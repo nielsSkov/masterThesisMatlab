@@ -16,7 +16,7 @@ b_p1_v = .4e-3;            % pendulum viscous friction   [N m s]
 b_p2_c =  4e-3;            % pendulum coulomb friction   [N m]
 b_p2_v = .4e-3;            % pendulum viscous friction   [N m s]
 
-k_tanh = 250;
+k_tan = 250;
 
 k_tau = 93.4e-3;           % motor torque constant       [N m A^-1]
 
