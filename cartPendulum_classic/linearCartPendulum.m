@@ -9,7 +9,11 @@ syms m M l g r b_c_c b_c_v b_p_c b_p_v k_tanh k_tau
 
 syms x1 x2 x3 x4 u
 
-noFriction = 1;
+noFriction = 0;
+
+if noFriction == 1
+  b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
+end
 
 MM = [ m*(l^2)       m*l*cos(x1)  ;
        m*l*cos(x1)   M+m         ];
@@ -44,17 +48,13 @@ B = jacobian(x_dot,u);
 x1 = 0; x2 = 0; x3 = 0; x4 = 0;
 k_tanh = 1;
 
-if noFriction == 1
-  b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
-end
-
 A = subs(A);
 B = subs(B);
 
 %-----controllability------------------------------------------------------
 
 %controllability (check equation)
-C = [ B A*B (A^2)*B ]
+C = [ B A*B (A^2)*B (A^3)*B ]
 
 run('initCartPendulum')
 
@@ -65,6 +65,10 @@ A = subs(A);
 B = subs(B);
 
 %controllability (check equation)
-C = vpa( [ B A*B (A^2)*B ], 4 )
+C = vpa( [ B A*B (A^2)*B (A^3)*B ], 4 )
 
 rank = rank(C)
+
+if rank == length(x)
+  disp('The system is controllable')
+end

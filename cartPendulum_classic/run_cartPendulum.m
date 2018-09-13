@@ -7,22 +7,32 @@ run('latexDefaults.m')
 
 run('initCartPendulum.m')
 
-%setting cart frictions to zero to see behaviour of cart
-b_c_c = 0;
-b_c_v = 0;
-M = M/3;
+noFriction = 1; % ( and no mass of cart, M )
+
+if noFriction == 1
+  b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
+  M = 1e-12;
+end
 
 %----------SIMULATION ODE45------------------------------------------------
 
 %initial conditions for ode45
-theta_0      = pi/4;
+theta_0      = .1;
 x_0          = 0;
 theta_dot_0  = 0;
 x_dot_0      = 0;
 
+
+
+
+
+
+
+
+
 %sample time and final time [s]
-Ts      = .01;
-T_final = 10;
+Ts      = .001;
+T_final = 1;
 
 %initialization for ode45
 tspan = 0:Ts:T_final;
@@ -50,7 +60,7 @@ x_dot     =  q(:,4);
 %initializing 2nd derivatives and amature current
 theta_dot_dot = zeros(size(t));
 x_dot_dot     = zeros(size(t));
-i_a           = zeros(size(t));
+i_a           = zeros(size*(t));
 
 %run ode45 simulation
 [t, q] = ode45( @(t,q)                                        ...
@@ -72,7 +82,35 @@ for i = 1:length(t)
 end
 
 
-%----------ANIMATION-------------------------------------------------------
+omega_0 = sqrt(m*g*l/(m*(l^2)));
+
+E_p = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1    ...
+              + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
+              + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
+
+E_p_test = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1 );
+
+E_p_test2 = m*g*l*(   (1/2)*(m/(m*g*l))*(x_dot.^2)                  ...
+                    + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot ) ;
+
+subplot(2,1,1)
+plot(t,E_p_test) %Åstrøm
+hold on
+scatter(t,E_p,'.') %Niels
+
+plot(t,E_p_test2) %Niels-Åstrøm
+
+legend('Aastrom','Niels','Niels-Aastrom')
+grid on, grid minor
+
+subplot(2,1,2)
+plot(t,theta)
+grid on, grid minor
+
+
+
+
+%% ----------ANIMATION-------------------------------------------------------
 
 xp = x + l*sin(theta);
 yp = l + l*cos(theta);
@@ -102,7 +140,7 @@ tic;
 res = 1; % deviding resolution of simulation data with res
 
 %Animation Loop
-for i = 2:length(t)  /res
+for i = 2:length(t)  /res*
   
   i = i*res;
 
