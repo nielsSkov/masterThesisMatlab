@@ -1,7 +1,7 @@
 clear all; close all; clc                                                  %#ok<CLALL>
 
 %change path to directory containing the project files
-cd ~/syncDrive/uni/thesis/masterThesisMatlab/cartPendulum_classic
+cd ~/syncDrive/uni/thesis/masterThesisMatlab/cartPendulum
 
 run('latexDefaults.m')
 
@@ -11,7 +11,8 @@ noFriction = 1; % ( and no mass of cart, M )
 
 if noFriction == 1
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
-  M = 1e-12;
+  %M = 1e-12;
+  M = M/3;
 end
 
 %----------SIMULATION ODE45------------------------------------------------
@@ -22,17 +23,9 @@ x_0          = 0;
 theta_dot_0  = 0;
 x_dot_0      = 0;
 
-
-
-
-
-
-
-
-
 %sample time and final time [s]
-Ts      = .001;
-T_final = 1;
+Ts      = .01;
+T_final = 10;
 
 %initialization for ode45
 tspan = 0:Ts:T_final;
@@ -82,37 +75,9 @@ for i = 1:length(t)
 end
 
 
-omega_0 = sqrt(m*g*l/(m*(l^2)));
-
-E_p = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1    ...
-              + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
-              + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
-
-E_p_test = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1 );
-
-E_p_test2 = m*g*l*(   (1/2)*(m/(m*g*l))*(x_dot.^2)                  ...
-                    + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot ) ;
-
-subplot(2,1,1)
-plot(t,E_p_test) %Åstrøm
-hold on
-scatter(t,E_p,'.') %Niels
-
-plot(t,E_p_test2) %Niels-Åstrøm
-
-legend('Aastrom','Niels','Niels-Aastrom')
-grid on, grid minor
-
-subplot(2,1,2)
-plot(t,theta)
-grid on, grid minor
-
-
-
-
 %% ----------ANIMATION-------------------------------------------------------
 
-xp = x + l*sin(theta);
+xp = x - l*sin(theta);
 yp = l + l*cos(theta);
 yc = l;
 
