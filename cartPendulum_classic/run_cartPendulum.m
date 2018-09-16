@@ -20,14 +20,14 @@ end
 %----------SIMULATION ODE45------------------------------------------------
 
 %initial conditions for ode45
-theta_0      = pi;
+theta_0      = pi-.1;
 x_0          = 0;
 theta_dot_0  = 0;
 x_dot_0      = 0;
 
 %sample time and final time [s]
 Ts      = .01;
-T_final = 10;
+T_final = 5.4;
 
 %initialization for ode45
 tspan = 0:Ts:T_final;
@@ -36,7 +36,7 @@ init  = [ theta_0 x_0 theta_dot_0 x_dot_0 ];
 %lowering relative tollerence (default 1e-3) to avoid drifting along x
 options = odeset('RelTol',1e-7);
 
-con = 3; %select control in sim
+con = 1; %select control in sim
 
 %run ode45 simulation
 [t, q] = ode45( @(t,q)                                      ...
@@ -115,7 +115,7 @@ yc = l;
 figure
 grid on, grid minor
 axis equal
-axis([ -6 1 0 1 ])
+axis([ -1 1 0 1 ])
 hold on
 
 %Initializing Moving Objects and Trajectory
