@@ -7,32 +7,27 @@ run('latexDefaults.m')
 
 run('initCartPendulum.m')
 
-noFriction = 1; % ( and no mass of cart, M )
+noFriction = 0; % ( and no mass of cart, M )
+noCartFriction = 1;
 
 if noFriction == 1
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
   M = 1e-12;
+elseif noCartFriction == 1
+  b_c_c = 0; b_c_v = 0;
 end
 
 %----------SIMULATION ODE45------------------------------------------------
 
 %initial conditions for ode45
-theta_0      = .1;
+theta_0      = pi;
 x_0          = 0;
 theta_dot_0  = 0;
 x_dot_0      = 0;
 
-
-
-
-
-
-
-
-
 %sample time and final time [s]
-Ts      = .001;
-T_final = 1;
+Ts      = .01;
+T_final = 10;
 
 %initialization for ode45
 tspan = 0:Ts:T_final;
@@ -41,7 +36,7 @@ init  = [ theta_0 x_0 theta_dot_0 x_dot_0 ];
 %lowering relative tollerence (default 1e-3) to avoid drifting along x
 options = odeset('RelTol',1e-7);
 
-con = 0; %select control in sim, first trajectory
+con = 3; %select control in sim
 
 %run ode45 simulation
 [t, q] = ode45( @(t,q)                                      ...
@@ -82,30 +77,30 @@ for i = 1:length(t)
 end
 
 
-omega_0 = sqrt(m*g*l/(m*(l^2)));
-
-E_p = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1    ...
-              + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
-              + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
-
-E_p_test = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1 );
-
-E_p_test2 = m*g*l*(   (1/2)*(m/(m*g*l))*(x_dot.^2)                  ...
-                    + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot ) ;
-
-subplot(2,1,1)
-plot(t,E_p_test) %Åstrøm
-hold on
-scatter(t,E_p,'.') %Niels
-
-plot(t,E_p_test2) %Niels-Åstrøm
-
-legend('Aastrom','Niels','Niels-Aastrom')
-grid on, grid minor
-
-subplot(2,1,2)
-plot(t,theta)
-grid on, grid minor
+% omega_0 = sqrt(m*g*l/(m*(l^2)));
+% 
+% E_p = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1    ...
+%               + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
+%               + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
+% 
+% E_p_test = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1 );
+% 
+% E_p_test2 = m*g*l*(   (1/2)*(m/(m*g*l))*(x_dot.^2)                  ...
+%                     + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot ) ;
+% 
+% subplot(2,1,1)
+% plot(t,E_p_test) %Åstrøm
+% hold on
+% scatter(t,E_p,'.') %Niels
+% 
+% plot(t,E_p_test2) %Niels-Åstrøm
+% 
+% legend('Aastrom','Niels','Niels-Aastrom')
+% grid on, grid minor
+% 
+% subplot(2,1,2)
+% plot(t,theta)
+% grid on, grid minor
 
 
 
@@ -120,7 +115,7 @@ yc = l;
 figure
 grid on, grid minor
 axis equal
-axis([ -1 1 0 1 ])
+axis([ -6 1 0 1 ])
 hold on
 
 %Initializing Moving Objects and Trajectory

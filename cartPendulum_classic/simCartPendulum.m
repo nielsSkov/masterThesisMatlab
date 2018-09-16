@@ -18,6 +18,23 @@ function [ q_dot,          ...
   
   if con == 0 %no controller - only model
     u = 0;
+  elseif con == 1 %rudementary controller (Åström)
+    k = 7;
+    J = m*(l^2);
+    E_delta = (1/2)*J*(x3^2) + m*g*l*(cos(x1) - 1);
+    u = k*E_delta*cos(x1)*x3;
+  elseif con == 2 %sign-based controller (Åström)
+    k = 5;
+    J = m*(l^2);
+    E_delta = (1/2)*J*(x3^2) + m*g*l*(cos(x1) - 1);
+    u = k*sign( E_delta*cos(x1)*x3 );
+  elseif con == 3 %sat-based controller (Åström)
+    k = 1/.03;
+    J = m*(l^2);
+    E_delta = (1/2)*J*(x3^2) + m*g*l*(cos(x1) - 1);
+    %  min( 1,max(-1,(1/epsilon)*) ) 
+    a_max = g*2;
+    u = min( a_max, max(-a_max, k*E_delta*sign( cos(x1)*x3 ) ));
   end
   
   MM = [  m*(l^2)       m*l*cos(x1)  ;

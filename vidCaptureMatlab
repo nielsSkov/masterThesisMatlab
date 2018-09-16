@@ -3,3 +3,6 @@ recordmydesktop  -x  170  -y  160  --width  1280 --height 650 --no-sound -o twin
 
 #convert
 ffmpeg -i twinPendulum.ogv -c:v libx264 -preset veryslow -crf 22 -c:a libmp3lame -qscale:a 2 -ac 2 -ar 44100 twinPendulum.mp4
+
+#crop
+ffmpeg -i swingUp.mp4 -ss 00:00:07 -t 00:00:20 -async 1 -strict -2 cut.mp4
