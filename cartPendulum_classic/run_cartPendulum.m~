@@ -7,25 +7,24 @@ run('latexDefaults.m')
 
 run('initCartPendulum.m')
 
-noFriction     = 1;
+noFriction = 1;
 noCartFriction = 0;
-noMass         = 0; % no mass of cart, M
+noMass = 0; % no mass of cart, M
 
-if noFriction
+if noFriction == 1
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
-elseif noCartFriction
+elseif noCartFriction == 1
   b_c_c = 0; b_c_v = 0;
 end
 
 if noMass
-    %M = 1e-12;
-    M = 1e-3;
+    M = 1e-12;
 end
 
 %----------SIMULATION ODE45------------------------------------------------
 
 %initial conditions for ode45
-theta_0      = pi+.01;
+theta_0      = pi+.1;
 x_0          = 0;
 theta_dot_0  = 0;
 x_dot_0      = 0;

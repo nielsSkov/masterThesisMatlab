@@ -19,7 +19,7 @@
   if con == 0 %no controller - only model
     u = 0;
   elseif con == 1 %rudementary controller (Åström)
-    k = 2;
+    k = 1;
     J = m*(l^2);
     E_delta = (1/2)*J*(x3^2) + m*g*l*(cos(x1) - 1);
     u = k*E_delta*cos(x1)*x3;
