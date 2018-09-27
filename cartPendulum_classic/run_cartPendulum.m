@@ -46,7 +46,7 @@ switch con
   case 3
     theta_0      = pi;
     x_0          = 0;
-    theta_dot_0  = -6;  %<-- this is a problem
+    theta_dot_0  = 0;%-6;  %<-- this is a problem
     x_dot_0      = 0;
 end
 
@@ -179,7 +179,7 @@ switch con
   case 2
     axis([ -1 1 0 1 ])
   case 3
-    axis([ -1 1 0 1 ])
+    axis([ -1 10 0 1 ])
 end
 
 %Initializing Moving Objects and Trajectory

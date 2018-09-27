@@ -8,6 +8,11 @@
                                                   b_p_c, b_p_v,        ...
                                                   b_c_c, b_c_v         )
   
+  persistent thetaDotDot;
+  if isempty(thetaDotDot)
+    thetaDotDot = 0;
+  end
+  
   theta      = q(1);
   x          = q(2);
   theta_dot  = q(3);
@@ -58,7 +63,7 @@
              0             ];
 
       F = [ 0  ;
-            (M+m)*xDotDot - m*l*sin(x1)*(x3^2) ];
+            (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDotDot];
 
       B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
             b_c_c*tanh(k_tanh*x4) + b_c_v*x4 ];
@@ -67,9 +72,9 @@
                 x4                   ; % =       x_dot
                 MM\(F - G - C - B ) ]; % = [ theta_dot_dot
                                        %         x_dot_dot ]
-    thetaDotDot = q_dot(3);
+    thetaDD_predict = q_dot(3);
     
-    u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDotDot;
+    u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDD_predict;
   end
   
   MM = [  m*(l^2)       m*l*cos(x1)  ;
@@ -93,6 +98,7 @@
                                    %         x_dot_dot ]
 
   theta_dot_dot = q_dot(3);
+  thetaDotDot   = q_dot(3); %persistant (for next loop)
   x_dot_dot     = q_dot(4);
   i_a           = u*r/k_tau;
 end
