@@ -18,8 +18,7 @@ elseif noCartFriction
 end
 
 if noMass
-    %M = 1e-12;
-    M = 1;
+    M = 1e-12;
 end
 
 %----------SIMULATION ODE45------------------------------------------------
@@ -41,16 +40,16 @@ switch con
   case 2
     theta_0      = pi;
     x_0          = 0;
-    theta_dot_0  = pi+.308;  %<-- this is a problem
+    theta_dot_0  = 0;
     x_dot_0      = 0;
   case 3
     theta_0      = pi;
     x_0          = 0;
-    theta_dot_0  = 0;%-6;  %<-- this is a problem
+    theta_dot_0  = 0;
     x_dot_0      = 0;
 end
 
-%sample time and final time [s]
+%sample time [s]
 Ts      = .01;
 
 %choose simulation length based on controller choise
@@ -58,11 +57,11 @@ switch con
   case 0
     T_final = 7;
   case 1
-    T_final = 30;
+    T_final = 7;
   case 2
-    T_final = 15;
+    T_final = 7;
   case 3
-    T_final = 15;
+    T_final = 7;
 end
 
 %initialization for ode45
@@ -116,37 +115,60 @@ end
 
 omega_0 = sqrt(m*g*l/(m*(l^2)));
 
-E_p = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1    ...
-              + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
-              + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
-% 
-% E_p_test = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1 );
-% 
-% E_p_test2 = m*g*l*(   (1/2)*(m/(m*g*l))*(x_dot.^2)                  ...
-%                     + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot ) ;
-% 
-% subplot(2,1,1)
-% plot(t,E_p_test) %Åstrøm
-% hold on
-% scatter(t,E_p,'.') %Niels
-% 
-% plot(t,E_p_test2) %Niels-Åstrøm
-% 
-% legend('Aastrom','Niels','Niels-Aastrom')
-% grid on, grid minor
-% 
-% subplot(2,1,2)
-% plot(t,theta)
-% grid on, grid minor
+% E_p = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1    ...
+%               + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
+%               + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
 
-%plot trajectory in theta-plane with respect to x_dot
+%plot trajectory in theta-plane
 figure
-plot3( theta, theta_dot, x_dot, 'linewidth', 1.5 )
+plot( theta, theta_dot, 'linewidth', 1.5 )
 grid on, grid minor
 axis equal
-xlabel('$\theta$')
-ylabel('$\dot{\theta}$')
-zlabel('$\dot{x}$')
+xlabel('$\theta$ [rad]')
+ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
+
+figure
+subplot(2,3,1)
+plot( t, x, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$x$ [m]')
+xlim([min(t) max(t)])
+
+subplot(2,3,2)
+plot( t, x_dot, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
+xlim([min(t) max(t)])
+
+subplot(2,3,3)
+plot( t, x_dot_dot, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\ddot{x}$ [m$\cdot$s$^{-2}$]')
+xlim([min(t) max(t)])
+
+subplot(2,3,4)
+plot( t, theta, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\theta$ [rad]')
+xlim([min(t) max(t)])
+
+subplot(2,3,5)
+plot( t, theta_dot, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
+xlim([min(t) max(t)])
+
+subplot(2,3,6)
+plot( t, theta_dot_dot, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\ddot{\theta}$ [rad$\cdot$s$^{-2}$]')
+xlim([min(t) max(t)])
 
 %plot difference in energy over time
 figure
@@ -154,8 +176,8 @@ plot( t, E_delta, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$E_\Delta$ [J]')
-hold on
-plot( t, E_p, 'linewidth', 1.5 )
+%hold on
+%plot( t, E_p, 'linewidth', 1.5 )
 
 %% ----------ANIMATION-------------------------------------------------------
 
@@ -175,11 +197,11 @@ switch con
   case 0
     axis([ -1 1 0 1 ])
   case 1
-    axis([ -1 2 0 1 ])
+    axis([ -1 1 0 1 ])
   case 2
     axis([ -1 1 0 1 ])
   case 3
-    axis([ -1 10 0 1 ])
+    axis([ -1 1 0 1 ])
 end
 
 %Initializing Moving Objects and Trajectory
@@ -205,7 +227,7 @@ for i = 2:length(t)  /res
 
   delete(cart)
   cart = rectangle(axAni, 'Position',  [ x(i)-.15 yc-.07 .3 .14 ], ...
-                          'FaceColor', [ .9 .9 .9 ]                   );
+                          'FaceColor', [ .9 .9 .9 ]                );
 
   delete(rod1)
   rod1 = plot(axAni, [ x(i) xp(i) ] , [ yc yp(i) ], 'k', 'linewidth', 2 );

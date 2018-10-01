@@ -1,6 +1,9 @@
 #capture
 recordmydesktop  -x  170  -y  160  --width  1280 --height 650 --no-sound -o twinPendulum.ogv
 
+(or for full window)
+recordmydesktop  -x  20  -y  35  --width  1560 --height 845 --no-sound -o swingUp3.ogv
+
 #convert
 ffmpeg -i twinPendulum.ogv -c:v libx264 -preset veryslow -crf 22 -c:a libmp3lame -qscale:a 2 -ac 2 -ar 44100 twinPendulum.mp4
 

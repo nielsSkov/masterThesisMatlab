@@ -8,9 +8,9 @@
                                                   b_p_c, b_p_v,        ...
                                                   b_c_c, b_c_v         )
   
-  persistent thetaDotDot;
-  if isempty(thetaDotDot)
-    thetaDotDot = 0;
+  persistent previousU;
+  if isempty(previousU)
+    previousU = 0;
   end
   
   theta      = q(1);
@@ -23,15 +23,9 @@
   x3 = theta_dot;
   x4 = x_dot;
   
-  %energy of pendulum with cooredinate system fixed at pivot point
+  %difference in energy with cooredinate system fixed at pivot point
   J = m*(l^2);
-  E_delta = (1/2)*J*(x3^2) + m*g*l*(cos(x1) - 1);  %output
-  
-  %full energy of system
-%   omega_0 = sqrt(m*g*l/(m*(l^2)));
-%   E_delta = m*g*l*( (1/2)*((theta_dot/omega_0)^2) + cos(theta) - 1    ...
-%                     + (1/2)*(m/(m*g*l))*(x_dot^2)                     ...
-%                     + (m*l/(m*g*l))*cos(theta)*theta_dot*x_dot )    ;
+  E_delta = (1/2)*J*(x3^2) + m*g*l*(cos(x1) - 1);  %(function output)
   
   if con == 0 %no controller - only model
     u = 0;
@@ -45,11 +39,11 @@
     xDotDot = k*sgnApprox; %sign( E_delta*cos(x1)*x3 );
   elseif con == 3 %sat-based controller (Åström)
     k = 20;
-    % min( 1,max(-1,(1/epsilon)*) )
     epsilon = .03;
-    sgnApprox = min( 1,max(-1,(1/epsilon)*cos(x1)*x3) );
-    a_max = g/4;
-    xDotDot = min( a_max, max(-a_max, k*E_delta*sgnApprox ));
+    sgn = min( 1,max(-1,(1/epsilon)*cos(x1)*x3) );
+    %sgn = sign(cos(x1)*x3);
+    a_max = g/2;
+    xDotDot = min( a_max, max(-a_max, k*E_delta*sgn ));
   end
   
   if con > 0
@@ -63,7 +57,7 @@
              0             ];
 
       F = [ 0  ;
-            (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDotDot];
+            previousU ];
 
       B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
             b_c_c*tanh(k_tanh*x4) + b_c_v*x4 ];
@@ -74,8 +68,18 @@
                                        %         x_dot_dot ]
     thetaDD_predict = q_dot(3);
     
-    u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDD_predict;
+    k1 = 10.5460;
+    k2 = 15.8190;
+    lin_u = -k1*x2 -k2*x4;
+    if E_delta < 0
+      u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) +  ...
+          + m*l*cos(x1)*thetaDD_predict  +lin_u ;
+    else
+      u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDD_predict;
+    end
   end
+  
+  
   
   MM = [  m*(l^2)       m*l*cos(x1)  ;
           m*l*cos(x1)   M+m         ];
@@ -98,7 +102,7 @@
                                    %         x_dot_dot ]
 
   theta_dot_dot = q_dot(3);
-  thetaDotDot   = q_dot(3); %persistant (for next loop)
+  previousU     = u; %persistant (for next loop)
   x_dot_dot     = q_dot(4);
   i_a           = u*r/k_tau;
 end

@@ -72,3 +72,28 @@ rank = rank(C)
 if rank == length(x)
   disp('The system is controllable')
 end
+
+%----design of cart position control during swing up-----------------------
+
+x = [ x1 
+      x2];
+
+x_dot = [ x2
+          (1/M)*u ]
+        
+A = jacobian(x_dot,x);
+
+B = jacobian(x_dot,u);
+
+
+A = [ 0 1
+      0 0 ];
+
+B = [ 0
+      1/M ];
+
+C = vpa( [ B A*B ], 4 )
+
+p = [ -1 -2 ];
+
+k = place(A,B,p)
