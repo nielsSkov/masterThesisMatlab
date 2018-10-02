@@ -119,59 +119,72 @@ omega_0 = sqrt(m*g*l/(m*(l^2)));
 %               + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
 %               + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
 
-%plot trajectory in theta-plane
+%plot all states
 figure
-plot( theta, theta_dot, 'linewidth', 1.5 )
-grid on, grid minor
-axis equal
-xlabel('$\theta$ [rad]')
-ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
-
-figure
-subplot(2,3,1)
+axX = subplot(3,1,1);
 plot( t, x, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$x$ [m]')
 xlim([min(t) max(t)])
 
-subplot(2,3,2)
+axXD = subplot(3,1,2);
 plot( t, x_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
 xlim([min(t) max(t)])
 
-subplot(2,3,3)
+axXDD = subplot(3,1,3);
 plot( t, x_dot_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\ddot{x}$ [m$\cdot$s$^{-2}$]')
 xlim([min(t) max(t)])
 
-subplot(2,3,4)
+figure
+axTheta = subplot(3,1,1);
 plot( t, theta, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\theta$ [rad]')
 xlim([min(t) max(t)])
 
-subplot(2,3,5)
+axThetaD = subplot(3,1,2);
 plot( t, theta_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
 xlim([min(t) max(t)])
 
-subplot(2,3,6)
+axThetaDD = subplot(3,1,3);
 plot( t, theta_dot_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\ddot{\theta}$ [rad$\cdot$s$^{-2}$]')
 xlim([min(t) max(t)])
 
-%plot difference in energy over time
+axesXTheta = [ axX axXD axXDD axTheta axThetaD axThetaDD ];
+linkaxes(axesXTheta, 'x')
+
+%plot armature current
 figure
+plot( t, i_a, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$i_a$ [A]')
+
+%plot trajectory in theta-plane
+figure
+subplot(3,1,[1 2]);
+plot( theta, theta_dot, 'linewidth', 1.5 )
+grid on, grid minor
+axis equal
+xlabel('$\theta$ [rad]')
+ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
+
+%plot difference in energy over time
+subplot(3,1,3);
 plot( t, E_delta, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')

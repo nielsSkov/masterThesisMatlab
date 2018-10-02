@@ -71,12 +71,12 @@
     k1 = 10.5460;
     k2 = 15.8190;
     lin_u = -k1*x2 -k2*x4;
-    if E_delta < 0
+%     if E_delta < 0
       u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) +  ...
           + m*l*cos(x1)*thetaDD_predict  +lin_u ;
-    else
-      u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDD_predict;
-    end
+%     else
+%       u = (M+m)*xDotDot - m*l*sin(x1)*(x3^2) + m*l*cos(x1)*thetaDD_predict;
+%     end
   end
   
   

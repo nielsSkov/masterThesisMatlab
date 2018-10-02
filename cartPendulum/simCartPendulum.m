@@ -37,11 +37,13 @@
     sgnApprox = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
     xDotDot = k*sgnApprox; %sign( E_delta*cos(x1)*x3 );
   elseif con == 3 %sat-based controller (Åström)
-    k = 20;
+    k = 100;
     epsilon = .03;
     sgn = min( 1,max(-1,(1/epsilon)*cos(x1)*x3) );
     %sgn = sign(cos(x1)*x3);
-    a_max = g/2;
+    i_max = 4.58;
+    u_max = i_max*k_tau/r;
+    a_max = u_max/(M+m) -1;
     xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
   end
   
@@ -71,12 +73,15 @@
     k2 = 15.8190;
     lin_u = -k1*x2 -k2*x4;
     
-    %if E_delta < 0.1
+    %enable to include cart friction
+    if 0
+      u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2) -      ...
+          - m*l*cos(x1)*thetaDD_predict +           ...
+          + b_c_c*tanh(k_tanh*x4) + b_c_v*x4 +lin_u ;
+    else
       u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2) -  ...
-          + m*l*cos(x1)*thetaDD_predict  +lin_u ;
-    %else
-    %  u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2) - m*l*cos(x1)*thetaDD_predict;
-    %end
+          - m*l*cos(x1)*thetaDD_predict +lin_u ;
+    end
   end
   
   MM = [  m*(l^2)      -m*l*cos(x1)  ;
