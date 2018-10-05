@@ -3,7 +3,7 @@
              x_dot_dot,     ...
              i_a,           ...
              E_delta        ]  = simCartPendulum( t, q,                ...
-                                                  con, m, M, l,        ...
+                                                  con, conX, m, M, l,  ...
                                                   g, k_tanh, r, k_tau, ...
                                                   b_p_c, b_p_v,        ...
                                                   b_c_c, b_c_v         )
@@ -31,19 +31,27 @@
   elseif con == 1 %rudementary controller (Åström)
     k = 2;
     xDotDot = -k*E_delta*cos(x1)*x3;
-  elseif con == 2 %sign-based controller (Åström)
-    k = 2;
-    epsilon = .03;
-    sgnApprox = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
-    xDotDot = k*sgnApprox; %sign( E_delta*cos(x1)*x3 );
+  elseif con == 2 %sign-based controller (Åström)  %rudementary controller (Åström)
+    k = 2.8;
+    E_delta = E_delta+.001;
+    epsilon = .0001;
+    sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
+%     sgn = sign(-E_delta*cos(x1)*x3);
+%     if sgn == 0
+%       sgn = 1;
+%     end
+    xDotDot = k*sgn;
   elseif con == 3 %sat-based controller (Åström)
-    k = 100;
-    epsilon = .03;
-    sgn = min( 1,max(-1,(1/epsilon)*cos(x1)*x3) );
-    %sgn = sign(cos(x1)*x3);
+    k = 200;
+    %epsilon = .03;
+    %sgn = min( 1,max(-1,(1/epsilon)*cos(x1)*x3) );
+    sgn = sign(cos(x1)*x3);
+    if sgn == 0
+      sgn = 1;
+    end
     i_max = 4.58;
     u_max = i_max*k_tau/r;
-    a_max = u_max/(M+m) -1;
+    a_max = u_max/(M+m);
     xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
   end
   
@@ -69,9 +77,16 @@
                                        %         x_dot_dot ]
     thetaDD_predict = q_dot(3);
     
-    k1 = 10.5460;
-    k2 = 15.8190;
-    lin_u = -k1*x2 -k2*x4;
+    if conX
+      K = [ 10.5460 15.8190 ];   %poles in [ -1   -2   ]
+      %K = [ 3.9548  10.5460 ];  %poles in [ -.5  -1.5 ]
+      %K = [ 0.2636  3.1638 ];   %poles in [ -.1  -.5  ]
+    else
+      K = [ 0 0 ];               %disable x-position/velocity control
+    end
+    
+    lin_u = -K*[ x2  ;
+                 x4 ];
     
     %enable to include cart friction
     if 0

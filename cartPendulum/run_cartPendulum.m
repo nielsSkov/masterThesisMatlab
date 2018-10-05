@@ -11,6 +11,16 @@ noFriction     = 0;
 noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 
+conX = 0; %select whether or not to control x-position/velocity
+con  = 1; %controller selection where,
+%
+%            0 - no control
+%            1 - "rudementary" controller (Åström)
+%            2 - sign-based controller (Åström)
+%            3 - sat-based controller (Åström)
+
+documentation = 1; %figures are plottet seperately if documentation is on
+
 if noFriction
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
 elseif noCartFriction
@@ -22,8 +32,6 @@ if noMass
 end
 
 %----------SIMULATION ODE45------------------------------------------------
-
-con = 3; %select control in sim
 
 %initial conditions for ode45 based on controller choise
 switch con
@@ -57,9 +65,9 @@ switch con
   case 0
     T_final = 7;
   case 1
-    T_final = 7;
+    T_final = 6.8;
   case 2
-    T_final = 7;
+    T_final = 10;
   case 3
     T_final = 7;
 end
@@ -72,12 +80,12 @@ init  = [ theta_0 x_0 theta_dot_0 x_dot_0 ];
 options = odeset('RelTol',1e-7);
 
 %run ode45 simulation
-[t, q] = ode45( @(t,q)                                       ...
-                simCartPendulum( t, q, con, m, M, l,    ...
-                                 g, k_tanh, r, k_tau,   ...
-                                 b_p_c, b_p_v,          ...
-                                 b_c_c, b_c_v           ),   ...
-                tspan, init, options                            );
+[t, q] = ode45( @(t,q) simCartPendulum( t, q,                 ...
+                                        con, conX, m, M, l,   ...
+                                        g, k_tanh, r, k_tau,  ...
+                                        b_p_c, b_p_v,         ...
+                                        b_c_c, b_c_v          ),  ...
+                tspan, init, options                              );
 
 %assigning results of ode45 simulation
 theta     =  q(:,1);
@@ -89,15 +97,8 @@ x_dot     =  q(:,4);
 theta_dot_dot = zeros(size(t));
 x_dot_dot     = zeros(size(t));
 i_a           = zeros(size(t));
+ia_rms        = zeros(size(t));
 E_delta       = zeros(size(t));
-
-%run ode45 simulation
-[t, q] = ode45( @(t,q)                                        ...
-                    simCartPendulum( t, q, con, m, M, l,  ... 
-                                     g, k_tanh, r, k_tau, ...
-                                     b_p_c, b_p_v,        ...
-                                     b_c_c, b_c_v         ),  ...
-                            tspan, init, options              );
 
 %calculating/simulating 2nd derivatives
 for i = 1:length(t)
@@ -106,77 +107,108 @@ for i = 1:length(t)
        x_dot_dot(i),     ...
        i_a(i),           ...
        E_delta(i)           ]  = simCartPendulum( t(i), q(i,:),        ...
-                                                  con, m, M, l,        ...
+                                                  con, conX, m, M, l,  ...
                                                   g, k_tanh, r, k_tau, ...
                                                   b_p_c, b_p_v,        ...
                                                   b_c_c, b_c_v         );
 end
 
-
-omega_0 = sqrt(m*g*l/(m*(l^2)));
-
-% E_p = m*g*l*( (1/2)*((theta_dot/omega_0).^2) + cos(theta) - 1    ...
-%               + (1/2)*(m/(m*g*l))*(x_dot.^2)                     ...
-%               + (m*l/(m*g*l)).*cos(theta).*theta_dot.*x_dot )    ;
+%rolling rms of i_a
+for i = 1:length(t)
+  ia_rms(i) = rms( i_a(1:i) );
+end
 
 %plot all states
-figure
-axX = subplot(3,1,1);
+h_x = figure;
+if documentation == 0
+  axX = subplot(3,1,1);
+end
 plot( t, x, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$x$ [m]')
 xlim([min(t) max(t)])
 
-axXD = subplot(3,1,2);
+if documentation == 0
+  axXD = subplot(3,1,2);
+else
+  h_xDot = figure;
+end
 plot( t, x_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
 xlim([min(t) max(t)])
 
-axXDD = subplot(3,1,3);
+if documentation == 0
+  axXDD = subplot(3,1,3);
+else
+  h_xDotDot = figure;
+end
 plot( t, x_dot_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\ddot{x}$ [m$\cdot$s$^{-2}$]')
 xlim([min(t) max(t)])
 
-figure
-axTheta = subplot(3,1,1);
+h_theta = figure;
+if documentation == 0
+  axTheta = subplot(3,1,1);
+end
 plot( t, theta, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\theta$ [rad]')
 xlim([min(t) max(t)])
 
-axThetaD = subplot(3,1,2);
+if documentation == 0
+  axThetaD = subplot(3,1,2);
+else
+  h_thetaDot = figure;
+end
 plot( t, theta_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
 xlim([min(t) max(t)])
 
-axThetaDD = subplot(3,1,3);
+if documentation == 0
+  axThetaDD = subplot(3,1,3);
+else
+  h_thetaDotDot = figure;
+end
 plot( t, theta_dot_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\ddot{\theta}$ [rad$\cdot$s$^{-2}$]')
 xlim([min(t) max(t)])
 
-axesXTheta = [ axX axXD axXDD axTheta axThetaD axThetaDD ];
-linkaxes(axesXTheta, 'x')
+if documentation == 0
+  axesXTheta = [ axX axXD axXDD axTheta axThetaD axThetaDD ];
+  linkaxes(axesXTheta, 'x')
+end
 
 %plot armature current
-figure
+h_ia = figure;
 plot( t, i_a, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$i_a$ [A]')
+hold on
+plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
+i_max = 4.44; %4.58;
+xlim([min(t) max(t)])
+plot(xlim,[i_max i_max], 'r', 'linewidth', 1.5 )
+legend( 'Motor Current',          ...
+        'Rolling RMS of $i_a$',   ...
+        'Max Continuous Current', ...
+        'location', 'southeast'   )
 
 %plot trajectory in theta-plane
-figure
-subplot(3,1,[1 2]);
+h_phase = figure;
+if documentation == 0
+  subplot(3,1,[1 2]);
+end
 plot( theta, theta_dot, 'linewidth', 1.5 )
 grid on, grid minor
 axis equal
@@ -184,13 +216,16 @@ xlabel('$\theta$ [rad]')
 ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
 
 %plot difference in energy over time
-subplot(3,1,3);
+if documentation == 0
+  subplot(3,1,3);
+else
+  h_Edelta = figure;
+end
 plot( t, E_delta, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$E_\Delta$ [J]')
-%hold on
-%plot( t, E_p, 'linewidth', 1.5 )
+xlim([min(t) max(t)])
 
 %% ----------ANIMATION-------------------------------------------------------
 
@@ -199,7 +234,7 @@ yp = l + l*cos(theta);
 yc = l;
 
 %Initializing Animation Figure
-figure
+h_ani = figure;
 axAni = axes;
 grid on, grid minor
 axis equal
@@ -210,7 +245,11 @@ switch con
   case 0
     axis([ -1 1 0 1 ])
   case 1
-    axis([ -1 1 0 1 ])
+    if conX
+      axis([ -1 1 0 1 ])
+    else
+      axis([ -3.5 .1 0 1 ])
+    end
   case 2
     axis([ -1 1 0 1 ])
   case 3
@@ -224,10 +263,6 @@ ypLast = yp(1);
 cart = rectangle('Position',[ x(1)-.15 yc-.07 .3 .14 ]);
 rod1 = plot(axAni, [ x(1) xp(1) ] , [ yc yp(1) ], 'k', 'linewidth', 3);
 drawnow
-
-%for testing timing
-% t_test1 = zeros(length(t),1);
-% t_test2 = zeros(length(t),1);
 
 tic;
 
@@ -254,19 +289,60 @@ for i = 2:length(t)  /res
 
   runT = toc;
   
-  %for testing timing
-  % t_test1(i/res) = t(i);
-  % t_test2(i/res) = runT;
-
-  %if runT < t(i)
-  %  pauses(t(i)-runT)
-  %end
-
   drawnow
+end      
+
+%remember to float the windows before saving (for consistent scale)
+if 0
+  figurePath1='~/syncDrive/uni/thesis/masterThesisReport/report/figures/original/';  %#ok<UNRCH>
+  figurePath2='~/syncDrive/uni/thesis/masterThesisReport/report/figures/';
+  fileTypeOrig="fig";
+  testID='_1_noConX';
+
+  for jj = 1:1:10
+    switch jj
+    case 1
+        figHandle=h_x;
+        fileName=strcat('x',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 2
+        figHandle=h_xDot;
+        fileName=strcat('xDot',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 3
+        figHandle=h_xDotDot;
+        fileName=strcat('xDotDot',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 4
+        figHandle=h_theta;
+        fileName=strcat('theta',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 5
+        figHandle=h_thetaDot;
+        fileName=strcat('thetaDot',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 6
+        figHandle=h_thetaDotDot;
+        fileName=strcat('thetaDotDot',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 7
+        figHandle=h_ia;
+        fileName=strcat('ia',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 8
+        figHandle=h_phase;
+        fileName=strcat('phase',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 9
+        figHandle=h_Edelta;
+        fileName=strcat('Edelta',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 10
+        figHandle=h_ani;
+        fileName=strcat('ani',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    end
+  end
 end
 
-%for testing timing
-% figure;
-% plot(t_test1(1:round(i/res)))
-% hold on
-% plot(t_test2(1:round(i/res)))
+

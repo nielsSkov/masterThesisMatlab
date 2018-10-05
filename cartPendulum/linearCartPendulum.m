@@ -75,11 +75,14 @@ end
 
 %----design of cart position control during swing up-----------------------
 
+syms x1 x2 u
+run('initCartPendulum')
+
 x = [ x1 
       x2];
 
 x_dot = [ x2
-          (1/M)*u ]
+          (1/M)*u ];
         
 A = jacobian(x_dot,x);
 
@@ -94,6 +97,8 @@ B = [ 0
 
 C = vpa( [ B A*B ], 4 )
 
-p = [ -1 -2 ];
+%p = [ -1 -2 ];
+%p = [ -.5 -1.5 ];
+p = [ -.1 -.5 ];
 
 k = place(A,B,p)
