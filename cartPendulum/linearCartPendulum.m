@@ -1,7 +1,7 @@
 clear all; close all; clc                                                  %#ok<CLALL>
 
 %change path to directory containing the project files
-cd ~/syncDrive/uni/thesis/masterThesisMatlab/cartPendulum_classic
+cd ~/syncDrive/uni/thesis/masterThesisMatlab/cartPendulum
 
 run('latexDefaults.m')
 
@@ -17,6 +17,8 @@ end
 
 MM = [ m*(l^2)      -m*l*cos(x1)  ;
       -m*l*cos(x1)   M+m         ];
+
+MM_inv = simplify( inv(MM) );
 
 C = [ 0
       m*l*sin(x1)*x3^2 ];

@@ -7,7 +7,7 @@ saveas(figHandle, figTmp);
 
 %save pdf
 figTmp=sprintf('%s%s.pdf', figurePath2, fileName);
-saveas(figHandle, figTmp);
+print(figHandle, figTmp, '-dpdf');
 
 %crop pdf
 cmdTmp=sprintf('pdfcrop %s %s --margins "%i"', figTmp, figTmp, margin);

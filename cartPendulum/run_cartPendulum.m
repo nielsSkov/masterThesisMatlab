@@ -10,6 +10,7 @@ run('initCartPendulum.m')
 noFriction     = 0;
 noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
+fComp          = 0; % friction compensation (feed forward)
 
 conX = 0; %select whether or not to control x-position/velocity
 con  = 1; %controller selection where,
@@ -65,11 +66,11 @@ switch con
   case 0
     T_final = 7;
   case 1
-    T_final = 6.8;
+    T_final = 20;
   case 2
-    T_final = 10;
+    T_final = 15;
   case 3
-    T_final = 7;
+    T_final = 10;
 end
 
 %initialization for ode45
@@ -84,7 +85,7 @@ options = odeset('RelTol',1e-7);
                                         con, conX, m, M, l,   ...
                                         g, k_tanh, r, k_tau,  ...
                                         b_p_c, b_p_v,         ...
-                                        b_c_c, b_c_v          ),  ...
+                                        b_c_c, b_c_v, fComp   ),  ...
                 tspan, init, options                              );
 
 %assigning results of ode45 simulation
@@ -110,7 +111,7 @@ for i = 1:length(t)
                                                   con, conX, m, M, l,  ...
                                                   g, k_tanh, r, k_tau, ...
                                                   b_p_c, b_p_v,        ...
-                                                  b_c_c, b_c_v         );
+                                                  b_c_c, b_c_v, fComp  );
 end
 
 %rolling rms of i_a
@@ -239,6 +240,8 @@ axAni = axes;
 grid on, grid minor
 axis equal
 hold on
+xlabel('$x$ [m]')
+ylabel('$y$ [m]')
 
 %setting axis limits depending on controller choise
 switch con
@@ -248,10 +251,14 @@ switch con
     if conX
       axis([ -1 1 0 1 ])
     else
-      axis([ -3.5 .1 0 1 ])
+      axis([ -2 .5 0 1 ])
     end
   case 2
-    axis([ -1 1 0 1 ])
+    if conX
+      axis([ -1 1 0 1 ])
+    else
+      axis([ -.2 11.5 0 1 ])
+    end
   case 3
     axis([ -1 1 0 1 ])
 end
@@ -294,11 +301,25 @@ end
 
 %remember to float the windows before saving (for consistent scale)
 if 0
-  figurePath1='~/syncDrive/uni/thesis/masterThesisReport/report/figures/original/';  %#ok<UNRCH>
-  figurePath2='~/syncDrive/uni/thesis/masterThesisReport/report/figures/';
-  fileTypeOrig="fig";
-  testID='_1_noConX';
-
+  figurePath1 = ...
+    '~/syncDrive/uni/thesis/masterThesisReport/report/figures/original/';  %#ok<UNRCH>
+  figurePath2 = ...
+    '~/syncDrive/uni/thesis/masterThesisReport/report/figures/';
+  fileTypeOrig = "fig";
+  if con == 1 && conX == 0
+    testID='_1_noConX';
+  elseif con == 1 && conX == 1
+    testID='_1_conX';
+  elseif con == 2 && conX == 0
+    testID='_2_noConX';
+  elseif con == 2 && conX == 1
+    testID='_2_conX';
+  elseif con == 3 && conX == 0
+    testID='_3_noConX';
+  elseif con == 3 && conX == 1
+    testID='_3_conX';
+  end
+  
   for jj = 1:1:10
     switch jj
     case 1

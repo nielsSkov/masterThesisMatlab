@@ -6,7 +6,7 @@
                                                   con, conX, m, M, l,  ...
                                                   g, k_tanh, r, k_tau, ...
                                                   b_p_c, b_p_v,        ...
-                                                  b_c_c, b_c_v         )
+                                                  b_c_c, b_c_v, fComp  )
   persistent previousU;
   if isempty(previousU)
     previousU = 0;
@@ -29,17 +29,18 @@
   if con == 0 %no controller - only model
     u = 0;
   elseif con == 1 %rudementary controller (Åström)
-    k = 2;
+    k = 1.3;
     xDotDot = -k*E_delta*cos(x1)*x3;
   elseif con == 2 %sign-based controller (Åström)  %rudementary controller (Åström)
-    k = 2.8;
-    E_delta = E_delta+.001;
-    epsilon = .0001;
-    sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
-%     sgn = sign(-E_delta*cos(x1)*x3);
-%     if sgn == 0
-%       sgn = 1;
-%     end
+    k = 2.7;
+    %E_delta = E_delta+.001;
+    %epsilon = .0001;
+    %sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
+    %sgn = tanh(100000*(-E_delta*cos(x1)*x3));
+    sgn = sign(-E_delta*cos(x1)*x3);
+    if sgn == 0
+      sgn = 1;
+    end
     xDotDot = k*sgn;
   elseif con == 3 %sat-based controller (Åström)
     k = 200;
@@ -69,7 +70,8 @@
             previousU ];
 
       B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
-            b_c_c*tanh(k_tanh*x4) + b_c_v*x4 ];
+            0                                ];
+            %b_c_c*tanh(k_tanh*x4) + b_c_v*x4
 
       q_dot = [ x3                   ; % =   theta_dot
                 x4                   ; % =       x_dot
@@ -85,17 +87,17 @@
       K = [ 0 0 ];               %disable x-position/velocity control
     end
     
+    %linear controller for x-position/velocity
     lin_u = -K*[ x2  ;
                  x4 ];
     
-    %enable to include cart friction
-    if 0
-      u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2) -      ...
-          - m*l*cos(x1)*thetaDD_predict +           ...
-          + b_c_c*tanh(k_tanh*x4) + b_c_v*x4 +lin_u ;
-    else
-      u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2) -  ...
-          - m*l*cos(x1)*thetaDD_predict +lin_u ;
+    %control signal (force)
+    u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2) -  ...
+        - m*l*cos(x1)*thetaDD_predict + lin_u  ;
+    
+    %friction compensation
+    if fComp
+      u = u + b_c_c*tanh(k_tanh*x4) + b_c_v*x4;
     end
   end
   
