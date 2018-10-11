@@ -22,38 +22,45 @@
   x3 = theta_dot;
   x4 = x_dot;
 
- %difference in energy with cooredinate system fixed at pivot point
+  %difference in energy with cooredinate system fixed at pivot point
   J = m*(l^2);
   E_delta = (1/2)*J*(x3^2) + m*g*l*(cos(x1) - 1);  %(function output)
   
-  if con == 0 %no controller - only model
+  if con == 0               %<--no controller - only model
     u = 0;
-  elseif con == 1 %rudementary controller (Åström)
+  
+  elseif con == 1           %<--rudementary controller (Åström)
     k = 1.3;
     xDotDot = -k*E_delta*cos(x1)*x3;
-  elseif con == 2 %sign-based controller (Åström)  %rudementary controller (Åström)
+  
+  elseif con == 2           %<--sign-based controller (Åström)
     k = 2.7;
-    %E_delta = E_delta+.001;
-    %epsilon = .0001;
-    %sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
-    %sgn = tanh(100000*(-E_delta*cos(x1)*x3));
     sgn = sign(-E_delta*cos(x1)*x3);
     if sgn == 0
       sgn = 1;
     end
     xDotDot = k*sgn;
-  elseif con == 3 %sat-based controller (Åström)
+  
+  elseif con == 3           %<--approximated sign-based controller (Åström)
+    k = 2.7;
+    epsilon = .01;
+    sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
+    if sgn == 0
+      sgn = 1;
+    end
+    xDotDot = k*sgn;
+  
+  elseif con == 4           %<--sat-based controller (Åström)
     k = 200;
-    %epsilon = .03;
-    %sgn = min( 1,max(-1,(1/epsilon)*cos(x1)*x3) );
     sgn = sign(cos(x1)*x3);
     if sgn == 0
       sgn = 1;
     end
     i_max = 4.58;
     u_max = i_max*k_tau/r;
-    a_max = u_max/(M+m);
+    a_max = u_max/(M+m) -.2;
     xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
+  
   end
   
   if con > 0

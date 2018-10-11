@@ -12,13 +12,14 @@ noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-conX = 0; %select whether or not to control x-position/velocity
-con  = 1; %controller selection where,
+conX = 1; %select whether or not to control x-position/velocity
+con  = 4; %controller selection where,
 %
 %            0 - no control
 %            1 - "rudementary" controller (Åström)
-%            2 - sign-based controller (Åström)
-%            3 - sat-based controller (Åström)
+%            2 - sign-based controller (Åström)    <--WARNING! VERY slow..
+%            3 - sat-approximation of 2
+%            4 - sat-based controller (Åström)
 
 documentation = 1; %figures are plottet seperately if documentation is on
 
@@ -56,6 +57,11 @@ switch con
     x_0          = 0;
     theta_dot_0  = 0;
     x_dot_0      = 0;
+  case 4
+    theta_0      = pi;
+    x_0          = 0;
+    theta_dot_0  = 0;
+    x_dot_0      = 0;
 end
 
 %sample time [s]
@@ -66,11 +72,31 @@ switch con
   case 0
     T_final = 7;
   case 1
-    T_final = 20;
+    if conX
+      T_final = 6.82;
+    else
+      T_final = 20;
+    end
   case 2
-    T_final = 15;
+    if conX
+      T_final = 6.82;
+    else
+      T_final = 15;
+    end
   case 3
-    T_final = 10;
+    if conX
+      T_final = 6.82;
+      %T_final = 20;   <--to show x-position/velocity control reaching zero
+    else
+      T_final = 7.5;
+    end
+  case 4
+    if conX
+      T_final = 6.49;
+      %T_final = 20;   <--to show x-position/velocity control reaching zero
+    else
+      T_final = 7.5;
+    end
 end
 
 %initialization for ode45
@@ -260,7 +286,17 @@ switch con
       axis([ -.2 11.5 0 1 ])
     end
   case 3
-    axis([ -1 1 0 1 ])
+    if conX
+      axis([ -1 1 0 1 ])
+    else
+      axis([ -.2 6 0 1 ])
+    end
+  case 4
+    if conX
+      axis([ -1 1 0 1 ])
+    else
+      axis([ -.2 6 0 1 ])
+    end
 end
 
 %Initializing Moving Objects and Trajectory
@@ -318,6 +354,10 @@ if 0
     testID='_3_noConX';
   elseif con == 3 && conX == 1
     testID='_3_conX';
+  elseif con == 4 && conX == 0
+    testID='_4_noConX';
+  elseif con == 4 && conX == 1
+    testID='_4_conX';
   end
   
   for jj = 1:1:10
