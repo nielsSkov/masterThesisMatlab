@@ -13,7 +13,7 @@ noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
 conX = 1; %select whether or not to control x-position/velocity
-con  = 4; %controller selection where,
+con  = 3; %controller selection where,
 %
 %            0 - no control
 %            1 - "rudementary" controller (Åström)
@@ -21,7 +21,7 @@ con  = 4; %controller selection where,
 %            3 - sat-approximation of 2
 %            4 - sat-based controller (Åström)
 
-documentation = 1; %figures are plottet seperately if documentation is on
+documentation = 0; %figures are plottet seperately if documentation is on
 
 if noFriction
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
@@ -38,7 +38,7 @@ end
 %initial conditions for ode45 based on controller choise
 switch con
   case 0
-    theta_0      = pi/4;
+    theta_0      = pi-.3;
     x_0          = 0;
     theta_dot_0  = 0;
     x_dot_0      = 0;
@@ -70,7 +70,7 @@ Ts      = .01;
 %choose simulation length based on controller choise
 switch con
   case 0
-    T_final = 7;
+    T_final = 20;
   case 1
     if conX
       T_final = 6.82;
@@ -120,12 +120,14 @@ x         =  q(:,2);
 theta_dot =  q(:,3);
 x_dot     =  q(:,4);
 
-%initializing 2nd derivatives, amature current and difference in energy
+%initializing 2nd derivatives, amature current,
+%difference in energy and total energy
 theta_dot_dot = zeros(size(t));
 x_dot_dot     = zeros(size(t));
 i_a           = zeros(size(t));
 ia_rms        = zeros(size(t));
 E_delta       = zeros(size(t));
+E_T           = zeros(size(t));
 
 %calculating/simulating 2nd derivatives
 for i = 1:length(t)
@@ -133,7 +135,8 @@ for i = 1:length(t)
   [ ~, theta_dot_dot(i), ...
        x_dot_dot(i),     ...
        i_a(i),           ...
-       E_delta(i)           ]  = simCartPendulum( t(i), q(i,:),        ...
+       E_delta(i),       ...
+       E_T(i)               ]  = simCartPendulum( t(i), q(i,:),        ...
                                                   con, conX, m, M, l,  ...
                                                   g, k_tanh, r, k_tau, ...
                                                   b_p_c, b_p_v,        ...
@@ -253,6 +256,20 @@ grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$E_\Delta$ [J]')
 xlim([min(t) max(t)])
+
+figure
+xlim([min(t) max(t)])
+E_min = M*g*l;
+plot(xlim,[E_min E_min], 'r', 'linewidth', 1.5 )
+hold on
+plot( t, E_T, 'linewidth', 1.5 )
+grid on, grid minor
+xlim([min(t) max(t)])
+xlabel('$t$ [s]')
+ylabel('$E_{total}$ [J]')
+legend( 'Energy at Rest', ...
+        'Total Energy',   ...
+        'location', 'northeast'   )
 
 %% ----------ANIMATION-------------------------------------------------------
 
