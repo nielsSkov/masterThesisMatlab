@@ -7,13 +7,13 @@ run('latexDefaults.m')
 
 run('initCartPendulum.m')
 
-noFriction     = 0;
-noCartFriction = 1;
+noFriction     = 1;
+noCartFriction = 0;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-conX = 1; %select whether or not to control x-position/velocity
-con  = 3; %controller selection where,
+conX = 0; %select whether or not to control x-position/velocity
+con  = 1; %controller selection where,
 %
 %            0 - no control
 %            1 - "rudementary" controller (Åström)

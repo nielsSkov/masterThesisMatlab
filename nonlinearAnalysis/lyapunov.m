@@ -14,14 +14,23 @@ x_dot_dot     = diff(x,t,2);
 theta_dot     = diff(theta,t,1);
 theta_dot_dot = diff(theta,t,2);
 
+fullEnergy = 0;
+
 %excessive to generalized cooredinates
-x_c     = x;
+if fullEnergy
+  x_c     = x;
+  x_dot_c = x_dot;
+else
+  x_c     = 0;
+  x_dot_c = 0;
+  x       = 0;
+  x_dot   = 0;
+end
 y_c     = l;
-x_dot_c = x_dot;
 y_dot_c = 0;
 
-zInSaddle = 1;  % 0 => zero in stable focus
-                % 1 => zero in saddlepoint
+zInSaddle  = 1;  % 0 => zero in stable focus
+                 % 1 => zero in saddlepoint
 if zInSaddle
   x_p     = x - l*sin(theta);
   y_p     = l + l*cos(theta);
@@ -34,18 +43,24 @@ else
   y_dot_p = l*sin(theta)*theta_dot;
 end
 
-%full potential energy in system
-U = M*g*y_c + m*g*y_p;
-
-%full kinetic energy in system
+%potential energy in system
+if fullEnergy
+  U = M*g*y_c + m*g*y_p;
+else
+  U = m*g*y_p;
+end
+%kinetic energy in system
 T = (1/2)*M*x_dot_c^2 + (1/2)*M*y_dot_c^2 ...
   + (1/2)*m*x_dot_p^2 + (1/2)*m*y_dot_p^2 ;
 
-%full energy in system
+%potential and kinetic energy in system
 E = U + T;
 
 %energy selected as Lyapunov function candidate
-V = E;
+V = (1/2)*E^2;
+
+x_c     = x;
+x_dot_c = x_dot;
 
 %syms p11 p12 p13 p14 p21 p22 p23 p24 p31 p32 p33 p34 p41 p42 p43 p44;
 
@@ -73,6 +88,8 @@ V = E;
 %                                                              x_dot     ];
 
 V_dot = diff(V,t,1);
+syms x(t)
+x_dot = diff(x,t,1);
 
 %choice of states
 % x1 = theta;
@@ -82,25 +99,47 @@ V_dot = diff(V,t,1);
 syms x1 x2 x3 x4
 
 %system dynamics
-MM = [  m*(l^2)      -m*l*cos(x1)  ;
-       -m*l*cos(x1)   M+m         ];
+if zInSaddle
+  MM = [  m*(l^2)      -m*l*cos(x1)  ;
+         -m*l*cos(x1)   M+m         ];
 
-C = [ 0
-      m*l*sin(x1)*x3^2 ];
+  C = [ 0
+        m*l*sin(x1)*x3^2 ];
 
-G = [ -m*g*l*sin(x1)  ;
-       0             ];
+  G = [ -m*g*l*sin(x1)  ;
+         0             ];
 
-% F = [ 0  ;
-%       u ];
-F = [ 0  ;
-      0 ];
+  % F = [ 0  ;
+  %       u ];
+  F = [ 0  ;
+        0 ];
 
-B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
-      b_c_c*tanh(k_tanh*x4) + b_c_v*x4 ];
-%B = [ 0  ;
-%      0 ];
+ % B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
+ %       b_c_c*tanh(k_tanh*x4) + b_c_v*x4 ];
+  B = [ 0  ;
+        0 ];
+else
+  MM = [  m*(l^2)       m*l*cos(x1)  ;
+          m*l*cos(x1)   M+m         ];
 
+  C = [ 0
+        -m*l*sin(x1)*x3^2 ];
+
+  G = [ m*g*l*sin(x1)  ;
+        0             ];
+
+  % F = [ 0  ;
+  %       u ];
+  F = [ 0  ;
+        0 ];
+
+  %B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
+  %      b_c_c*tanh(k_tanh*x4) + b_c_v*x4 ];
+  B = [ 0  ;
+        0 ];
+end
+
+if fullEnergy
 q_dot = [ x3                   ; % =   theta_dot
           x4                   ; % =       x_dot
           MM\(F - G - C - B ) ]; % = [ theta_dot_dot
@@ -110,6 +149,10 @@ x1_dot = q_dot(1);
 x2_dot = q_dot(2);
 x3_dot = q_dot(3);
 x4_dot = q_dot(4);
+end
+
+%should contain x_dot_dot ... this script is dying.. don't try n' save it
+%x3_dot = 
 
 V_dot = subs(V_dot, [ theta           ...
                       x               ...
@@ -124,18 +167,13 @@ V_dot = subs(V_dot, [ theta           ...
                                            x4_dot ] );
 V_dot = simplify(V_dot)
 
-
-V = subs(V, [ theta           ...
-              x               ...
-              diff(theta,t)   ...
-              diff(x,t)       ...
-              diff(theta,t,2) ...
-              diff(x,t,2)     ], [ x1     ...
-                                   x2     ...
-                                   x3     ...
-                                   x4     ...
-                                   x3_dot ...
-                                   x4_dot ] );
+V = subs(V, [ theta         ...
+              x             ...
+              diff(theta,t) ...
+              diff(x,t)       ], [ x1  ...
+                                   x2  ...
+                                   x3  ...
+                                   x4  ] );
 V = simplify(V)
 
 %%
@@ -152,43 +190,23 @@ V_gr     = zeros(size(gr_x1));
 V_dot1_gr = zeros(size(gr_x1));
 
 for i = 1:length(x1_vec)*length(x3_vec)
-  %zero in saddle point
+
   if zInSaddle
+    if fullEnergy
+      V_gr(i) = (M*x4^2 + m*x4^2 + l^2*m*gr_x3(i)^2 + 2*M*g*l + 2*g*l*m + 2*g*l*m*cos(gr_x1(i)) - 2*l*m*gr_x3(i)*x4*cos(gr_x1(i)))^2/8;
+    else
+      V_gr(i) = (l^2*m^2*(l*gr_x3(i)^2 + 2*g + 2*g*cos(gr_x1(i)))^2)/8;
+    end
+  else
   V_gr(i) = (M*x4^2)/2 + (m*x4^2)/2       + ...
           + (l^2*m*gr_x3(i)^2)/2 + M*g*l  + ...
-          + g*l*m + g*l*m*cos(gr_x1(i))   - ...
-          - l*m*gr_x3(i)*x4*cos(gr_x1(i))   ;
-
-  V_dot1_gr(i) = - b_c_v*x4^2 - b_p_v*gr_x3(i)^2        - ...
-                - b_c_c*x4*tanh(k_tanh*x4)             - ...
-                - b_p_c*gr_x3(i)*tanh(k_tanh*gr_x3(i))   ;
-  else  
-  V_gr(i) = (M*x4^2)/2 + (m*x4^2)/2 + ...
-          + (l^2*m*gr_x3(i)^2)/2 + M*g*l  + ...
           + g*l*m - g*l*m*cos(gr_x1(i))   + ...
-          + l*m*gr_x3(i)*x4*cos(gr_x1(i));
-
-  V_dot1_gr(i) = -(2*l^3*m^2*gr_x3(i)^3*sin(2*gr_x1(i)) + ...
-                 + 2*M*b_c_v*l*x4^2 + 2*M*b_p_v*l*gr_x3(i)^2 + ...
-                 + 3*b_c_v*l*m*x4^2 + 3*b_p_v*l*m*gr_x3(i)^2 + ...
-                 + 4*M*b_p_c*x4*tanh(k_tanh*gr_x3(i))*cos(gr_x1(i)) + ...
-                 + 4*l^2*m^2*gr_x3(i)^2*x4*sin(gr_x1(i)) + ...
-                 + 4*b_p_c*m*x4*tanh(k_tanh*gr_x3(i))*cos(gr_x1(i)) + ...
-                 + 2*M*b_c_c*l*x4*tanh(k_tanh*x4) + ...
-                 + 2*M*b_p_c*l*gr_x3(i)*tanh(k_tanh*gr_x3(i)) + ...
-                 + b_c_v*l*m*x4^2*cos(2*gr_x1(i)) + ...
-                 + b_p_v*l*m*gr_x3(i)^2*cos(2*gr_x1(i)) - 2*g*l*m^2*x4*sin(2*gr_x1(i)) - ...
-                 - 4*g*l^2*m^2*gr_x3(i)*sin(gr_x1(i)) + ...
-                 + 3*b_c_c*l*m*x4*tanh(k_tanh*x4) + ...
-                 + 3*b_p_c*l*m*gr_x3(i)*tanh(k_tanh*gr_x3(i)) + ...
-                 + 4*M*b_p_v*gr_x3(i)*x4*cos(gr_x1(i)) + 4*b_p_v*m*gr_x3(i)*x4*cos(gr_x1(i)) + ...
-                 + b_c_c*l*m*x4*cos(2*gr_x1(i))*tanh(k_tanh*x4) + ...
-                 + b_p_c*l*m*gr_x3(i)*cos(2*gr_x1(i))*tanh(k_tanh*gr_x3(i)) + ...
-                 + 4*b_c_c*l^2*m*gr_x3(i)*tanh(k_tanh*x4)*cos(gr_x1(i)) + ...
-                 + 4*M*l^2*m*gr_x3(i)^2*x4*sin(gr_x1(i)) - 2*M*g*l*m*x4*sin(2*gr_x1(i)) - ...
-                 - 4*M*g*l^2*m*gr_x3(i)*sin(gr_x1(i)) + ...
-                 + 4*b_c_v*l^2*m*gr_x3(i)*x4*cos(gr_x1(i)))/(l*(2*M + ...
-                 + m - m*cos(2*gr_x1(i))));
+          + l*m*gr_x3(i)*x4*cos(gr_x1(i))   ;
+  end
+  if fullEnergy
+    V_dot1_gr(i) = -((b_c_v*x4^2 + b_p_v*gr_x3(i)^2 + b_c_c*x4*tanh(k_tanh*x4) + b_p_c*gr_x3(i)*tanh(k_tanh*gr_x3(i)))*(M*x4^2 + m*x4^2 + l^2*m*gr_x3(i)^2 + 2*M*g*l + 2*g*l*m + 2*g*l*m*cos(gr_x1(i)) - 2*l*m*gr_x3(i)*x4*cos(gr_x1(i))))/2;
+  else
+    V_dot1_gr(i) = -(l*m*gr_x3(i)*(l*gr_x3(i)^2 + 2*g + 2*g*cos(gr_x1(i)))*(M*b_p_v*gr_x3(i) + b_p_v*m*gr_x3(i) + M*b_p_c*tanh(k_tanh*gr_x3(i)) + b_p_c*m*tanh(k_tanh*gr_x3(i)) - g*l*m^2*cos(gr_x1(i))^2*sin(gr_x1(i)) + b_c_c*l*m*tanh(k_tanh*x4)*cos(gr_x1(i)) + l^2*m^2*gr_x3(i)^2*cos(gr_x1(i))*sin(gr_x1(i)) + b_c_v*l*m*x4*cos(gr_x1(i))))/(2*(M + m - m*cos(gr_x1(i))^2));
   end
 end
 
@@ -203,32 +221,10 @@ x3_vecQ = -10:.8:10;
 V_dot_gr = zeros(size(gr_x1Q));
 
 for i = 1:length(x1_vecQ)*length(x3_vecQ)
-  if zInSaddle
-  V_dot_gr(i) = - b_c_v*x4^2 - b_p_v*gr_x3Q(i)^2        - ...
-                - b_c_c*x4*tanh(k_tanh*x4)             - ...
-                - b_p_c*gr_x3Q(i)*tanh(k_tanh*gr_x3Q(i))   ;
+  if fullEnergy
+    V_dot_gr(i) = -((b_c_v*x4^2 + b_p_v*gr_x3Q(i)^2 + b_c_c*x4*tanh(k_tanh*x4) + b_p_c*gr_x3Q(i)*tanh(k_tanh*gr_x3Q(i)))*(M*x4^2 + m*x4^2 + l^2*m*gr_x3Q(i)^2 + 2*M*g*l + 2*g*l*m + 2*g*l*m*cos(gr_x1Q(i)) - 2*l*m*gr_x3Q(i)*x4*cos(gr_x1Q(i))))/2;
   else
-  V_dot_gr(i) =  -(2*l^3*m^2*gr_x3Q(i)^3*sin(2*gr_x1Q(i)) + ...
-                 + 2*M*b_c_v*l*x4^2 + 2*M*b_p_v*l*gr_x3Q(i)^2 + ...
-                 + 3*b_c_v*l*m*x4^2 + 3*b_p_v*l*m*gr_x3Q(i)^2 + ...
-                 + 4*M*b_p_c*x4*tanh(k_tanh*gr_x3Q(i))*cos(gr_x1Q(i)) + ...
-                 + 4*l^2*m^2*gr_x3Q(i)^2*x4*sin(gr_x1Q(i)) + ...
-                 + 4*b_p_c*m*x4*tanh(k_tanh*gr_x3Q(i))*cos(gr_x1Q(i)) + ...
-                 + 2*M*b_c_c*l*x4*tanh(k_tanh*x4) + ...
-                 + 2*M*b_p_c*l*gr_x3Q(i)*tanh(k_tanh*gr_x3Q(i)) + ...
-                 + b_c_v*l*m*x4^2*cos(2*gr_x1Q(i)) + ...
-                 + b_p_v*l*m*gr_x3Q(i)^2*cos(2*gr_x1Q(i)) - 2*g*l*m^2*x4*sin(2*gr_x1Q(i)) - ...
-                 - 4*g*l^2*m^2*gr_x3Q(i)*sin(gr_x1Q(i)) + ...
-                 + 3*b_c_c*l*m*x4*tanh(k_tanh*x4) + ...
-                 + 3*b_p_c*l*m*gr_x3Q(i)*tanh(k_tanh*gr_x3Q(i)) + ...
-                 + 4*M*b_p_v*gr_x3Q(i)*x4*cos(gr_x1Q(i)) + 4*b_p_v*m*gr_x3Q(i)*x4*cos(gr_x1Q(i)) + ...
-                 + b_c_c*l*m*x4*cos(2*gr_x1Q(i))*tanh(k_tanh*x4) + ...
-                 + b_p_c*l*m*gr_x3Q(i)*cos(2*gr_x1Q(i))*tanh(k_tanh*gr_x3Q(i)) + ...
-                 + 4*b_c_c*l^2*m*gr_x3Q(i)*tanh(k_tanh*x4)*cos(gr_x1Q(i)) + ...
-                 + 4*M*l^2*m*gr_x3Q(i)^2*x4*sin(gr_x1Q(i)) - 2*M*g*l*m*x4*sin(2*gr_x1Q(i)) - ...
-                 - 4*M*g*l^2*m*gr_x3Q(i)*sin(gr_x1Q(i)) + ...
-                 + 4*b_c_v*l^2*m*gr_x3Q(i)*x4*cos(gr_x1Q(i)))/(l*(2*M + ...
-                 + m - m*cos(2*gr_x1Q(i))));
+    V_dot_gr(i) = -(l*m*gr_x3Q(i)*(l*gr_x3Q(i)^2 + 2*g + 2*g*cos(gr_x1Q(i)))*(M*b_p_v*gr_x3Q(i) + b_p_v*m*gr_x3Q(i) + M*b_p_c*tanh(k_tanh*gr_x3Q(i)) + b_p_c*m*tanh(k_tanh*gr_x3Q(i)) - g*l*m^2*cos(gr_x1Q(i))^2*sin(gr_x1Q(i)) + b_c_c*l*m*tanh(k_tanh*x4)*cos(gr_x1Q(i)) + l^2*m^2*gr_x3Q(i)^2*cos(gr_x1Q(i))*sin(gr_x1Q(i)) + b_c_v*l*m*x4*cos(gr_x1Q(i))))/(2*(M + m - m*cos(gr_x1Q(i))^2));
   end
 end
 
