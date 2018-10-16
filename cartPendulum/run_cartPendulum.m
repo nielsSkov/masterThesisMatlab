@@ -7,19 +7,21 @@ run('latexDefaults.m')
 
 run('initCartPendulum.m')
 
-noFriction     = 1;
-noCartFriction = 0;
+noFriction     = 0;
+noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-conX = 0; %select whether or not to control x-position/velocity
-con  = 1; %controller selection where,
+slm   = 1; %<-enable/disable sliding mode catch controller
+noLim = 0; %<-select weather or not to limit control to actuator capability
+conX  = 1; %<-select whether or not to control x-position/velocity
+con   = 3; %<-controller selection where,
 %
-%            0 - no control
-%            1 - "rudementary" controller (Åström)
-%            2 - sign-based controller (Åström)    <--WARNING! VERY slow..
-%            3 - sat-approximation of 2
-%            4 - sat-based controller (Åström)
+%             0 - no control
+%             1 - "rudementary" controller (Åström)
+%             2 - sign-based controller (Åström)    <--WARNING! VERY slow..
+%             3 - sat-approximation of 2
+%             4 - sat-based controller (Åström)
 
 documentation = 0; %figures are plottet seperately if documentation is on
 
@@ -38,9 +40,9 @@ end
 %initial conditions for ode45 based on controller choise
 switch con
   case 0
-    theta_0      = pi-.3;
+    theta_0      = 2*pi-.2;
     x_0          = 0;
-    theta_dot_0  = 0;
+    theta_dot_0  = -pi;
     x_dot_0      = 0;
   case 1
     theta_0      = pi-.1;
@@ -70,7 +72,7 @@ Ts      = .01;
 %choose simulation length based on controller choise
 switch con
   case 0
-    T_final = 20;
+    T_final = 10;
   case 1
     if conX
       T_final = 6.82;
@@ -107,12 +109,13 @@ init  = [ theta_0 x_0 theta_dot_0 x_dot_0 ];
 options = odeset('RelTol',1e-7);
 
 %run ode45 simulation
-[t, q] = ode45( @(t,q) simCartPendulum( t, q,                 ...
-                                        con, conX, m, M, l,   ...
-                                        g, k_tanh, r, k_tau,  ...
-                                        b_p_c, b_p_v,         ...
-                                        b_c_c, b_c_v, fComp   ),  ...
-                tspan, init, options                              );
+[t, q] = ode45( @(t,q) simCartPendulum( t, q,                  ...
+                                        con, conX, slm, noLim, ...
+                                        m, M, l, g,            ...
+                                        k_tanh, r, k_tau,      ...
+                                        b_p_c, b_p_v,          ...
+                                        b_c_c, b_c_v, fComp    ),  ...
+                tspan, init, options                               );
 
 %assigning results of ode45 simulation
 theta     =  q(:,1);
@@ -136,11 +139,12 @@ for i = 1:length(t)
        x_dot_dot(i),     ...
        i_a(i),           ...
        E_delta(i),       ...
-       E_T(i)               ]  = simCartPendulum( t(i), q(i,:),        ...
-                                                  con, conX, m, M, l,  ...
-                                                  g, k_tanh, r, k_tau, ...
-                                                  b_p_c, b_p_v,        ...
-                                                  b_c_c, b_c_v, fComp  );
+       E_T(i)               ] = simCartPendulum( t(i), q(i,:),          ...
+                                                 con, conX, slm, noLim, ...
+                                                 m, M, l, g,            ...
+                                                 k_tanh, r, k_tau,      ...
+                                                 b_p_c, b_p_v,          ...
+                                                 b_c_c, b_c_v, fComp    );
 end
 
 %rolling rms of i_a
@@ -257,19 +261,19 @@ xlabel('$t$ [s]')
 ylabel('$E_\Delta$ [J]')
 xlim([min(t) max(t)])
 
-figure
-xlim([min(t) max(t)])
-E_min = M*g*l;
-plot(xlim,[E_min E_min], 'r', 'linewidth', 1.5 )
-hold on
-plot( t, E_T, 'linewidth', 1.5 )
-grid on, grid minor
-xlim([min(t) max(t)])
-xlabel('$t$ [s]')
-ylabel('$E_{total}$ [J]')
-legend( 'Energy at Rest', ...
-        'Total Energy',   ...
-        'location', 'northeast'   )
+% figure
+% xlim([min(t) max(t)])
+% E_min = M*g*l;
+% plot(xlim,[E_min E_min], 'r', 'linewidth', 1.5 )
+% hold on
+% plot( t, E_T, 'linewidth', 1.5 )
+% grid on, grid minor
+% xlim([min(t) max(t)])
+% xlabel('$t$ [s]')
+% ylabel('$E_{total}$ [J]')
+% legend( 'Energy at Rest', ...
+%         'Total Energy',   ...
+%         'location', 'northeast'   )
 
 %% ----------ANIMATION-------------------------------------------------------
 
@@ -326,11 +330,11 @@ drawnow
 
 tic;
 
-res = 1; % deviding resolution of simulation data with res
+res = 2; % deviding resolution of simulation data with res
 
 %Animation Loop
 for i = 2:length(t)  /res
-  
+
   i = i*res;
 
   delete(cart)
@@ -346,9 +350,13 @@ for i = 2:length(t)  /res
     xpLast = xp(i);                                       %   points on the
     ypLast = yp(i);                                       %   trajectory
   end
-
+  
   runT = toc;
   
+  while runT < t(i)
+    java.lang.Thread.sleep(1);
+    runT = toc;
+  end
   drawnow
 end      
 
