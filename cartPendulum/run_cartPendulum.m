@@ -7,6 +7,9 @@ run('latexDefaults.m')
 
 run('initCartPendulum.m')
 
+%plot only the orbit
+plotOrbit = 1;
+
 noFriction     = 0;
 noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
@@ -232,6 +235,7 @@ hold on
 plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
 i_max = 4.44; %4.58;
 xlim([min(t) max(t)])
+ylim([min(i_a)-.5 max(i_a)+.5])
 plot(xlim,[i_max i_max], 'r', 'linewidth', 1.5 )
 legend( 'Motor Current',          ...
         'Rolling RMS of $i_a$',   ...
@@ -245,7 +249,9 @@ if documentation == 0
 end
 plot( theta, theta_dot, 'linewidth', 1.5 )
 grid on, grid minor
+run('piAxes.m')
 axis equal
+axis([-4*pi 4*pi -4*pi 4*pi])
 xlabel('$\theta$ [rad]')
 ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
 
@@ -274,6 +280,30 @@ xlim([min(t) max(t)])
 % legend( 'Energy at Rest', ...
 %         'Total Energy',   ...
 %         'location', 'northeast'   )
+
+if plotOrbit
+  h_orbit = figure;
+  %
+  x1   = 0:.0001:2*pi;
+  J    = m*l^2;
+  %
+  x3_1 =  ( -2*m*g*l*(cos(x1)-1)/J ).^(1/2);
+  x3_2 = -( -2*m*g*l*(cos(x1)-1)/J ).^(1/2);
+  %
+  plot(x1,x3_1, 'color', [ 0 0 .8 ], 'linewidth', 1.5 )
+  hold on
+  plot(x1,x3_2, 'color', [ 0 0 .8 ], 'linewidth', 1.5 )
+  grid on, grid minor
+  xlabel('$\theta$')
+  ylabel('$\dot{\theta}$')
+  run('piAxes.m')
+  axis equal
+  axis([-3*pi 3*pi min(x3_2)-.5 max(x3_1)+.5])
+  %
+  %add equilibrium-points
+  plot(0,0, 'color', [ 0 .55 0 ], 'marker', '.', 'markersize', 18)
+  plot(2*pi,0, 'color', [ 0 .55 0 ], 'marker', '.', 'markersize', 18)
+end
 
 %% ----------ANIMATION-------------------------------------------------------
 
@@ -383,6 +413,12 @@ if 0
     testID='_4_noConX';
   elseif con == 4 && conX == 1
     testID='_4_conX';
+  end
+  
+  if plotOrbit == 1
+    figHandle=h_orbit;
+    fileName='orbit';
+    saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
   end
   
   for jj = 1:1:10

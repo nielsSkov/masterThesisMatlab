@@ -1,0 +1,6 @@
+xticks([-4*pi -3*pi -2*pi -pi 0 pi 2*pi 3*pi 4*pi])
+xticklabels( {'$-4\pi$' '$-3\pi$' '$-2\pi$' '$-\pi$' '$0$' ...
+              '$\pi$' '$2\pi$' '$3\pi$' '$4\pi$'           } )
+yticks([-4*pi -3*pi -2*pi -pi 0 pi 2*pi 3*pi 4*pi])
+yticklabels( {'$-4\pi$' '$-3\pi$' '$-2\pi$' '$-\pi$' '$0$' ...
+              '$\pi$' '$2\pi$' '$3\pi$' '$4\pi$'           } )

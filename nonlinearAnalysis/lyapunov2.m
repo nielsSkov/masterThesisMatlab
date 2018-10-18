@@ -97,8 +97,8 @@ run('initCartPendulum.m')
 % E_delta_dot = vpa( subs( E_delta_dot ), 4);
 % E_delta     = vpa( subs( E_delta     ), 4);
 
-x1_vec     = -pi:.1:pi;
-x3_vec     = -2*pi:.1:2*pi;
+x1_vec     = 0:.2:2*pi;
+x3_vec     = -4*pi:.2:4*pi;
 
 [ gr_x1, gr_x3 ] = meshgrid(x1_vec,x3_vec);
 
@@ -108,7 +108,7 @@ V_dot_gr       = zeros(size(gr_x1));
 V_gr           = zeros(size(gr_x1));
 
 %control select
-con = 0;
+con = 1;
 %         0 - no control
 %         1 - "rudementary" controller (Åström)
 %         2 - sign-based controller (Åström)
@@ -174,7 +174,7 @@ for i = 1:length(x1_vec)*length(x3_vec)
   E_delta_dot_gr(i) = l*m*gr_x3(i)*xa_dot_dot*cos(gr_x1(i));
   
   V_dot_gr(i)       = E_delta_gr(i)*E_delta_dot_gr(i);
-
+  
 end
 
 figure
@@ -193,7 +193,7 @@ ylabel('$\dot{\theta}$')
 zlabel('$\dot{V}$')
 axis tight
 
-figure
+h_E_delta = figure;
 mesh(gr_x1, gr_x3, E_delta_gr)
 hold on
 xlabel('$\theta$')
@@ -201,7 +201,7 @@ ylabel('$\dot{\theta}$')
 zlabel('$E_\Delta$')
 axis tight
 
-figure
+h_E_delta_dot = figure;
 mesh(gr_x1, gr_x3, E_delta_dot_gr)
 hold on
 xlabel('$\theta$')
@@ -221,3 +221,52 @@ axis tight
 % 
 % figure
 % mesh(gr_x1Q, gr_x3Q, V_dot_gr)
+
+syms x1 x3 g m l
+
+%Find solutions of E_delta = 0
+solve((l^2*m*x3^2)/2 - g*l*m + g*l*m*cos(x1) == 0, x3)
+
+x1 = 0:.0001:2*pi;
+
+run('initCartPendulum.m')
+J = m*l^2;
+
+x3_1 =  ( -2*m*g*l*(cos(x1)-1)/J ).^(1/2);
+x3_2 = -( -2*m*g*l*(cos(x1)-1)/J ).^(1/2);
+
+figure
+plot(x1,x3_1, 'color', [ 0 .55 0 ], 'linewidth', 2 )
+hold on
+plot(x1,x3_2, 'color', [ 0 .55 0 ], 'linewidth', 2 )
+grid on, grid minor
+xlabel('$\theta$')
+ylabel('$\dot{\theta}$')
+xticks([-4*pi -3*pi -2*pi -pi 0 pi 2*pi 3*pi 4*pi])
+xticklabels( {'$-4\pi$' '$-3\pi$' '$-2\pi$' '$-\pi$' '$0$' ...
+              '$\pi$' '$2\pi$' '$3\pi$' '$4\pi$'           } )
+yticks([-4*pi -3*pi -2*pi -pi 0 pi 2*pi 3*pi 4*pi])
+yticklabels( {'$-4\pi$' '$-3\pi$' '$-2\pi$' '$-\pi$' '$0$' ...
+              '$\pi$' '$2\pi$' '$3\pi$' '$4\pi$'           } )
+% yticks([-4*pi -7*pi/2 -3*pi -5*pi/2 -2*pi -3*pi/2 -pi -pi/2 0 ...
+%         pi/2 pi 3*pi/2 2*pi 5*pi/2 3*pi 7*pi/2 4*pi])
+% yticklabels( {'$-4\pi$' '$-7\pi/2$' '$-3\pi$' '$-5\pi/2$'     ...
+%               '$-2\pi$' '$-3\pi/2$' '$-\pi$' '$-\pi/2$' '$0$' ...
+%               '$\pi/2$' '$\pi$' '$3\pi/2$' '$2\pi$'           ...
+%               '$5\pi/2$' '$3\pi$' '$7\pi/2$' '$4\pi$'           } )
+axis equal
+axis([-4*pi 4*pi -4*pi 4*pi])
+%add equilibrium-points
+plot(0,0, 'color', [ .8 0 .2 ], 'marker', '.', 'markersize', 18)
+plot(2*pi,0, 'color', [ .8 0 .2 ], 'marker', '.', 'markersize', 18)
+
+figure(h_E_delta)
+plot(x1,x3_1, 'color', [ 0 .6 0 ], 'linewidth', 2 )
+hold on
+plot(x1,x3_2, 'color', [ 0 .6 0 ], 'linewidth', 2 )
+
+
+figure(h_E_delta_dot)
+plot(x1,x3_1, 'color', [ 1 0 0 ], 'linewidth', 2 )
+hold on
+plot(x1,x3_2, 'color', [ 1 0 0 ], 'linewidth', 2 )
