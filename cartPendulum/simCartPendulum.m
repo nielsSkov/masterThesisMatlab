@@ -5,7 +5,7 @@ function [ q_dot,         ...
            E_delta,       ...
            E_T            ]  = simCartPendulum( t, q,                  ...
                                                 con, conX, slm, noLim, ...
-                                                m, M, l, g,            ...
+                                                iaLim, m, M, l, g,    ...
                                                 k_tanh, r, k_tau,      ...
                                                 b_p_c, b_p_v,          ...
                                                 b_c_c, b_c_v, fComp    )
@@ -148,13 +148,17 @@ function [ q_dot,         ...
     end
   end
   
-  i_peak = 5;
-  if abs(u*r/k_tau) > i_peak && noLim == 0
-    i_a = sign(u)*i_peak;
+  if iaLim
+    i_peak = 5;
+    if abs(u*r/k_tau) > i_peak && noLim == 0
+      i_a = sign(u)*i_peak;
+    else
+      i_a = u*r/k_tau;
+    end
+    u = i_a*k_tau/r;
   else
     i_a = u*r/k_tau;
   end
-  u = i_a*k_tau/r;
   
   MM = [  m*(l^2)      -m*l*cos(x1)  ;
          -m*l*cos(x1)   M+m         ];

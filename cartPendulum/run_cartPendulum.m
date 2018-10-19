@@ -8,17 +8,18 @@ run('latexDefaults.m')
 run('initCartPendulum.m')
 
 %plot only the orbit
-plotOrbit = 1;
+plotOrbit = 0;
 
 noFriction     = 0;
 noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-slm   = 1; %<-enable/disable sliding mode catch controller
+slm   = 0; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
+iaLim = 0; %<-limmit actuation peak on/off
 conX  = 1; %<-select whether or not to control x-position/velocity
-con   = 3; %<-controller selection where,
+con   = 4; %<-controller selection where,
 %
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
@@ -26,7 +27,7 @@ con   = 3; %<-controller selection where,
 %             3 - sat-approximation of 2
 %             4 - sat-based controller (Åström)
 
-documentation = 0; %figures are plottet seperately if documentation is on
+documentation = 1; %figures are plottet seperately if documentation is on
 
 if noFriction
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
@@ -91,14 +92,14 @@ switch con
   case 3
     if conX
       T_final = 6.82;
-      %T_final = 20;   <--to show x-position/velocity control reaching zero
+      %T_final = 20;  %<--to show x-position/velocity control reaching zero
     else
       T_final = 7.5;
     end
   case 4
     if conX
       T_final = 6.49;
-      %T_final = 20;   <--to show x-position/velocity control reaching zero
+      %T_final = 20;  %<--to show x-position/velocity control reaching zero
     else
       T_final = 7.5;
     end
@@ -114,7 +115,7 @@ options = odeset('RelTol',1e-7);
 %run ode45 simulation
 [t, q] = ode45( @(t,q) simCartPendulum( t, q,                  ...
                                         con, conX, slm, noLim, ...
-                                        m, M, l, g,            ...
+                                        iaLim, m, M, l, g,    ...
                                         k_tanh, r, k_tau,      ...
                                         b_p_c, b_p_v,          ...
                                         b_c_c, b_c_v, fComp    ),  ...
@@ -144,7 +145,7 @@ for i = 1:length(t)
        E_delta(i),       ...
        E_T(i)               ] = simCartPendulum( t(i), q(i,:),          ...
                                                  con, conX, slm, noLim, ...
-                                                 m, M, l, g,            ...
+                                                 iaLim, m, M, l, g,    ...
                                                  k_tanh, r, k_tau,      ...
                                                  b_p_c, b_p_v,          ...
                                                  b_c_c, b_c_v, fComp    );
@@ -155,240 +156,12 @@ for i = 1:length(t)
   ia_rms(i) = rms( i_a(1:i) );
 end
 
-%plot all states
-h_x = figure;
-if documentation == 0
-  axX = subplot(3,1,1);
-end
-plot( t, x, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$x$ [m]')
-xlim([min(t) max(t)])
+run('plotFigs.m')
 
-if documentation == 0
-  axXD = subplot(3,1,2);
-else
-  h_xDot = figure;
-end
-plot( t, x_dot, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
-xlim([min(t) max(t)])
+%% ----------ANIMATION-----------------------------------------------------
+run('animation.m')
 
-if documentation == 0
-  axXDD = subplot(3,1,3);
-else
-  h_xDotDot = figure;
-end
-plot( t, x_dot_dot, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$\ddot{x}$ [m$\cdot$s$^{-2}$]')
-xlim([min(t) max(t)])
-
-h_theta = figure;
-if documentation == 0
-  axTheta = subplot(3,1,1);
-end
-plot( t, theta, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$\theta$ [rad]')
-xlim([min(t) max(t)])
-
-if documentation == 0
-  axThetaD = subplot(3,1,2);
-else
-  h_thetaDot = figure;
-end
-plot( t, theta_dot, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
-xlim([min(t) max(t)])
-
-if documentation == 0
-  axThetaDD = subplot(3,1,3);
-else
-  h_thetaDotDot = figure;
-end
-plot( t, theta_dot_dot, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$\ddot{\theta}$ [rad$\cdot$s$^{-2}$]')
-xlim([min(t) max(t)])
-
-if documentation == 0
-  axesXTheta = [ axX axXD axXDD axTheta axThetaD axThetaDD ];
-  linkaxes(axesXTheta, 'x')
-end
-
-%plot armature current
-h_ia = figure;
-plot( t, i_a, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$i_a$ [A]')
-hold on
-plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
-i_max = 4.44; %4.58;
-xlim([min(t) max(t)])
-ylim([min(i_a)-.5 max(i_a)+.5])
-plot(xlim,[i_max i_max], 'r', 'linewidth', 1.5 )
-legend( 'Motor Current',          ...
-        'Rolling RMS of $i_a$',   ...
-        'Max Continuous Current', ...
-        'location', 'southeast'   )
-
-%plot trajectory in theta-plane
-h_phase = figure;
-if documentation == 0
-  subplot(3,1,[1 2]);
-end
-plot( theta, theta_dot, 'linewidth', 1.5 )
-grid on, grid minor
-run('piAxes.m')
-axis equal
-axis([-4*pi 4*pi -4*pi 4*pi])
-xlabel('$\theta$ [rad]')
-ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
-
-%plot difference in energy over time
-if documentation == 0
-  subplot(3,1,3);
-else
-  h_Edelta = figure;
-end
-plot( t, E_delta, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$E_\Delta$ [J]')
-xlim([min(t) max(t)])
-
-% figure
-% xlim([min(t) max(t)])
-% E_min = M*g*l;
-% plot(xlim,[E_min E_min], 'r', 'linewidth', 1.5 )
-% hold on
-% plot( t, E_T, 'linewidth', 1.5 )
-% grid on, grid minor
-% xlim([min(t) max(t)])
-% xlabel('$t$ [s]')
-% ylabel('$E_{total}$ [J]')
-% legend( 'Energy at Rest', ...
-%         'Total Energy',   ...
-%         'location', 'northeast'   )
-
-if plotOrbit
-  h_orbit = figure;
-  %
-  x1   = 0:.0001:2*pi;
-  J    = m*l^2;
-  %
-  x3_1 =  ( -2*m*g*l*(cos(x1)-1)/J ).^(1/2);
-  x3_2 = -( -2*m*g*l*(cos(x1)-1)/J ).^(1/2);
-  %
-  plot(x1,x3_1, 'color', [ 0 0 .8 ], 'linewidth', 1.5 )
-  hold on
-  plot(x1,x3_2, 'color', [ 0 0 .8 ], 'linewidth', 1.5 )
-  grid on, grid minor
-  xlabel('$\theta$')
-  ylabel('$\dot{\theta}$')
-  run('piAxes.m')
-  axis equal
-  axis([-3*pi 3*pi min(x3_2)-.5 max(x3_1)+.5])
-  %
-  %add equilibrium-points
-  plot(0,0, 'color', [ 0 .55 0 ], 'marker', '.', 'markersize', 18)
-  plot(2*pi,0, 'color', [ 0 .55 0 ], 'marker', '.', 'markersize', 18)
-end
-
-%% ----------ANIMATION-------------------------------------------------------
-
-xp = x - l*sin(theta);
-yp = l + l*cos(theta);
-yc = l;
-
-%Initializing Animation Figure
-h_ani = figure;
-axAni = axes;
-grid on, grid minor
-axis equal
-hold on
-xlabel('$x$ [m]')
-ylabel('$y$ [m]')
-
-%setting axis limits depending on controller choise
-switch con
-  case 0
-    axis([ -1 1 0 1 ])
-  case 1
-    if conX
-      axis([ -1 1 0 1 ])
-    else
-      axis([ -2 .5 0 1 ])
-    end
-  case 2
-    if conX
-      axis([ -1 1 0 1 ])
-    else
-      axis([ -.2 11.5 0 1 ])
-    end
-  case 3
-    if conX
-      axis([ -1 1 0 1 ])
-    else
-      axis([ -.2 6 0 1 ])
-    end
-  case 4
-    if conX
-      axis([ -1 1 0 1 ])
-    else
-      axis([ -.2 6 0 1 ])
-    end
-end
-
-%Initializing Moving Objects and Trajectory
-scatter(axAni, xp(1), yp(1), '.', 'b')
-xpLast = xp(1);
-ypLast = yp(1);
-cart = rectangle('Position',[ x(1)-.15 yc-.07 .3 .14 ]);
-rod1 = plot(axAni, [ x(1) xp(1) ] , [ yc yp(1) ], 'k', 'linewidth', 3);
-drawnow
-
-tic;
-
-res = 2; % deviding resolution of simulation data with res
-
-%Animation Loop
-for i = 2:length(t)  /res
-
-  i = i*res;
-
-  delete(cart)
-  cart = rectangle(axAni, 'Position',  [ x(i)-.15 yc-.07 .3 .14 ], ...
-                          'FaceColor', [ .9 .9 .9 ]                );
-
-  delete(rod1)
-  rod1 = plot(axAni, [ x(i) xp(i) ] , [ yc yp(i) ], 'k', 'linewidth', 2 );
-
-  if sqrt( (xpLast-xp(i))^2 + (ypLast-yp(i))^2 ) >= .01   %<--setting
-                                                          %   distance
-    plot(axAni, xp(i),yp(i), '.', 'color', 'b')           %   between
-    xpLast = xp(i);                                       %   points on the
-    ypLast = yp(i);                                       %   trajectory
-  end
-  
-  runT = toc;
-  
-  while runT < t(i)
-    java.lang.Thread.sleep(1);
-    runT = toc;
-  end
-  drawnow
-end      
+%% ----------SAVE PLOTS----------------------------------------------------
 
 %remember to float the windows before saving (for consistent scale)
 if 0
@@ -466,5 +239,3 @@ if 0
     end
   end
 end
-
-
