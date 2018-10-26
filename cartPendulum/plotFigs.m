@@ -111,7 +111,9 @@ grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$E_\Delta$ [J]')
 xlim([min(t) max(t)])
-pbaspect(aspectRatioPhasePlot)
+if documentation == 1
+  pbaspect(aspectRatioPhasePlot)
+end
 
 % figure
 % xlim([min(t) max(t)])

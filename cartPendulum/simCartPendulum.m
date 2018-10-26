@@ -25,7 +25,7 @@ function [ q_dot,         ...
   x4 = x_dot;
   
   %maximum catch angle
-  catchAngle = 0.3;
+  catchAngle = 0.7;
   x_old = 0;
   
   if slm && ( ( abs(x1) < catchAngle ) || ( abs(x1) > 2*pi-catchAngle ) )  %<-- catch controller
@@ -37,13 +37,18 @@ function [ q_dot,         ...
     k1      = k_s(1);
     k2      = k_s(2);
     k3      = k_s(3);
+    
     g_b_inv = (l*(M + m - m*cos(x1)^2))/cos(x1);
+    
     rho     = 20;
     beta0   = 0.1;
     beta    = rho + beta0;
+    
     s       = x3 + k1*x2 + k3*x1 - k2*(x3 - 3.0912*x4*cos(x1));
+    
     epsilon = 0.03;
     sgnS    = min( 1, max(-1, (1/epsilon)*s));
+    
     u       = - g_b_inv*beta*sgnS;
     
     if abs(x_old) > 2*pi-catchAngle
@@ -69,7 +74,7 @@ function [ q_dot,         ...
   elseif con == 2 && energyCon == 1  %<--sign-based controller (Åström)
     k = 2.7;
     sgn = sign(-E_delta*cos(x1)*x3);
-    if sgn == 0
+    if sgn == 0 && E_delta ~= 0
       sgn = 1;
     end
     xDotDot = k*sgn;
@@ -82,7 +87,7 @@ function [ q_dot,         ...
       k = k+2.7;
     end
     sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
-    if sgn == 0
+    if sgn == 0 && E_delta ~= 0
       sgn = 1;
     end
     xDotDot = k*sgn;
@@ -95,7 +100,7 @@ function [ q_dot,         ...
     end
     i_max = 4.58;
     u_max = i_max*k_tau/r;
-    a_max = u_max/(M+m) -.2;
+    a_max = u_max/(M+m)-.1;% -.2;
     if noLim
       E_delta = E_delta+.0015;
       a_max = a_max*2;

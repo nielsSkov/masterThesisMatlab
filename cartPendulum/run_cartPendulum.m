@@ -1,7 +1,7 @@
 clear all; close all; clc                                                  %#ok<CLALL>
 
 %change path to directory containing the project files
-cd ~/syncDrive/uni/thesis/masterThesisMatlab/cartPendulum
+cd ~/syncDrive/uni/thesis/matlab/cartPendulum
 
 run('latexDefaults.m')
 
@@ -11,15 +11,15 @@ run('initCartPendulum.m')
 plotOrbit = 0;
 
 noFriction     = 0;
-noCartFriction = 1;
+noCartFriction = 0;
 noMass         = 0; % no mass of cart, M
-fComp          = 0; % friction compensation (feed forward)
+fComp          = 1; % friction compensation (feed forward)
 
-slm   = 0; %<-enable/disable sliding mode catch controller
+slm   = 1; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
-iaLim = 0; %<-limmit actuation peak on/off
+iaLim = 1; %<-limmit actuation peak on/off
 conX  = 1; %<-select whether or not to control x-position/velocity
-con   = 4; %<-controller selection where,
+con   = 3; %<-controller selection where,
 %
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
@@ -27,7 +27,7 @@ con   = 4; %<-controller selection where,
 %             3 - sat-approximation of 2
 %             4 - sat-based controller (Åström)
 
-documentation = 1; %figures are plottet seperately if documentation is on
+documentation = 0; %figures are plottet seperately if documentation is on
 
 if noFriction
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;

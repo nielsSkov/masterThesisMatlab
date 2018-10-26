@@ -1,7 +1,7 @@
 clear all; close all; clc                                                  %#ok<CLALL>
 
 %change path to directory containing the project files
-cd ~/syncDrive/uni/thesis/masterThesisMatlab/nonlinearAnalysis
+cd ~/syncDrive/uni/thesis/matlab/nonlinearAnalysis
 
 run('latexDefaults.m')
 
