@@ -7,19 +7,22 @@ run('latexDefaults.m')
 
 run('initCartPendulum.m')
 
+%define variable for default matlab plot color
+matlabBlue = [0 0.4470 0.7410];
+
 %plot only the orbit
 plotOrbit = 0;
 
 noFriction     = 0;
-noCartFriction = 0;
+noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
-fComp          = 1; % friction compensation (feed forward)
+fComp          = 0; % friction compensation (feed forward)
 
-slm   = 1; %<-enable/disable sliding mode catch controller
+slm   = 0; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
-iaLim = 1; %<-limmit actuation peak on/off
-conX  = 1; %<-select whether or not to control x-position/velocity
-con   = 3; %<-controller selection where,
+iaLim = 0; %<-limmit actuation peak on/off
+conX  = 0; %<-select whether or not to control x-position/velocity
+con   = 2; %<-controller selection where,
 %
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
@@ -27,7 +30,7 @@ con   = 3; %<-controller selection where,
 %             3 - sat-approximation of 2
 %             4 - sat-based controller (Åström)
 
-documentation = 0; %figures are plottet seperately if documentation is on
+documentation = 1; %figures are plottet seperately if documentation is on
 
 if noFriction
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
@@ -98,7 +101,7 @@ switch con
     end
   case 4
     if conX
-      T_final = 6.49;
+      T_final = 6.75+1.5;
       %T_final = 20;  %<--to show x-position/velocity control reaching zero
     else
       T_final = 7.5;
@@ -166,9 +169,9 @@ run('animation.m')
 %remember to float the windows before saving (for consistent scale)
 if 0
   figurePath1 = ...
-    '~/syncDrive/uni/thesis/masterThesisReport/report/figures/original/';  %#ok<UNRCH>
+    '~/syncDrive/uni/thesis/report/report/figures/original/';  %#ok<UNRCH>
   figurePath2 = ...
-    '~/syncDrive/uni/thesis/masterThesisReport/report/figures/';
+    '~/syncDrive/uni/thesis/report/report/figures/';
   fileTypeOrig = "fig";
   if con == 1 && conX == 0
     testID='_1_noConX';

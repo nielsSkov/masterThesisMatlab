@@ -90,8 +90,12 @@ h_phase = figure;
 if documentation == 0
   subplot(3,1,[1 2]);
 end
-plot( theta, theta_dot, 'linewidth', 1.5 )
-grid on, grid minor
+if con == 1 || con == 2 || con == 4
+  run('addPhasePortrait.m')
+  hold on
+end
+plot( theta, theta_dot, 'linewidth', 1.5, 'color', matlabBlue )
+grid on
 run('piAxes.m')
 axis equal
 thetaLim = max( abs(min(theta_dot)), max(theta_dot) );

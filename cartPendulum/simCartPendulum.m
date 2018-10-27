@@ -100,7 +100,7 @@ function [ q_dot,         ...
     end
     i_max = 4.58;
     u_max = i_max*k_tau/r;
-    a_max = u_max/(M+m)-.1;% -.2;
+    a_max = u_max/(M+m) -.1;
     if noLim
       E_delta = E_delta+.0015;
       a_max = a_max*2;

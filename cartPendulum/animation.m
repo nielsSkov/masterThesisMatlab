@@ -67,7 +67,7 @@ for i = 2:length(t)  /res
 
   if sqrt( (xpLast-xp(i))^2 + (ypLast-yp(i))^2 ) >= .01   %<--setting
                                                           %   distance
-    plot(axAni, xp(i),yp(i), '.', 'color', 'b')           %   between
+    plot(axAni, xp(i),yp(i), '.', 'color', [ 0 0 1 ])     %   between
     xpLast = xp(i);                                       %   points on the
     ypLast = yp(i);                                       %   trajectory
   end
