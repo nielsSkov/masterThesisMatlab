@@ -1,7 +1,7 @@
 clear all; close all; clc                                                  %#ok<CLALL>
 
 %change path to directory containing the project files
-cd ~/syncDrive/uni/thesis/masterThesisMatlab/cartPendulum
+cd ~/syncDrive/uni/thesis/matlab/cartPendulum
 
 run('latexDefaults.m')
 
@@ -201,15 +201,18 @@ end
 for i = 2:iter+1
   %control gain
   if iter > 1
-    poles = [ -i*.4; -i*.5; -i*.6 ];
+    poles = [ -i*.7-1; -i*.7-2; -i*.7-3 ];
     %poles = [ -i*1/3; -i*2/3; -i*3/3 ];
     k = place(A, B, poles);
   else
     %k = place(A, B, [ -6 -7 -8 ])  %most on x pos
-    k = place(A, B, [ -2.8 -3.5 -4.2 ])
+    %k = place(A, B, [ -2.8 -3.5 -4.2 ])
+    k = place(A, B, [ -10 -12 -14 ])
     %k = place(A, B, [ -3 -7 -8 ])
     %k = place(A, B, [ -1; -2; -3 ]);
   end
+   -32.0774 ,  -2.7818 ,  31.8236  
+  
 
   %-----simulation of reduced state system, eta_dot, using ode45-----------
   
@@ -221,7 +224,7 @@ for i = 2:iter+1
   %initial conditions for ode45
   eta1_0 = 0; % =  x
   eta2_0 = 0; % = -theta_dot+x_dot*cos(theta)/l
-  eta3_0 = 1; % =  theta
+  eta3_0 = .1; % =  theta
 
   %sample time and final time [s]
   Ts = .01;
@@ -354,7 +357,7 @@ end
 
 
 %%
-
+syms x1 x2 x3 x4
 syms k1 k2 k3 u
 syms eta1 eta2 eta3 xi
 

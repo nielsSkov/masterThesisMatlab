@@ -22,7 +22,7 @@ slm   = 0; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
 iaLim = 0; %<-limmit actuation peak on/off
 conX  = 0; %<-select whether or not to control x-position/velocity
-con   = 2; %<-controller selection where,
+con   = 4; %<-controller selection where,
 %
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
