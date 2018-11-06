@@ -1,0 +1,300 @@
+\message{ !name(sim_exp-slides4.tex)}{\makeatletter\gdef\AucTeX@cite#1[#2]#3{[#3#1#2]}\gdef\cite{\@ifnextchar[{\AucTeX@cite{, }}{\AucTeX@cite{}[]}}}
+
+\message{ !name(sim_exp-slides4.tex) !offset(-3) }
+\documentclass[pdf,slideColor]{prosper}
+
+\usepackage[latin1]{inputenc}
+%\usepackage{pstricks,pst-node,pst-text,pst-3d}
+\usepackage{graphicx,theorem}
+\usepackage{amsmath,amsfonts,amssymb}
+\graphicspath{{figurer/}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+\theoremstyle{break}\newtheorem{Saet}{}
+
+% For comparison, the existing overlap macros:
+% \def\llap#1{\hbox to 0pt{\hss#1}}
+% \def\rlap#1{\hbox to 0pt{#1\hss}}
+\def\clap#1{\hbox to 0pt{\hss#1\hss}}
+\def\mathllap{\mathpalette\mathllapinternal}
+\def\mathrlap{\mathpalette\mathrlapinternal}
+\def\mathclap{\mathpalette\mathclapinternal}
+\def\mathllapinternal#1#2{%
+\llap{$\mathsurround=0pt#1{#2}$}}
+\def\mathrlapinternal#1#2{%
+\rlap{$\mathsurround=0pt#1{#2}$}}
+\def\mathclapinternal#1#2{%
+\clap{$\mathsurround=0pt#1{#2}$}}
+
+\title{\bigskip
+Simulering og eksperimentel modelbestemmelse}
+%\subtitle{ \ }
+\author{\href{http://www.control.aau.dk/~vie/}{Henrik Vie
+      Christensen}}
+\institution{%
+Automation \& Control\\
+Aalborg University\\
+Denmark}
+\slideCaption{Sim.exp.model.4}
+
+\email{vie@es.aau.dk}
+
+%\DefaultTransition{Wipe}
+
+\begin{document}
+\maketitle
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{%
+\begin{slide}[Replace]{Dagens program}
+
+\bigskip\bigskip
+\begin{itemstep}
+\item Parameter nøjagtighed 
+\begin{itemize}
+\item Stokastisk parameter usikkerhed (støj)
+\item Deterministisk fejl (undermodellering)
+\end{itemize}
+\bigskip
+\item Input-signal design
+\begin{itemize}
+\item Optimale input signaler
+\item Eksempler
+\end{itemize}
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Model verifikation}
+
+En nøjagtig model forudsætter:
+\begin{itemstep}
+\item God overensstemmelse mellem system og model output beskrevet
+  ved
+\begin{itemize}
+\item {\blue Normed root mean output error}:
+$\displaystyle\blue errn = \sqrt{\frac{\sum_{k=1}^N (y(k) - y_m(k,\theta_N))^2}{\sum_{k=1}^N y^2(k)}}$
+\item Plot af system og model output
+\end{itemize}
+\medskip
+\item Gode parameter følsomhedsmål
+\medskip
+\item Evaluering baseret på fysisk indsigt og fornuft
+\end{itemstep}
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Parameter nøjagtighed}
+
+\onlySlide*{1}{
+Model fejlen kan splittes i tre bidrag:\\[18.7pt]
+$\displaystyle\blue \epsilon(k,\theta) = y(k) - y_m(k,\theta) =
+\epsilon_x(k) + \epsilon_m(k) + \epsilon_p(k,\theta)$\\[13.7pt] 
+hvor $\blue\epsilon_x$ er {\blue støj}, $\blue\epsilon_m$ er {\blue
+  undermodellering}, og $\blue\epsilon_p$ er
+{\blue parameter afhængig} bidrag.
+}%
+\fromSlide{2}{%
+Model fejlen kan splittes i tre bidrag:
+$\displaystyle\blue \epsilon(k,\theta) = y(k) - y_m(k,\theta) =
+\overbrace{\epsilon_x(k) + \epsilon_m(k)}^{{\red
+  \epsilon_0(k)}} + \ \epsilon_p(k,\theta)$\\
+\hspace*{150pt}{\tiny\red støj \quad model fejl \quad par.
+    afh. ($= 0$ for $\theta=\theta_N$)}\\
+hvor $\blue\epsilon_x$ er {\blue støj}, $\blue\epsilon_m$ er {\blue
+  undermodellering}, og $\blue\epsilon_p$ er
+{\blue parameter afhængig} bidrag.
+}
+
+\fromSlide{3}{%
+\medskip
+Minimum af performance fkt. er
+$$\blue P(\theta_N) = \frac{1}{2N}\sum_{k=1}^N \epsilon^2(k,\theta_N) =
+\frac{1}{2}(\epsilon_{x,RMS}^2 + \epsilon_{m,RMS}^2)$$%
+idet $\blue\epsilon_x$ og $\blue\epsilon_m$ er uafhængige.
+}%
+
+\fromSlide{4}{%
+\medskip
+Disse to bidrag kan behandles separat\hspace*{\fill}\smash{\raisebox{-12pt}{\makebox[2mm]{\includegraphics[height=2cm]{tavle.md}}}}
+}%
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{6}{
+\begin{slide}[Replace]{Parameter følsomhed og nøjagtighed}
+
+\untilSlide*{3}{
+Brug følsomhedsmålene: $\blue S_i$, $\blue S_{i\text{ min}}$, $\blue R =
+S_\text{max}/S_\text{min}$, $\blue R_i = S_i/S_{i\text{ min}}$
+til at evaluere situationen, fx. nødvendighed af ændret model struktur
+eller input.
+
+\fromSlide*{2}{%
+\bigskip
+Parameter nøjagtigheden kan udtrykkes ved\\
+Kun støj:
+$$\blue \sigma_{r,\theta i\%} = \frac{errn}{S_{i\text{
+      min}}}\frac{1}{\sqrt{N}} \ [\%]$$
+}
+
+\fromSlide*{3}{%
+Kun undermodellering:
+$$\blue\Delta_{\theta eq,i\%} = \frac{errn}{S_{i\text{ min}}} \ [\%]$$
+}}
+
+\fromSlide*{4}{%
+Både støj og undermodellering:
+$$\blue\Delta_{\theta total,i} = \sigma_{r,\theta i} + \Delta_{\theta
+  eq,i}= \frac{1}{S_{i\text{ min}}} \Big(
+  \frac{\epsilon_{x,RMSn}}{\sqrt{N}} + \epsilon_{m,RMSn} \Big)$$
+}%
+
+\fromSlide{5}{%
+\medskip
+Senstools udregner
+\begin{itemize}
+\item En ``best case'' værdi, antaget kun støj (sigpar)
+\item En ``worst case'' værdi, antaget kun undermodellering (dpar)
+\end{itemize}
+}%
+
+\fromSlide{6}{%
+\bigskip
+En nøjagtig værdi af den totale parameterfejl forudsætter at model
+output fejlen splittes op i et bidrag fra støj $\epsilon_x$ og et
+bidrag fra undermodellering $\epsilon_m$.
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{
+\begin{slide}[Replace]{Eksempel: Højtaler}
+
+\vspace*{-5mm}
+\hspace*{\fill}\includegraphics[width=.75\linewidth,clip,bb=128 517 435 771]{figur_ex15}\hspace*{\fill}
+
+\fromSlide{2}{%
+Ækvivalent parameterfejl: $\blue\Delta_{\theta_{eq},i\%} = 14.1\%$
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Design af input signal}
+
+{\red Tommelfinger regel}:
+\medskip
+
+{\blue Lineære systemer}:\\
+Indput signalet skal have størstedelen af effekten i frekvensområdet,
+hvor nøjagtigh. af modellen er vigtigst.
+
+\fromSlide{2}{%
+\medskip
+{\blue Ulineære systemer}:\\
+Amplitude variationen i input signalet skal svare til det amplitude
+område, hvor nøjagtigh. af modellen er vigtigst.
+Indput signalet skal have størstedelen af effekten i frekvensområdet,
+hvor nøjagtigh. af modellen er vigtigst.
+}
+
+\fromSlide{3}{%
+\bigskip
+{\red Procedure}:\\
+Design et input signal der optimerer følsomhedsmålene.
+}%
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{5}{
+\begin{slide}[Replace]{Procedure for input design}
+
+\begin{itemstep}
+\item[\red 1.] {\blue Bestem tilnærmede parameter værdier} eller find á priori
+  parameter værdier.
+\item[\red 2.] {\blue Vælg en klasse af input signaler} -- skal afhænge af få
+  (helst kun en) parametre. En parameter, mindst, skal bestemme
+  frekvensspektret. Hvis modellen er ulineær, skal yderligere en parameter
+  bestemme amplituden.
+\item[\red 3.] {\blue Optimer input signalet til bedste følsomhed
+  (simulering)}. Bestem og plot karakteristiske følsomhedsmål som
+  fkt. af input signal parametre, vælg bedste værdi for disse.
+\item[\red 4.] {\blue Brug det fundne input signal på det fysiske system}.\\
+Hvis nødvendigt, gentag proceduren med de forbedrede parameter
+estimater.
+\end{itemstep}
+
+\fromSlide{5}{%
+Senstools programmet til optimalt input design: \texttt{\blue maininp.m}
+}%
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{
+\begin{slide}[Replace]{Eksempel: Optimalt input, lineært syst.}
+
+System: \qquad\qquad\quad $\blue G_m(s) = \frac{K}{1 + s\tau}$, \quad $K=1$, $\tau = 2$
+
+Input signal klasse: {\blue Firkant signal}
+
+\fromSlide{2}{%
+\hspace*{\fill}\includegraphics[width=.75\linewidth]{eksempel17}\hspace*{\fill}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Eksempel: Optimalt input, ulineært syst.}
+
+\vspace*{-2mm}
+System: \qquad\qquad\quad $\blue G_m(s) = \frac{K(u)}{1 + s\tau}$,
+\quad $\blue K(u) = k_0(1 + \frac{k_1}{0.5 + u^2})$,\\
+\hspace*{\fill} {\scriptsize$[k_0,k_1,\tau]=[1.5,4,2]$}
+
+Input signal klasse: {\blue Firkant-rampe signal}
+
+\onlySlide*{2}{%
+\hspace*{\fill}\includegraphics[width=.75\linewidth]{eksempel18_sens}\hspace*{\fill}
+}%
+
+\onlySlide*{3}{%
+\hspace*{\fill}\includegraphics[width=.75\linewidth]{eksempel18_in_out}\hspace*{\fill}
+}%
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Næste Forelæsning}
+
+\bigskip\bigskip
+Næste gang ser vi på:
+
+\begin{itemize}
+\item Frekvensdomæne 
+\item Opsamling
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: master
+%%% End: 
+
+\message{ !name(sim_exp-slides4.tex) !offset(-300) }

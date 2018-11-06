@@ -1,0 +1,366 @@
+\documentclass[pdf,slideColor]{prosper}
+
+\usepackage[latin1]{inputenc}
+%\usepackage{pstricks,pst-node,pst-text,pst-3d}
+\usepackage{graphicx,theorem}
+\usepackage{amsmath,amsfonts,amssymb}
+\graphicspath{{figurer/}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+\theoremstyle{break}\newtheorem{Saet}{}
+
+\title{\bigskip
+Simulering og eksperimentel modelbestemmelse}
+%\subtitle{ \ }
+\author{\href{http://www.control.aau.dk/~vie/}{Henrik Vie
+      Christensen}}
+\institution{%
+Automation \& Control\\
+Aalborg University\\
+Denmark}
+\slideCaption{Sim.exp.model.1}
+
+\email{vie@es.aau.dk}
+
+%\DefaultTransition{Wipe}
+
+\begin{document}
+\maketitle
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{5}{%
+\begin{slide}[Replace]{Kursusoversigt}
+
+\bigskip
+Plan for de enkelte minimoduler:
+
+\bigskip
+\begin{itemstep}
+\item[1.] Introduktion, metode og procedure for eksperimentel
+modelbestemmelse, Grafisk modeltilpasning, System identifikation
+\item[2.] Modellering, modelbeskrivelse og simulering
+\item[3.] Senstools til parameterestimering
+\item[4.] Parameter nøjagtighed og følsomhed, Frekvensdomænet
+\item[5.] Design af inputsignaler
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{7}{
+\begin{slide}[Replace]{\large Eksperimentel modelbestemmelse, Senstools}
+
+Metodens fordele:
+\begin{itemstep}
+\item En simpel grundlæggende metode, illustreret grafisk.
+\item Modeller i kontinuert tid med fysisk betydende parametre.
+\item Enhver model struktur kan anvendes, lineær, ulineær,
+  fordelte parametre, tidsforsinkelse, etc.
+\item Stokastiskeaspekter er reduceret til et minimum.
+\item Robust over for afvigelser fra teoretiske antagelser.
+\item En følsomheds metode brugbar til valg af model struktur,
+  eksperiment design, og nøjagtighedsverifikation.
+\item Alt i alt, kompatibel med fysisk indsigt.
+\end{itemstep}
+\hspace*{\fill} Morten Knudsen
+
+\end{slide}
+}
+\addtocounter{equation}{2}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Applikationer}
+
+Senstools og følsomhedsmetoden for eksperimentel modellering er blevet
+anvendt i mange forsknings og studenter projekter. Eksempler er:
+\begin{itemize}
+\item Skibs- og maritime systemer
+\item Vindmøller
+\item Højtalere
+\item Induktions- og DC-motore
+\item Varmevekslere
+\item Menneskeligt væv for hypertermi-terapi mod kræft
+\item Nyre og cerebellar blodgennemstrømning
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{5}{
+\begin{slide}[Replace]{Procedure for eksperimentel modellering}
+
+\vspace*{-4mm}
+\hspace*{\fill}\includegraphics[width=.85\linewidth]{sys_ident_principle.md}\hspace*{\fill}
+%
+%\medskip
+\vspace*{-2mm}
+\onlySlide*{1}{
+\begin{description}
+\item[\normalsize\blue Bestemmelse af modelstruktur:] Modelstrukturen er
+  bestemt af basal fysisk indsigt og empiriske overvejelser. En
+  ``{\blue simuleringsmodel}'' konstrueres.
+\end{description}
+}%
+\onlySlide*{2}{
+\begin{description}
+\item[\normalsize\blue Eksperiment design:] Specielt vigtigt er et ``{\blue
+    godt}'' {\blue inputsignal}. 
+%Det er enten valgt ud fra fornufts
+%    overvejelser, eller designet som et signal der optimerer
+%    karakteristiske parameter følsomhedsmål.
+\end{description}
+}%
+\onlySlide*{3}{
+\begin{description}
+\item[\normalsize\blue Eksperiment:] {\blue Systemet exciteres med inputsignalet} og
+  overensstemmende værdier af input- og outputsignaler samples og
+  gemmes.
+\end{description}
+}%
+\onlySlide*{4}{
+\begin{description}
+\item[\normalsize\blue Parameter estimation:] Simulationsmodellens {\blue parametre
+  justeres} til minimum afvigelse mellem det samplede system output og
+  modellen.% output (model fejlen). Som et mål for
+%  afvigelsen bruges en performancefunktion.
+\end{description}
+}
+\onlySlide*{5}{
+\begin{description}
+\item[\normalsize\blue Model validering:] Korrektheden af {\blue modelstrukturen} og
+  {\blue nøjagtigheden af parameter estimaterne kontrolleres}.%, baseret på
+% ``{\blue model fit}'' og karakteristisk parameter følsomhedsmål.
+\end{description}
+}
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Eksempel 1: Grafisk model tilpasning}
+Bestem forstærkning $\blue K$ og tidskonstant $\blue\tau$ ved at tilpasse en
+første-ordens model til den målte step-respons:
+
+\untilSlide*{3}{
+\begin{minipage}[c]{.6\linewidth}
+\includegraphics[width=\linewidth]{step_response_measured.md}
+\end{minipage}%
+}%
+\fromSlide*{4}{
+\begin{minipage}[c]{.6\linewidth}
+\includegraphics[width=\linewidth]{step_response.md}
+\end{minipage}%
+}%
+\onlySlide*{2}{%
+\begin{minipage}[c]{.39\linewidth}
+Model:
+
+$\blue G_m(s) = \frac{K}{1+s\tau}$
+
+\medskip
+Input: (step)
+
+$\blue U(s) = \frac{a}{s}$
+
+\medskip
+Step respons:
+
+$\blue Y(s) = \frac{aK}{s(1+s\tau)}$
+\end{minipage}
+}%
+\fromSlide{3}{
+\begin{minipage}[c]{.39\linewidth}
+I tidsdomænet:
+
+$\blue y(t) = aK(1 - e^{-\frac{t}{\tau}})$
+
+\bigskip
+$t \rightarrow \infty:$\\
+$y(\infty) = aK$\\
+$\Rightarrow \blue K = \frac{y(\infty)}{a}$
+
+\medskip
+$t = \tau:$\\
+${\blue y(\tau)} = aK(1 - e^{-1})$\\
+\hspace*{25.7pt}$\blue = 0.63 aK$
+\end{minipage}
+}%
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Eksempel 2: Grafisk model tilpasning}
+
+Tilsvarende for et førsteordens-system med forsinkelse $\blue T$:
+
+\medskip
+\begin{minipage}[c]{.6\linewidth}
+\includegraphics[width=\linewidth]{delayed_step_response.md}
+\end{minipage}%
+\begin{minipage}[c]{.39\linewidth}
+Model:
+
+$\blue G_m(s) = \frac{K}{1+s\tau} e^{-sT}$
+\end{minipage}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Systemidentifikationsmetoder}
+
+Metoderne er karakteriseret af modeltyperne:
+
+\begin{itemstep}
+\item \textbf{Linear diskrete-time model:} \quad Klassisk
+  systemidentifikation
+\item \textbf{Neuraltnetværk:} \quad Meget ulineære systemer med en
+  kompliceret struktur
+\item \textbf{Generel simulationsmodel:} \quad Enhver matematisk
+  model, som kan simuleres fx. med Matlab. Den kræver en {\blue
+  fysisk realistisk model struktur}, typisk udviklet ved teoretisk
+  modellering.\\
+Metoden: Direkte estimering af fysiske parametre
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Computer tilpasning ved minimering}
+
+\begin{minipage}[c]{.39\linewidth}
+Performance funktion:
+$$\blue P(\theta) = \frac{1}{2N} \sum_{k=1}^N \varepsilon^2(k,\theta)$$
+
+\medskip
+Optimale parametre:
+$$\blue\theta_N = \argmin_\theta P(u_N, y_N, \theta)$$
+\end{minipage}%
+\begin{minipage}[c]{.6\linewidth}
+\includegraphics[width=\linewidth]{model_error_kT.md}
+\end{minipage}%
+
+hvor $T$ er samplingstiden og $\varepsilon(k,\theta) = y(kT) - y_m(kT,\theta)$.
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Performance funktion som fkt. af $\theta$}
+
+\begin{minipage}[c]{.48\linewidth}
+En parameter:
+
+\includegraphics[width=\linewidth]{performance_one_par.md}
+
+Model:\quad $\displaystyle\blue \frac{Y_m(s)}{U(s)} =
+\frac{1}{1+s\tau}$
+\end{minipage}\hspace*{\fill}
+\begin{minipage}[c]{.48\linewidth}
+To parametre:
+
+\includegraphics[width=\linewidth]{performance_two_par.md}
+
+Model:\quad $\displaystyle\blue \frac{Y_m(s)}{U(s)} =
+\frac{K}{1+s\tau}$
+
+%\put(175,150){\includegraphics[width=40pt]{tavle.md}}
+\end{minipage}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{
+\begin{slide}[Replace]{Minimum af en funktion}
+
+Betingelser for {\blue minimum i $\theta = \theta_0$} af en fkt. af flere
+variable
+$$P(\theta) = \frac{1}{2N} \sum_{k=1}^N (y(kT) - y_m(kT,\theta))^2$$
+
+er, at {\blue gradient vektoren er nul}:\quad
+$\displaystyle G(\theta_0) = \frac{\partial P(\theta)}{\partial
+  \theta}\Big|_{\theta=\theta_0} = 0$
+
+\bigskip
+og at {\blue Hessian matricen}:\quad
+$\displaystyle H(\theta_0) = \frac{\partial^2 P(\theta)}{\partial
+  \theta \partial \theta^\top}\Big|_{\theta=\theta_0}$
+
+\bigskip
+er {\blue positiv definit}, dvs. $v^\top Hv > 0$ for alle $v \neq 0$.
+
+\bigskip
+\fromSlide{2}{
+{\red Problem:} $G(\theta_0) = 0$ har generelt ingen eksplicit
+løsning!
+}
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Numeriske metoder til at finde minimum}
+
+\begin{itemstep}
+\item \makebox[.6\linewidth][l]{Steepest descent}\raisebox{-.75cm}{\includegraphics[height=1.5cm]{tavle.md}}
+\item \makebox[.6\linewidth][l]{Newtons metode}\raisebox{-.75cm}{\includegraphics[height=1.5cm]{tavle.md}}
+  + DEMO 
+\item \makebox[.6\linewidth][l]{Gauss-Newton metoden}\raisebox{-.75cm}{\includegraphics[height=1.5cm]{tavle.md}}
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Direkte estimering af fysiske parametre}
+
+\vspace*{-2mm}
+\begin{itemstep}
+\item Bestem model output (simulation): $\displaystyle\blue y_m(k) = F(u_n,\theta)$
+\item Bestem model gradienten $\psi$ ved numerisk differentiation:
+
+\hspace*{\fill}$\displaystyle\blue \psi_j(k,\theta) = \frac{y_m(k,\theta_j+\Delta\theta_j) -
+  y_m(k,\theta_j)}{\Delta\theta_j}$\hspace*{\fill}
+
+\item Bestem gradienten $G$ og Hessian matricen $H$ fra $\psi$:
+
+{\small$\displaystyle\blue G(\theta) = -\frac{1}{N}\!\sum_{k=1}^N
+\varepsilon(k,\theta)\psi(k,\theta)$,\hspace*{\fill}
+$\displaystyle\blue \widetilde{H}(\theta) = \frac{1}{N} \!\sum_{k=1}^N
+\psi(k,\theta)\psi^\top(k,\theta)$}
+
+\item Bestem de parameter værdier der minimerer performance funktionen
+  $P$ vha. Gauss-Newton metoden 
+
+\hspace*{\fill}$\displaystyle\blue \theta_{i+1} = \theta_i -
+\widetilde{H}^{-1}(\theta_i)G(\theta_i)$\hspace*{\fill}
+
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Næste Forelæsning}
+
+\bigskip\bigskip
+Næste gang ser vi på:
+
+\begin{itemize}
+\item Modeller og modellering: koncepter
+\item Model beskrivelse
+\item Diskritiseringsmetoder
+\item Simulering af lineære og ulineære dynamiske systemer i Matlab
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: master
+%%% End: 

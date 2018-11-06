@@ -1,0 +1,16 @@
+
+% a
+
+mk_14_11_29
+t=(1:500)/50;
+y=tach(:)/0.03;
+u=volt(:);
+save measdcml1 u y t
+
+y=[tach(:)/0.03 -strom(:)];
+save measdcml2 u y t
+
+
+
+
+

@@ -1,0 +1,464 @@
+\documentclass[pdf,slideColor]{prosper}
+
+% \ifinColor
+%         \newcommand{\mathColor}{\green}
+%         \newcommand{\emphColor}{\red}
+%         \newcommand{\itemColor}{\red}
+%         \newcommand{\titleColor}{} % Automatic ...
+%         \newcommand{\pslineColor}{black}
+%         \newcommand{\psemphlineColor}{red}
+% \else
+%         \newcommand{\mathColor}{}
+%         \newcommand{\emphColor}{\it}
+%         \newcommand{\itemColor}{}
+%         \newcommand{\titleColor}{\black} % Override ...
+%         \newcommand{\pslineColor}{black}
+%         \newcommand{\psemphlineColor}{black}
+% \fi
+%% \FontTitle{%
+%%   \usefont{T1}{ptm}{b}{n}\fontsize{20.74pt}{20pt}\selectfont%
+%%   \lightgray}{%
+%%   \usefont{T1}{ptm}{b}{n}\fontsize{20.74pt}{20pt}\selectfont%
+%%   \black}
+%% \newcommand{\mf}[1]{{\mathColor$#1$}}
+%% \newcommand{\dmf}[1]{{\mathColor$$#1$$}}
+%% \newcommand{\reel}{\mathcal{R}}
+%% \newcommand{\Z}{\mathcal{Z}}
+%% \newcommand{\cemph}[1]{\emph{\emphColor #1}\xspace}
+%% \newcommand{\cbul}{\item[\mbox{\red{$\bullet$}}]}
+%% \newcommand{\devDepStuff}{}%
+%% \usepackage{xspace}
+
+%\newlength{\jssignalwidth}
+
+\usepackage[latin1]{inputenc}
+%\usepackage{pstricks,pst-node,pst-text,pst-3d}
+\usepackage{graphicx,theorem}
+\usepackage{amsmath,amsfonts,amssymb}
+\graphicspath{{figurer/}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+\theoremstyle{break}\newtheorem{Saet}{}
+
+\title{\bigskip
+Simulering og eksperimentel modelbestemmelse}
+%\subtitle{ \ }
+\author{\href{http://www.control.aau.dk/~vie/}{Henrik Vie
+      Christensen}}
+\institution{%
+Department of Control Engineering\\
+Aalborg University\\
+Denmark}
+\slideCaption{Sim.exp.model.3}
+
+\email{vie@control.aau.dk}
+
+%\DefaultTransition{Wipe}
+
+\begin{document}
+\maketitle
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{%
+\begin{slide}[Replace]{Dagens program}
+
+\bigskip\bigskip
+\begin{itemstep}
+\item SENSTOOLS til parameter estimation 
+\begin{itemize}
+\item Navne konventioner
+\item Procedure for parameter estimation
+\end{itemize}
+\bigskip
+\item Parameter følsomhed
+\begin{itemize}
+\item Følsomhedsmål
+\item Følsomhedsellipse
+\end{itemize}
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{SENSTOOLS til parameter estimation}
+
+\begin{itemstep}
+\item {\blue Senstools} er en samling af Matlab programmer, der implementere
+  følsomhedsmetoden for {\blue direkte parameter estimation}, {\blue
+  eksperiment design} og {\blue model validering}.
+\item Programmerne kan fordelagtigt organiseres som en {\blue Matlab Toolbox}.
+\item Alt hvad brugeren behøver at programmere er {\blue simulerings
+  programmet for den specifikke proces}.
+\item Programmerne er organiseret som main programmer (script filer),
+  der kalder under programmer (funktioner) og bruger data (mat filer).
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Navne konventioner}
+
+\begin{itemstep}
+\item Program og data filnavnene indeholder information om program
+  type og navnet på den aktuelle proces. Begyndelses bogstaverne
+  indikere typen:
+\begin{itemize}
+\item \makebox[1.2cm][l]{\blue\texttt{main}}main program (script fil)
+\item \makebox[1.2cm][l]{\blue\texttt{sim}}simulerings program for processen
+  (funktion)
+\item \makebox[1.2cm][l]{\blue\texttt{meas}}input/output måledata (mat fil)
+\item \makebox[1.2cm][l]{\blue\texttt{prog}}program data (mat fil)
+% er oprettet med progprog (program data program, script fil)
+\end{itemize}
+\item Navne på filer tilknyttet en specifik proces skal indeholde
+  proces navnet.
+Eksempel:\\ \texttt{\blue process='motor'}  \texttt{\blue
+  simmotor.m} og \texttt{\blue measmotor.mat}
+\item Programnavnene indeholder også info om funktionen.\\
+Eksempel: \texttt{\blue mainest.m}\quad (main program for estimation)
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Procedure for parameter estimation}
+
+For en proces med navn \texttt{xxx}:
+\begin{itemstep}
+\item[\red 1.] \textbf{Opret simulerings programmet} som en Matlab
+  funktion: \ \ \texttt{\blue y = simxxx.m}
+\item[\red 2.] \textbf{Gem de målte data} t, u og y: \ \
+\texttt{\blue save measxxx t u y}
+\item[\red 3.] \textbf{Indtast nødvendige program data}, en af de tre
+måder:
+\begin{itemize}
+\item[\green a)] Direkte i workspace: \
+  \begin{minipage}[t]{3cm}\texttt{\blue process='xxx';\\ par0=[1
+    2];}\end{minipage}
+\item[\green b)] Indlæses fra en mat fil (\texttt{\blue
+    progdataxxx.mat}). Sker automatisk hvis filen
+    eksisterer. progdata-filen oprettes med \texttt{progprogxxx.m}
+    fil.
+\item[\green c)] Brug default værdier for main programmet. 
+\end{itemize}
+\item[\red 4.] \textbf{Kør \ \texttt{\blue mainest.m}\ }
+  for parameter estimation.
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Hvordan de tre input metoder skelnes}
+
+Programkoden for \texttt{mainest.m}:
+
+{\tiny
+{\green\texttt{\% mainest is the main program for parameter estimation}\\
+\vdots
+\texttt{\% 20/9-94,MK. 26/11-02,MK }\\[2ex]
+
+\texttt{\% Default values:}}\\
+\texttt{{\blue if} $\sim$exist(\textcolor{brown}{'process'}), \quad   process='ktau';\ {\blue end}  \quad   {\green\% Process name}\\
+{\blue if} $\sim$exist(\textcolor{brown}{'no'}),  \qquad\qquad
+no=\textcolor{brown}{'{}'}; \qquad\qquad\qquad  {\blue end} \quad {\green\% Measurement number} \\
+{\blue if} exist([\textcolor{brown}{'progdata'},process,no,\textcolor{brown}{'.mat'}])==2  \&  $\sim$exist(\textcolor{brown}{'par0'})\\
+{}\quad        load([\textcolor{brown}{'progdata'},process,no]),
+\qquad\qquad\  {\blue  end }  \quad {\green\% progdata loades}\\
+{\blue if}
+exist([\textcolor{brown}{'meas'},process,no,\textcolor{brown}{'.mat'}])==2,
+\quad load([\textcolor{brown}{'meas'},process,no]), {\blue else}\\
+{}\quad      disp([\textcolor{brown}{'data: meas'},process,no,\textcolor{brown}{'.mat  missing !'}]),\quad {\blue break},  \quad {\blue  end} \\
+{\blue if} $\sim$exist(\textcolor{brown}{'ploty'}), \quad    ploty=2;
+\qquad\qquad\ {\blue end}\\
+{\blue if} $\sim$exist(\textcolor{brown}{'par0'}),  \quad    par0=[1.5 3];      \qquad {\blue end}\\
+simmod=[\textcolor{brown}{'sim'},process];\\
+\vdots
+}}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Eksempel: Par. estim. med \texttt{mainest.m}}
+
+System {\blue kutau}
+
+Model: $\displaystyle \frac{Y(s)}{U(s)} = \frac{K(u)}{1+s\tau}$ hvor
+$K(u) = k_0(1+\frac{k_1}{0.5 + u^2})$
+
+\texttt{\blue measkutau.mat} eksisterer (målinger $u,y,t$)
+
+\onlySlide*{1}{%
+\begin{itemize}
+\item[\green a)] Manuel indlæsning af programdata\\
+\texttt{>> process='kutau';}\\
+\texttt{>> par0=[1 2 3];}\\
+\texttt{>> mainest}
+\end{itemize}
+\hspace*{\fill}\smash{\raisebox{-20mm}{\makebox[7mm]{\includegraphics[height=1.2cm]{matlab}}}}}%
+\onlySlide*{2}{%
+\begin{itemize}
+\item[\green b)] \texttt{progprogkutau.m} dannet programdata\\
+\begin{minipage}[c]{.45\linewidth}
+\texttt{>> clear}\\
+\texttt{>> process='kutau';}\\
+\texttt{>> mainest}\end{minipage}\qquad
+\makebox[3cm][l]{\begin{minipage}[t]{.54\linewidth}\tiny
+\texttt{\green \% progprogkutau.m creates program\\ 
+\% data for mainest \\
+\% with process kutau, Example 9.\\
+\% 27/11-02,MK}\\[1ex]
+%
+\texttt{clear}\\[1ex]
+%
+\texttt{process=\textcolor{brown}{'kutau'};\\
+par0=[.85  1.8  2.24];\\
+save progdatakutau  process par0 \\ \green\% creates \makebox[1cm][l]{progdatakutau.mat}}
+\end{minipage}}
+\end{itemize}
+}%
+\onlySlide*{3}{%
+\begin{itemize}
+\item[\green c)] Default\\
+\texttt{>> clear}\\
+\texttt{>> mainest}\\
+\ \\
+Bemærk: Kun to parametre, \texttt{process} $\rightarrow$ \texttt{ktau} 
+\end{itemize}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Eksempel: DC-motor (SIMO)}
+
+{\tiny
+\texttt{>> help simdcml\\
+%
+  y=[i,w]=simdcml(u,t,par) simulates a  linear dc-motor with \\
+  input u and outputs i and w.  \\
+  w/u = K/R/(J*s+B+K\^{}2/R),  i/u=(J*s+B)/R/(J*s+B+K\^{}2/R)      \\
+  par=[R K J B]\\
+ %
+  27/11-02,MK
+}}
+
+\onlySlide*{2}{%
+\bigskip\bigskip
+DC-motor modellen er en {\blue SIMO} model (single input multiple output)
+så målingerne skal organiseres som en matrix:
+
+$$\blue y = [ \; i \ \ \omega \; ] = \begin{bmatrix} i[1]
+  & \omega[1] \\ i[2] & \omega[2] \\ \vdots & \vdots \\ i[N] &
+  \omega[N] \end{bmatrix}$$
+}
+\onlySlide*{3}{%
+\begin{minipage}[c]{.45\linewidth}
+\texttt{>> process='dcml';}\\
+\texttt{>> ploty=1;}\\
+\texttt{>> mainest}
+\end{minipage}\begin{minipage}[c]{.5\linewidth}
+\includegraphics[width=\linewidth]{dcml1.eps}
+\end{minipage}
+}%
+\onlySlide{4}{%
+\begin{minipage}[c]{.45\linewidth}
+\texttt{>> process='dcml';}\\
+\texttt{>> ploty=1;}\\
+\texttt{>> mainest}\\
+
+\texttt{>> ploty=2;}\\
+\texttt{>> mainest}
+\end{minipage}\begin{minipage}[c]{.5\linewidth}
+\includegraphics[width=\linewidth]{dcml2.eps}
+\end{minipage}
+}%
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{
+\begin{slide}[Replace]{Evaluering af model fit}
+
+\vspace*{-2mm}
+Parameter estimat: \qquad $\displaystyle\blue \theta_N = \argmin_\theta P(u_N,
+y_N, \theta)$
+
+Performance funktion: \ \ $\blue P(\theta) = \frac{1}{2N} \sum_{k=1}^{N}
+\epsilon^2(k,\theta)$
+
+\medskip
+Minimum værdien $\blue P(\theta_N)$ giver {\red ikke} brugbar information om
+hvor godt fit der er opnået.
+
+\fromSlide{2}{%
+\bigskip 
+{\blue Normed root mean square output error}:
+$$\blue errn = \sqrt{\frac{\sum_{k=1}^N (y(k) -
+    y_m(k,\theta_N))^2}{\sum_{k=1}^N y^2(k)}} \cdot 100\ [\%]$$
+der giver god information om graden af fit.
+
+\medskip
+Gode modeller og lav støj på målinger: {\blue 5--8\%}
+
+Meget komplicerede systemer: \qquad\quad \ \ {\blue 20--25\%}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Parameter følsomhed}
+
+\onlySlide*{1}{%
+
+Model fejlen kan splittes i to bidrag:
+$$\blue \epsilon(k,\theta) = \epsilon_0(k) + \epsilon_p(k,\theta)$$
+hvor $\blue\epsilon_0$ er {\blue støj og undermodellering}, $\blue\epsilon_p$ er
+{\blue parameter afhængig} bidrag:
+
+$$\blue\epsilon_p(k,\theta) = y_m(k,\theta) - y_m(k,\theta_N) \approx
+\psi^\top(k,\theta_N)(\theta - \theta_N)$$
+
+hvor $\psi$ er model gradienten $\psi(k,\theta) = \frac{\partial
+  y_m(k,\theta}{\partial \theta}$.
+}%
+\fromSlide*{2}{%
+\untilSlide*{3}{%
+\hspace*{-1em}\mbox{\small
+$\displaystyle\blue\epsilon_{p,RMSn}(\theta) = \sqrt{\frac{1}{n} \sum_{k=1}^N
+  \epsilon_{pn}^2(k,\theta)} \approx \sqrt{\frac{1}{n} \sum_{k=1}^N
+  (\theta_r - \theta_{Nr})^\top \psi_{rn}^\top\psi_{rn} (\theta_r -
+  \theta_{Nr})}$}\\[1ex]
+\hspace*{15.4mm}$\blue = \sqrt{(\theta_r - 1_v)^\top \tilde{H}_{rn} (\theta_r -
+  1_v)}$\\[1ex]
+idet \:\ $\tilde{H} = \frac{1}{N}\psi^\top\psi$, \:\ $\theta_{ri} =
+\frac{\theta_i}{\theta_{Ni}}$, \:\ $\theta_{Nri} =
+\frac{\theta_{Ni}}{\theta_{Ni}}$ \:\ og \:\ $\theta_{Nr} = 1_v$.
+}%
+\onlySlide*{3}{%
+
+\bigskip\bigskip
+{\blue Parameter følsomhed} m.h.t. den $i$'te parameter $\theta_i$:
+$$\blue S_i = \frac{\partial\epsilon_{p,RMSn}}{\partial \theta_{ri}} =
+\sqrt{h_{rnii}} \qquad \Big( = \big\{\tilde{H}_{rn}\big\}_{ii}\Big)$$
+}}%
+\fromSlide{4}{%
+\bigskip
+\begin{minipage}[t]{.8\linewidth}
+\vspace{0pt}
+\includegraphics[width=\linewidth]{sens_funct.md} %{eval_fit}
+\end{minipage}%
+%\begin{minipage}[t]{.39\linewidth}
+%\vspace{10pt}
+%{\blue $P(\theta_i)$}\\[2.2ex]
+%{\green $\epsilon_{p,RMS}(\theta_i)$\\[1ex]
+%slope $= S_i$}
+%\end{minipage}
+}
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Følsomhedsellipse}
+
+\onlySlide*{1}{%
+Tilfældet to parametre: \quad $\blue\theta = \begin{bmatrix} \theta_1\\
+  \theta_2 \end{bmatrix}$
+
+\bigskip
+$\blue \epsilon_{p,RMSn}(\theta_r) = 1$ kaldes følsomhedsellipsen\\[.7ex]
+idet $\blue x^\top H x = c$ er forskriften for en ellipse ($H$
+symmetrisk).
+
+\bigskip
+I sådan en ellipse er afstanden fra (0,0) til et punkt på ellipsen
+$(x_i,0) = \frac{c}{\sqrt{h_{ii}}}$
+}%
+\onlySlide*{2}{%
+\hspace*{\fill}\includegraphics[width=.6\linewidth]{sensitiv.md}\hspace*{\fill}\smash{\raisebox{-32mm}{\makebox[2mm]{\includegraphics[height=2cm]{tavle.md}}}}
+
+
+\makebox[1cm][l]{$\blue S_i$} følsomhed af $\theta_i$ alene\\
+\makebox[1cm][l]{$\blue S_{i\text{ min}}$} minimum følsomhed af
+$\theta_i$\\
+\makebox[1cm][l]{$\blue S_\text{min}$} minimum følsomhed i vilkårlig
+retning\\
+\makebox[1cm][l]{$\blue S_\text{max}$} maksimum følsomhed i vilkårlig
+retning
+}%
+\onlySlide*{3}{%
+Disse karakteristiske mål er de mest beskrivende, specielt for flere
+end 2 parametre:
+
+\bigskip
+\begin{tabular}{@{}lp{9cm}}
+$\blue S_\text{min}$ & minimum følsomhed, reciprok af
+major half axis -- {\blue så stor som muligt}\\[.6ex]
+$\blue S_{i\text{ min}}$ & minimum følsomhed af
+$\theta_i$ -- {\blue så stor som muligt}\\[.6ex]
+$\blue R = \frac{S_\text{max}}{S_\text{min}}$ &
+  forhold mellem max. og min. følsomhed i 
+
+vilkårlig retning -- {\blue så tæt
+  på 1 som muligt}\\[.6ex]
+$\blue R_i = \frac{S_i}{S_{i\text{ min}}}$ & forhold
+mellem følsomhed af $\theta_i$ alene og min. 
+
+følsomhed af $\theta_i$
+-- {\blue så tæt på 1 som muligt}. 
+
+$R_i >> 1$ indikerer at to eller flere
+parametre er 
+
+korrollerede
+\end{tabular}
+}%
+\onlySlide{4}{%
+
+\bigskip
+\includegraphics[width=.47\linewidth,clip,bb=68 403 538 613]{sens_ellipse}
+\hspace{\fill}
+\raisebox{-1.2mm}{\includegraphics[width=.47\linewidth,clip,bb=68 187 538 402]{sens_ellipse}}
+
+\bigskip
+\begin{tabular}{@{}c|c|c|c|c@{}}
+$\omega$ & 0.04 & 0.2 & 0.5 & 4 \\
+\hline
+$S_\text{min}$ & 0.13 & 0.42 & 0.37 & 0.10 \\
+$S_{i\text{ min}}$ & 0.98/0.13 & 0.86/0.44 & 0.56/0.46 & 0.14/0.14 \\
+$R$ & 7.9 & 2.5 & 3.3 & 13.8 \\
+$R_i$ & 1.03/1.03 & 1.2/1.2 & 1.8/1.8 & 6.9/6.9
+\end{tabular}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Næste Forelæsning}
+
+\bigskip\bigskip
+Næste gang ser vi på:
+
+\begin{itemize}
+\item Parameter nøjagtighed
+\item Input-signal design
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: master
+%%% End: 

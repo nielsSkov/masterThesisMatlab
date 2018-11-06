@@ -1,0 +1,11 @@
+
+clear
+process='simkzetaw';
+inputt='inpsqw';
+par=[40 0.6 2];
+h=0.05/par(3);
+f1v=logspace(par(3)/100,par(3)*100,100);
+maininp
+
+
+

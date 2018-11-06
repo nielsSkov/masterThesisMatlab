@@ -1,0 +1,13 @@
+
+H=tf([0 0 40],[1 2*0.6*2 2*2]);
+
+Hzoh=c2d(H,1,'zoh')
+Htus=c2d(H,1,'tustin')
+
+
+DCH=10
+DCzoh=sum(Hzoh.num)/sum(Hzoh.den)
+DCtus=sum(Htus.num)/sum(Htus.den)
+
+
+

@@ -1,0 +1,550 @@
+\documentclass[pdf,slideColor]{prosper}
+
+\usepackage[latin1]{inputenc}
+%\usepackage{pstricks,pst-node,pst-text,pst-3d}
+\usepackage{graphicx,theorem}
+\usepackage{amsmath,amsfonts,amssymb}
+\graphicspath{{figurer/}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+\theoremstyle{break}\newtheorem{Saet}{}
+
+\title{\bigskip
+Simulering og eksperimentel modelbestemmelse}
+%\subtitle{ \ }
+\author{\href{http://www.control.aau.dk/~ktr/}{Klaus Trangbæk}}
+\institution{%
+Automation \& Control\\
+Aalborg University\\
+Denmark}
+\slideCaption{Sim.exp.model.2}
+
+\email{ktr@es.aau.dk}
+
+%\DefaultTransition{Wipe}
+
+\begin{document}
+\maketitle
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{%
+\begin{slide}[Replace]{Dagens program}
+
+\bigskip
+\begin{itemstep}
+\item Modeller og modellering: koncepter
+\begin{itemize}
+\item Definitioner
+\item Simulering
+\item Matematiske modeller
+\end{itemize}
+\item Modelbeskrivelse
+\begin{itemize}
+\item Overføringsfunktioner
+\item Tilstandsbeskrivelse
+\item Blok-diagrammer
+\end{itemize}
+\item Diskretiseringsmetoder
+\item Simulering af lineære og ulineære dynamiske systemer i Matlab
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{
+\begin{slide}[Replace]{Modeller og modellering: koncepter}
+
+\textbf{Definition: }\\
+{\slshape
+\textbf{Model:} en {\blue repræsentation} -- i en brugbar form --
+{\blue af de essentielle dele} af et system.
+}
+
+\medskip
+\fromSlide{2}{%
+\textbf{Definition: }\\
+{\slshape
+\textbf{Systemidentifikation:} {\blue Udvikle matematisk model af dynamisk system
+baseret på observerede data} fra systemet:
+\begin{itemize}
+\item Mange måledata er indsamlet som samplede værdier af input og
+  output
+\item En computer anvendes til behandling af data
+\item Modelparametre estimeres ved minimering af et fejlkriterie
+\end{itemize}
+}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Karakterisering af modeller/modellering}
+
+\vspace*{-3mm}
+Modeller:\begin{center}
+\textbf{\blue matematiske} -- andre\\
+\textbf{\blue parametriske} -- ikke-parametriske\\
+\textbf{\blue kontinuert tid} -- diskret tid\\
+\textbf{\blue input/output} -- \textbf{\blue tilstands}\\
+\textbf{\blue lineære} -- \textbf{\blue ulineære}\\
+\textbf{\blue dynamisk} -- statisk\\
+\textbf{\blue tidsinvariant} -- tidsvarierende\\
+\textbf{\blue SISO} -- \textbf{\blue MIMO}
+\end{center}
+
+\medskip
+Modellering/systemidentifikation:\begin{center}
+\textbf{\blue teoretisk (fysisk)} -- \textbf{\blue eksperimentel}\\
+white-box -- \textbf{\blue gray-box} -- black-box\\
+\textbf{\blue strukturbestemmelse} -- \textbf{\blue parameter-estimation}\\
+\textbf{\blue tidsdomæne} -- \textbf{\blue frekvensdomæne}\\
+\textbf{\blue direkte} -- indirekte
+\end{center}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Fysiske parametre}
+
+\vspace*{-2mm}
+Fysiske parametre er {\blue modelparametre med en indlysende fysisk mening}
+eller betydning.
+
+\medskip
+\fromSlide{2}{%
+Typisk er de {\blue koefficienter i basale fysiske love}, fx. Newtons, Hooks,
+Ohms, eller Kirchoffs love.
+}
+
+\medskip
+\fromSlide{3}{%
+Eksempler på fysiske parametre er
+\begin{itemize}
+\item Mekanik parametre: Masse, friktions koeffic., stivhed
+\item Elektro parametre: Modstand, induktans, kapacitet
+\item Termiske parametre: Termisk modstand, specifik varme
+\item Desuden: Statisk forstærkning, tidskonstant, egen-frekvens og
+  dæmpningsfaktor
+\end{itemize}
+}
+
+\medskip
+\fromSlide{4}{%
+{\red Ikke}-fysiske parametre: {\blue koefficienter i $z$-transformen} af en
+tilstandsbeskrivelse.
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{6}{
+\begin{slide}[Replace]{Simulering}
+
+\vspace*{-4mm}
+Formål:
+\begin{itemstep}
+\item At opnå forståelse af systemet
+\item Forudsigelse af fremtidigt system output
+\item Design og test af kontrolsystem
+\item Optimering af konstruktion
+\item Træning af operatører på real-tids simulatorer
+\item Model parameter estimation fra eksperimenter
+\end{itemstep}
+
+\end{slide}
+}\addtocounter{slide}{-1}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Simulering}
+
+\vspace*{-4mm}
+Formål:
+\begin{itemize}
+\item At opnå forståelse af systemet
+\item Forudsigelse af fremtidigt system output
+\item Design og test af kontrolsystem
+\item Optimering af konstruktion
+\item Træning af operatører på real-tids simulatorer
+\item Model-parameter-estimation fra eksperimenter
+\end{itemize}
+
+\medskip
+En computer simulation forudsætter:
+\begin{itemstep}
+\item En diskrettids-model
+\item Mulighed for at udføre eksperimenter på modellen, fx.
+  specificere inputsignal og parametre
+\item Grafiske værktøjer til at præsentere resultatet
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Matematiske Modeller}
+Modelbeskrivelser:
+\begin{itemize}
+\item Overføringsfunktion
+\item Tilstandsbeskrivelse \fromSlide{3}{\hspace*{4cm}\smash{\includegraphics[height=2cm]{tavle.md}}}
+\item Blok-diagram
+\end{itemize}
+
+\medskip
+\onlySlide*{2}{%
+\raisebox{2cm}{\blue DC-motor:}\quad\includegraphics[width=.75\linewidth]{dc_moter_blokdiagram.md} 
+}
+
+\fromSlide{3}{%
+Notation for modeller i kontinuert- og diskrettid:
+
+\begin{tabular}{@{}ll}
+Kompleks Laplace variabel $\blue s$ \\ 
+Differentialoperator $\blue p$: & $\blue x(t)=\frac{\partial x(t)}{\partial t} = px(t)$ \\
+Kompleks Z-transform variabel $\blue z$ \\
+Shift operator $\blue q$: & $\blue x(k+1) = qx(t)$
+\end{tabular}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Diskretiseringsmetoder}
+
+\hspace*{-2mm}\begin{tabular}{||p{3.0cm}|c|p{2.9cm}||}
+\hline\hline
+Navn & Algoritme\hspace*{\fill} & Karakteristik\\
+\hline
+%\smash{\raisebox{-8pt}[0pt][0pt]{Forward Euler}} 
+Forward Euler& \smash{\raisebox{-8pt}[0pt][0pt]{$\displaystyle\blue s \rightarrow \frac{z-1}{T}$}} & $x'(t)$ konstant\\[-.5ex]
+ & & over perioden\\
+\hline
+Tustin (Bilineær &
+\smash{\raisebox{-8pt}[0pt][0pt]{$\displaystyle \blue
+s \rightarrow
+\frac{2}{T}\frac{z-1}{z+1}$}} & $x'(t)$ variere lin.\\[-.5ex]
+transformation) &  &  over perioden\\
+\hline
+Step invariant & \smash{\raisebox{-8pt}[0pt][0pt]{\footnotesize$\blue
+    G_d(z) = (1 - z^{-1})Z\{\frac{1}{s}G(s)\}$}} & $u(t)$ konstant\\[-.5ex]
+{\footnotesize(ZOH ækvivalent)} & & over perioden\\
+\hline
+Ramp invariant & \smash{\raisebox{-8pt}[0pt][0pt]{\footnotesize$\blue
+    G_d(z) = \frac{(1 - z{^-1})^2}{z^{-1}T}Z\{\frac{1}{s^2}G(s)\}$}} &
+$u(t)$ variere lin.\\[-.5ex]
+{\footnotesize(Tr H ækvivalent)} & & over perioden\\
+\hline
+Pole-Zero & \smash{\raisebox{-8pt}[0pt][0pt]{$\displaystyle\blue z_0 =
+    e^{s_0T}$}} & \\[-.5ex]
+mapping & & \\
+\hline\hline
+\end{tabular}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Invariante transformationer}
+Givet et analogt system $\blue G(p)$. \\Bestem overføringsfunktionen
+$\blue G_d(q)$ for et diskret system (modellen), så outputtene er ens
+til samplingstidspunkterne:\\ $$\blue t=kT \quad \Rightarrow\quad y_d(k) = y(kT)$$
+
+%\bigskip\bigskip\bigskip
+\hspace*{\fill}\includegraphics[width=.85\linewidth]{invarians_transforms.md}\hspace*{\fill}\smash{\raisebox{-7mm}{\makebox[1mm]{\includegraphics[height=2cm]{tavle.md}}}}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Simulering af lineært system i Matlab}
+Senstools behøver en Matlab funktion: \textsf{\blue y =
+  simprocess(u,t,par)}
+
+Eksempel: Lineært system \quad $\displaystyle\blue \frac{Y(s)}{U(s)} = \frac{K}{1+s\tau}$
+\begin{itemstep}
+\item[\red a)] Tistandsmodel og for-løkke
+\onlySlide*{1}{%
+
+\hspace*{-5mm}%
+\begin{minipage}[c]{.48\linewidth}
+Kontinuert tilstandsmodel:
+\blue
+\begin{align*}
+\dot{x}(t) & = -\frac{1}{\tau}x(t) + \frac{K}{\tau}u(t)\\
+y(t) & = x(t)
+\end{align*}
+\end{minipage}\hspace*{5mm}
+\begin{minipage}[c]{.48\linewidth}\tiny
+\texttt{
+\mbox{function y=simktauloop(u,t,par)}\\
+% y=simktauloop(u,t,par) simulates K/(1+s*tau)
+% using ss (xdot=-1/tau*x+k/tau*u, y=x) c2d and a for loop.
+% par=[K tau]
+%
+% 22/10-02,MK
+h=t(2)-t(1);\\
+nn=length(u);\\
+x=0;\\
+K=par(1); tau=par(2);\\
+{\red sysc=ss(-1/tau,K/tau,1,0);\\ 
+sysd=c2d(sysc,h);\\ 
+{}[ad,bd,cd,dd] = ssdata(sysd);}\\
+{\blue for jj=1:nn\\
+x1=ad*x + bd*u(jj);\\
+y(jj)=cd*x1;\\
+x=x1;}\\
+end
+}
+\end{minipage}
+}
+\item[\red b)] 'filter'/'dlsim' funktion
+\onlySlide*{2}{%
+
+\medskip
+\hspace*{-5mm}%
+\begin{minipage}[c]{.48\linewidth}
+Kont. overføringsfunktion:
+{\blue
+$$ \frac{Y(s)}{U(s)} = \frac{K}{s\tau + 1} $$
+
+\texttt{y = filter(nz,dz,u)}}
+
+\medskip
+beregner output baseret\\
+ på diskret overføringsfkt.
+\end{minipage}\hspace*{5mm}
+\begin{minipage}[c]{.48\linewidth}\tiny
+\texttt{
+\mbox{function y=simktaufilt(u,t,par)}\\
+% y=simktauloop(u,t,par) simulates K/(1+s*tau)
+% using ss (xdot=-1/tau*x+k/tau*u, y=x) c2d and a for loop.
+% par=[K tau]
+%
+% 22/10-02,MK
+$\vdots$\\
+{\red sysctf=tf(par(1),[par(2) 1]);\\
+sysdtf=c2d(sysctf,h);\\{}
+[nz,dz]=tfdata(sysdtf,'v');\\
+\hspace*{5mm} \% NB: 'v' for vector format
+\hspace*{5mm} \% - not cell}\\
+{\blue y=filter(nz,dz,u);}\\
+end
+}
+\end{minipage}
+}
+\item[\red c)] 'lsim' fkt.
+\onlySlide*{3}{%
+
+\hspace*{-5mm}%
+\begin{minipage}[c]{.48\linewidth}
+{\blue \texttt{y = lsim(sysc,u,t)}}
+
+\medskip
+beregner output baseret\\
+på kontinuert system-\\ 
+beskrivelse.
+\end{minipage}\hspace*{5mm}
+\begin{minipage}[c]{.48\linewidth}\tiny
+\texttt{%
+\mbox{function y=simktau(u,t,par)}\\
+% y=simktauloop(u,t,par) simulates K/(1+s*tau)
+% using ss (xdot=-1/tau*x+k/tau*u, y=x) c2d and a for loop.
+% par=[K tau]
+%
+% 22/10-02,MK
+$\vdots$\\
+{\red nc=K; dc=[tau 1];\\
+t=[0 t(1:length(t)-1)];\\
+\hspace*{5mm}  \% lsim requires that t\\
+\hspace*{5mm}  \% starts with 0}\\
+{\blue y=lsim(nc,dc,u,t);}\\
+end
+}
+\end{minipage}
+}
+\end{itemstep}
+
+\fromSlide{4}{%
+\bigskip\bigskip
+Evaluering af de tre metoder:
+\begin{tabular}{@{}lp{.8\linewidth}}
+\red a) & er langsom, {\blue\textbf{undgå} løkker i Matlab}, hvor det
+  er muligt. Ofte nødvendige ved ulineære systemer.\\
+\red b) og c) & er sammenlignelige i hastighed.
+\end{tabular}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Simulering af ulineært system i Matlab}
+
+\vspace*{-4mm}
+\hspace*{\fill}\includegraphics[width=.85\linewidth]{simulating_nonlinear_sys.md}\hspace*{\fill}
+
+Mætning: {\tiny\blue\begin{tabular}{r@{\ }c@{\ }ll}
+$e$ & $<$ & $-e_0$: & $u = -u_0$ \\
+$-e_0 \leq$ & $e$ & $\leq e_0$: & $u = ke$ \\
+$e_0$ & $<$ & $e$: & $u = u_0$ 
+\end{tabular}}
+
+\medskip
+\fromSlide{2}{%
+Implementation i Matlab: \quad
+\begin{minipage}[c]{4cm}\tiny\blue
+\texttt{%
+u = ke\\
+if e>e0, u=u0; end\\
+if e<-e0, u=-u0; end
+}
+\end{minipage}
+}
+
+\medskip
+\fromSlide{3}{%
+Brug af logiske operatorer (falsk udtryk har værdi 0) er mere
+effektivt:\quad
+{\blue\scriptsize\texttt{u = k*e-(abs(e)>e0)*k*(e-sign(e)*e0);}}
+
+\medskip
+idet $u_0 = ke_0$ kan skrives som $\blue u_0 = ke-k(e-e_0)$ og $\blue -u_0 = ke-k(e+e_0)$.
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{%
+\begin{slide}[Replace]{Modellering og simulering af højttaler}
+
+\onlySlide*{1}{%
+\vspace*{-2mm}
+\begin{minipage}[c]{.6\linewidth}%
+Betydning af symboler:
+
+\medskip
+\begin{tabular}{@{}ll}
+$u$ & påtrykt spænding \quad [V]\\
+$i$ & strøm i spolen \quad [A]\\
+$x$ & forskydning af spole [m]\\
+$R$ & modstand i spole [$\Omega$]\\
+$Bl$ & kraftfaktor [N/A]\\
+$m$ & bevægelige sys. masse [kg]\\
+$r$ & friktions koefficient [Ns/m]\\
+$k$ & ophængets stivhed [N/m]
+\end{tabular}
+\end{minipage}%
+\begin{minipage}[c]{.37\linewidth}%
+\includegraphics[width=\linewidth]{loudspeaker.ps}%
+\end{minipage}
+\smash{\raisebox{-42mm}{\makebox[2mm]{\includegraphics[height=2cm]{tavle.md}}}}
+}
+\OnlySlide{2}{%
+Steprespons:
+
+\includegraphics[width=.75\linewidth]{testsimsplf.eps}
+\put(-18,165){Strøm}
+\put(-18,140){Forskydning}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{%
+\begin{slide}[Replace]{Ulineær højttalermodel}
+
+\onlySlide*{1}{%
+Positionsafhængig kraftfaktor:
+
+\hspace*{\fill}\includegraphics[width=\linewidth]{loudspeaker_blok_diagram.md}\hspace*{\fill}%
+
+\begin{minipage}[c]{.55\linewidth}
+$$\blue Bl(x) = Bl\: e^{-c_1(x+c_2)^2} $$
+\end{minipage}
+\begin{minipage}[c]{.3\linewidth}
+\includegraphics[width=\linewidth]{displacement_dep_force_factor.md}%
+\end{minipage}
+}
+\OnlySlide{2}{%
+Steprespons:
+
+\includegraphics[width=.75\linewidth]{testsimspnst.eps}
+\put(-18,150){Strøm}
+\put(-18,70){Forskydning}
+}
+
+\end{slide}
+}
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{4}{
+\begin{slide}[Replace]{Simulering af ulineært system i Matlab}
+Senstools behøver en Matlab funktion: \textsf{\blue y =
+  simprocess(u,t,par)}
+
+\begin{itemstep}
+\item[\red a)] Tistandsmodel og for-løkke
+\item[\red b)] 'odexxx' funktion
+\onlySlide*{2}{%
+
+\medskip
+\hspace*{-5mm}%
+\begin{minipage}[c]{.88\linewidth}
+(ikke i note)\\
+Integrerer ulineære ordinære differentialligninger
+
+\hspace*{5mm}%
+\texttt{x = ode45('odefkt',t,x0,options,u)}
+
+\hspace*{5mm}%
+\texttt{\mbox{function dxdt=odefkt(t,x,udok,par)}}
+\end{minipage}
+}
+
+\item[\red c)] 'simulink'
+\onlySlide*{3}{%
+
+\begin{minipage}[c]{.88\linewidth}
+(ikke i note)\\
+En Simulink-model kan kaldes fra en m-fil
+\texttt{sim('mdl-fil')}
+
+\medskip
+Inputs og outputs overføres vha. workspace.
+
+\end{minipage}
+}
+\end{itemstep}
+
+\fromSlide{4}{%
+\bigskip\bigskip
+Evaluering af de tre metoder:
+\begin{itemize}
+\item a) er hurtigst, fordi systemindsigt kan indbygges ved håndkraft.
+\item b) og c) er sammenlignelige i hastighed, da de bruger samme solver.
+\end{itemize}
+}
+
+\end{slide}
+}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Næste Forelæsning}
+
+\bigskip\bigskip
+Næste gang ser vi på:
+
+\begin{itemize}
+\item Senstools
+\item Parameter-estimation med Senstools
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\end{document}
+

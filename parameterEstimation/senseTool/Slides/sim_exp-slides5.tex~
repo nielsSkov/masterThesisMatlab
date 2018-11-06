@@ -1,0 +1,529 @@
+\documentclass[pdf,slideColor]{prosper}
+
+\usepackage[latin1]{inputenc}
+%\usepackage{pstricks,pst-node,pst-text,pst-3d}
+\usepackage{graphicx,theorem}
+\usepackage{amsmath,amsfonts,amssymb}
+\graphicspath{{figurer/}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+\theoremstyle{break}\newtheorem{Saet}{}
+
+% For comparison, the existing overlap macros:
+% \def\llap#1{\hbox to 0pt{\hss#1}}
+% \def\rlap#1{\hbox to 0pt{#1\hss}}
+\def\clap#1{\hbox to 0pt{\hss#1\hss}}
+\def\mathllap{\mathpalette\mathllapinternal}
+\def\mathrlap{\mathpalette\mathrlapinternal}
+\def\mathclap{\mathpalette\mathclapinternal}
+\def\mathllapinternal#1#2{%
+\llap{$\mathsurround=0pt#1{#2}$}}
+\def\mathrlapinternal#1#2{%
+\rlap{$\mathsurround=0pt#1{#2}$}}
+\def\mathclapinternal#1#2{%
+\clap{$\mathsurround=0pt#1{#2}$}}
+
+\title{\bigskip
+Simulering og eksperimentel modelbestemmelse}
+%\subtitle{ \ }
+\author{\href{http://www.control.aau.dk/~vie/}{Henrik Vie
+      Christensen}}
+\institution{%
+Automation \& Control\\
+Aalborg University\\
+Denmark}
+\slideCaption{Sim.exp.model.5}
+
+\email{vie@es.aau.dk}
+
+%\DefaultTransition{Wipe}
+
+\begin{document}
+\maketitle
+
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{%
+\begin{slide}[Replace]{Dagens program}
+
+\bigskip
+\begin{itemstep}
+\item Frekvens-domæne
+\begin{itemize}
+\item Tids-domæne fit i frekvens-domænet
+\item Parameter fit i frekvens-domænet
+\end{itemize}
+\bigskip
+\item Praktiske forhold
+\begin{itemize}
+\item Målinger og offset
+\item DC-motor eksempel
+\end{itemize}
+\bigskip
+\item Resume af kurset
+\end{itemstep}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{5}{
+\begin{slide}[Replace]{Frekvens-domæne}
+
+\untilSlide*{3}{%
+Model fejlen i tids-domænet ({\red støj ignoreret}): 
+$$ \blue \epsilon(k,\theta) = y(k) - y_m(k,\theta) = (G_0(q) -
+G(k,\theta))u(k)$$
+\fromSlide{2}{%
+Diskret Fouriertransformation af endeligt signal:
+\vspace*{-6pt}$$ \blue U_N(\omega) = \frac{1}{\sqrt{N}}\sum_{k=1}^N u(k)e^{-j\omega
+  k}$$
+}%
+\fromSlide{3}{%
+og den inverse DFT:
+\vspace*{-6pt}$$\blue u(k) = \frac{1}{\sqrt{N}}\sum_{l=1}^N
+U_N(\omega_l)e^{j\omega_l k}$$
+\vspace*{-6pt}hvor $\blue \omega_l = \frac{2\pi l}{N}$.
+}}%
+\fromSlide{4}{%
+Parsevals lighed:
+$$\blue \sum_{k=1}^N u^2(k) = \sum_{l=1}^N |U_N(\omega_l)|^2$$
+}%
+\fromSlide{5}{%
+Performancefunktion tids $\rightarrow$ frekvens-domæne
+{\blue\begin{align*}
+P_N(\theta) & = \frac{1}{2N}\sum_{k=1}^N \epsilon^2(k,\theta) 
+= \frac{1}{2N}\sum_{k=1}^N |E_N(\tfrac{2\pi l}{N})|^2 \\
+& = \frac{1}{2N}\sum_{k=1}^N |G_0(\omega_l) - G(\omega_l,\theta)|^2
+|U_N(\omega_l)|^2
+\end{align*}}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{
+\begin{slide}[Replace]{Prefiltre}
+
+Prefiltre er digitale filtre på input og output signalerne
+
+\onlySlide*{1}{%
+Lineært system:\\
+\hspace*{2cm}\includegraphics[width=.7\linewidth]{prefilter_lin.md}
+
+$\blue \epsilon_f(k) = L(q)\epsilon(k)$, dvs. ekstra vægtning $L(q)$.\\[1ex]
+Samlet vægtning: $\blue Q(\omega) = |L(\omega)|^2 |U_N(\omega)|^2$
+}%
+\onlySlide{2}{%
+Ulineær model:\\
+\hspace*{2cm}\includegraphics[width=.7\linewidth]{prefilter_ulin.md}
+
+$\blue \epsilon_f(k) = L(q)\epsilon(k)$, dvs. ekstra vægtning $L(q)$.\\[1ex]
+Samlet vægtning: $\blue Q(\omega) = |L(\omega)|^2 |U_N(\omega)|^2$
+}%
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{2}{
+\begin{slide}[Replace]{Parameter fit i frekvens-domænet}
+
+Model parametrene kan bestemmes i frekvens-domænet, når der er målt
+frekvens respons for systemet.
+
+\bigskip
+Performancefunktion:
+$$\blue P_f(\theta) = \frac{1}{2N} \sum_{k=1}^N |G_{0f}(j\omega_k) -
+G_f(j\omega_k,\theta)|^2$$
+
+\fromSlide{2}{%
+\bigskip
+Igen kan frekvensvægtning opnås ved at vælge forskellig input
+amplitude.
+
+\bigskip
+Reel- og imaginærdel behandles på samme måde som to output i
+tids-domænet.
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+\overlays{3}{
+\begin{slide}[Replace]{Praktiske forhold ved eksperimenter}
+
+\untilSlide*{2}{%
+Måleopstilling for DC-motor:
+
+\hspace*{1cm}\includegraphics[width=.8\linewidth]{motoropstilling.md}
+
+\fromSlide{2}{%
+\bigskip
+{\red Vær omhyggelig med jordinger} (stelforbindelser)!\\[1ex]
+{\red Husk}: at kompensere for $i \cdot R_m$ i $u$.
+}}%
+\fromSlide{3}{%
+Fjern af offset:
+%
+%\medskip
+Lad input starte med et antal nuller, fx. 10
+
+\hspace*{1cm}\includegraphics[width=.8\linewidth]{fjern_offset.md}
+\vspace*{-12pt}{\blue\begin{align*}
+u & = u - \mathrm{mean}(u(1:10))\\
+y & = y - \mathrm{mean}(y(1:10))
+\end{align*}}
+}
+
+\end{slide}
+}
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{DC-motor demo}
+
+\begin{minipage}{.49\linewidth}
+Lineær model:
+
+\includegraphics[width=.95\linewidth]{dc_moter_lin_blokdiagram.md}
+\end{minipage}
+\begin{minipage}{.49\linewidth}
+Ulineær model:
+
+\includegraphics[width=.95\linewidth]{dc_moter_blokdiagram.md}
+\end{minipage}
+
+\bigskip
+\begin{itemize}
+\item Virkelige måledata: \qquad \, {\blue\texttt{no = '8'}}
+\item Først lineær model: \qquad \, {\blue\texttt{process = 'dcml'}}
+\item Dernæst ulineær model: \ {\blue\texttt{process = 'dcmn'}}
+\end{itemize}
+\hspace*{\fill}\smash{\raisebox{-7mm}{\makebox[7mm]{\includegraphics[height=1.2cm]{matlab}}}}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Kursusoversigt}
+
+\bigskip
+Plan for de enkelte minimoduler:
+
+\bigskip
+\begin{itemize}
+\item[1.] Introduktion, metode og procedure for eksperimentel
+modelbestemmelse, Grafisk modeltilpasning, System identifikation
+\item[2.] Modellering, modelbeskrivelse og simulering
+\item[3.] Senstools til parameterestimering
+\item[4.] Parameter nøjagtighed og følsomhed, Design af inputsignaler
+\item[5.] Frekvensdomænet, Praktiske forhold
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Procedure for eksperimentel modellering}
+
+\vspace*{-4mm}
+\begin{itemize}
+\item {\red Bestemmelse af modelstruktur:} Modelstrukturen er
+  bestemt af basal fysisk indsigt og empiriske overvejelser. En
+  ``{\blue simuleringsmodel}'' konstrueres.
+\item {\normalsize\red Eksperiment design:} Specielt vigtigt er et ``{\blue
+    godt}'' {\blue inputsignal}. 
+\item {\normalsize\red Eksperiment:} {\blue Systemet exciteres med inputsignalet} og
+  overensstemmende værdier af input- og outputsignaler samples og
+  gemmes.
+\item {\normalsize\red Parameter estimation:} Simulationsmodellens {\blue parametre
+  justeres} til minimum afvigelse mellem det samplede system output og
+  modellen.
+\item {\normalsize\red Model validering:} Korrektheden af {\blue modelstrukturen} og
+  {\blue nøjagtigheden af parameter estimaterne kontrolleres}.
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Systemidentifikation}
+
+\begin{itemize}
+\item Det fundamentale princip er: \qquad \begin{minipage}[t]{.35\linewidth}\vspace{-12pt}\includegraphics[width=\linewidth]{sys_ident_principle.md}\end{minipage}
+
+\item
+Det konvertere parameter tilpasnings problemet til minimering af Performance funktionen: 
+$$\blue P(\theta) = \frac{1}{2N} \sum_{k=1}^N \varepsilon^2(k,\theta)$$
+\item
+Dette kan gøres med Gauss-Newton metoden.
+
+\item
+Men der kræves en simuleringsmodel.
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Modeller og modellering: koncepter}
+
+\textbf{Definition: }\\
+{\slshape
+\textbf{Model:} en {\blue repræsentation} -- i en brugbar form --
+{\blue af de essentielle dele} af et system.
+}
+
+\medskip
+\textbf{Definition: }\\
+{\slshape
+\textbf{Systemidentifikation:} {\blue Udvikle matematisk model af dynamisk system
+baseret på observerede data} fra systemet:
+\begin{itemize}
+\item Mange måledata er indsamlet som samplede værdier af input og
+  output
+\item En computer anvendes til behandling af data
+\item Model parametre estimeres ved minimering af et fejlkriterie
+\end{itemize}
+}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Matematiske Modeller}
+Model beskrivelser:
+\begin{itemize}
+\item Overføringsfunktion
+\item Tilstandsbeskrivelse
+\item Blok-diagram
+\end{itemize}
+
+\medskip
+\raisebox{2cm}{\blue DC-motor:}\quad\includegraphics[width=.75\linewidth]{dc_moter_blokdiagram.md} 
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Diskritiserings metoder}
+
+\hspace*{-2mm}\begin{tabular}{||p{3.0cm}|c|p{2.9cm}||}
+\hline\hline
+Navn & Algoritme\hspace*{\fill} & Karakteristik\\
+\hline
+%\smash{\raisebox{-8pt}[0pt][0pt]{Forward Euler}} 
+Forward Euler& \smash{\raisebox{-8pt}[0pt][0pt]{$\displaystyle\blue s \rightarrow \frac{z-1}{T}$}} & $x'(t)$ konstant\\[-.5ex]
+ & & over perioden\\
+\hline
+Tustin (Bilineær &
+\smash{\raisebox{-8pt}[0pt][0pt]{$\displaystyle \blue
+s \rightarrow
+\frac{2}{T}\frac{z-1}{z+1}$}} & $x'(t)$ variere lin.\\[-.5ex]
+transformation) &  &  over perioden\\
+\hline
+Step invariant & \smash{\raisebox{-8pt}[0pt][0pt]{\footnotesize$\blue
+    G_d(z) = (1 - z^{-1})Z\{\frac{1}{s}G(s)\}$}} & $u(t)$ konstant\\[-.5ex]
+{\footnotesize(ZOH ækvivalent)} & & over perioden\\
+\hline
+Ramp invariant & \smash{\raisebox{-8pt}[0pt][0pt]{\footnotesize$\blue
+    G_d(z) = \frac{(1 - z{^-1})^2}{z^{-1}T}Z\{\frac{1}{s^2}G(s)\}$}} &
+$u(t)$ variere lin.\\[-.5ex]
+{\footnotesize(Tr H ækvivalent)} & & over perioden\\
+\hline
+Pole-Zero & \smash{\raisebox{-8pt}[0pt][0pt]{$\displaystyle\blue z_0 =
+    e^{s_0T}$}} & \\[-.5ex]
+mapping & & \\
+\hline\hline
+\end{tabular}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{SENSTOOLS til parameter estimation}
+
+\begin{itemize}
+\item {\blue Senstools} er en samling af Matlab programmer, der implementere
+  følsomhedsmetoden for {\blue direkte parameter estimation}, {\blue
+  eksperiment design} og {\blue model validering}.
+\item Programmerne kan fordelagtigt organiseres som en {\blue Matlab Toolbox}.
+\item Alt hvad brugeren behøver at programmere er {\blue simulerings
+  programmet for den specifikke proces}.
+\item Programmerne er organiseret som main programmer (script filer),
+  der kalder under programmer (funktioner) og bruger data (mat filer).
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Procedure for parameter estimation}
+
+For en proces med navn \texttt{xxx}:
+
+\bigskip
+\begin{itemize}
+\item[\red 1.] \textbf{Opret simulerings programmet} som en Matlab
+  funktion: \ \ \texttt{\blue y = simxxx.m}
+\medskip
+\item[\red 2.] \textbf{Gem de målte data} t, u og y: \hspace{\fill}
+\texttt{\blue save measxxx t u y}
+\medskip
+\item[\red 3.] \textbf{Indtast nødvendige program data}, dette kan
+  gøres på tre forskellige måder.
+\medskip
+\item[\red 4.] \textbf{Kør \ \texttt{\blue mainest.m}\ }
+  for parameter estimation.
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Model verifikation}
+
+En nøjagtig model forudsætter:
+\begin{itemize}
+\item God overensstemmelse mellem system og model output beskrevet
+  ved
+\begin{itemize}
+\item {\blue Normed root mean output error}:
+$\displaystyle\blue errn = \sqrt{\frac{\sum_{k=1}^N (y(k) - y_m(k,\theta_N))^2}{\sum_{k=1}^N y^2(k)}}$
+\item Plot af system og model output
+\end{itemize}
+\medskip
+\item Gode parameter følsomhedsmål
+\medskip
+\item Evaluering baseret på fysisk indsigt og fornuft
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Parameter følsomhed}
+
+{\blue Parameter afhængig} bidrag på output fejlen:
+
+$$\blue\epsilon_p(k,\theta) = y_m(k,\theta) - y_m(k,\theta_N) \approx
+\psi^\top(k,\theta_N)(\theta - \theta_N)$$
+
+\bigskip
+{\blue Parameter følsomhed} m.h.t. den $i$'te parameter $\theta_i$:
+$$\blue S_i = \frac{\partial\epsilon_{p,RMSn}}{\partial \theta_{ri}} =
+\sqrt{h_{rnii}} \qquad \Big( = \big\{\tilde{H}_{rn}\big\}_{ii}\Big)$$
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Følsomhedsellipse}
+
+Disse karakteristiske mål er de mest beskrivende, specielt for flere
+end 2 parametre:
+
+\bigskip
+\begin{tabular}{@{}lp{9cm}}
+$\blue S_\text{min}$ & minimum følsomhed, reciprok af
+major half axis -- {\blue så stor som muligt}\\[.6ex]
+$\blue S_{i\text{ min}}$ & minimum følsomhed af
+$\theta_i$ -- {\blue så stor som muligt}\\[.6ex]
+$\blue R = \frac{S_\text{max}}{S_\text{min}}$ &
+  forhold mellem max. og min. følsomhed i 
+
+vilkårlig retning -- {\blue så tæt
+  på 1 som muligt}\\[.6ex]
+$\blue R_i = \frac{S_i}{S_{i\text{ min}}}$ & forhold
+mellem følsomhed af $\theta_i$ alene og min. 
+
+følsomhed af $\theta_i$
+-- {\blue så tæt på 1 som muligt}. 
+
+$R_i >> 1$ indikerer at to eller flere
+parametre er 
+
+korrollerede
+\end{tabular}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Parameter nøjagtighed}
+
+\bigskip\bigskip
+Parameterfejl kan skyldes to ting:
+
+\bigskip
+\begin{itemize}
+\item Stokastisk parameter usikkerhed forårsaget af støj
+\bigskip
+\item Deterministisk fejl forårsaget af fejl i modelstrukturen (undermodellering)
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Input signal design}
+
+\bigskip
+\begin{itemize}
+\item En procedure for design af et optimalt input signal blandt en
+  given klasse af signaler.
+\item For lineære systemer var signalklassen firkant sigaler.
+\item For ulineære systemer var signalklassen firkant-rampe signaler.
+\item Signalet med grundfrekvens og amplitude fordeling der minimerer
+  følsomhedsforholdet $R$ er det optimale signal.
+\bigskip\bigskip
+\item I mange tilfælde er sund fornuft og erfaring tilstrækkeligt til
+  at bestemme et godt input signal.
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Frekvens-domæne betragtninger}
+
+\bigskip
+Et mindste kvadrater fit i tids-domænet er lig med et vægtet mindste
+kvadraters fit af frekvens funktionen. 
+
+\bigskip
+Frekvensvægtningen er  $$\blue Q(\omega) = |U_N(\omega)|^2$$
+
+dvs. bedste fit er i frekvensområdet, hvor effekten i input signalet
+er høj.
+
+\bigskip
+Prefiltre kan anvendes til at ændre frekvensvægtningen.
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\begin{slide}[Replace]{Afsluttende bemærkninger}
+
+\bigskip\bigskip
+\begin{itemize}
+\item Senstools er oplagt at bruge i jeres 6. semester projekt.
+
+\bigskip
+\item Vær opfindsomme mht. målinger, hvis systemet er ustabilt
+(vend opstillingen på hovedet, kør baglæns, \dots)
+
+\bigskip
+\item Der findes andre minimeringsmetoder end Gauss-Newton
+fx. Nelder-Mead simplex algortihm, der ikke anvender gradient
+information explicit.
+\end{itemize}
+
+\end{slide}
+
+%---------------------------------------------------------------------- SLIDE -
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: master
+%%% End: 

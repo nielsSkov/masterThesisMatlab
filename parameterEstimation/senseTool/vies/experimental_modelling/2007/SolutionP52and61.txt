@@ -1,0 +1,84 @@
+SolutionP52and61
+% testprob52. Data for Problem 5.2
+% 24/1-03,mk
+clear
+mk_14_11_29
+whos
+t=(1:length(volt))/50;
+plot(t,volt,t,strom,t,tach)
+pause
+y=tach(:)/0.03;
+u=volt(:);
+save measdcml1 u y t
+process='dcml1'
+par0=[31 1.0];
+mainest
+par0
+dev=(pare(:)-par0(:))./par0(:)*100
+
+Results:
+********
+pare =
+   24.2438
+    1.7306
+errn =
+    2.1456
+par0 =
+    31     1
+dev =
+  -21.7942
+   73.0649
+
+pause
+clear
+mk_14_11_29
+t=(1:length(volt))/50;
+u=volt(:);
+% from plot it is seen that strom is inverted:
+y=[-strom(:)/0.217, tach(:)/0.03]; % y=[i w]
+save measdcml u y t
+process='dcml'
+% par0=[1.2 .03 8.7e-4 5e-5] %Are in progdatadcml:
+
+mainest
+dev=(pare(:)-par0(:))./par0(:)*100
+
+% Problem 6.1
+disp('            ')
+disp('Problem 6.1:')
+disp('************')
+dpar
+sigpar
+[Smin,Simin,R]=sens(Hrn)
+
+Results:
+********
+errn =
+    8.1609
+dev =
+  148.6187
+    0.0241
+   152.6721  
+ 
+   
+Problem 6.1:
+************
+dpar =
+   24.0868
+   19.3111
+   44.1674
+   36.9400
+sigpar =
+    0.7617
+    0.6107
+    1.3967
+    1.1681
+Smin =
+    0.1705
+Simin =
+    0.3388
+    0.4226
+    0.1848
+    0.2209
+R =
+    5.5255
