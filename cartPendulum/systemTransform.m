@@ -14,7 +14,7 @@ syms fa1 fa2 fa3
 syms fb gb
 
 syms x1 x2 x3 x4
-syms M m l
+syms M m l g
 
 syms f1 f2 g1 g2
 
@@ -31,16 +31,16 @@ dTdx = [ T11  T12  T13  T14  ;
 %       f1  ;
 %       f2 ];
 
-g = [ 0   ;
+gg = [ 0   ;
       0   ;
       g1  ;
       g2 ];
 
 %system of equations
-eq1 = dTdx(1,:)*g == 0;
-eq2 = dTdx(2,:)*g == 0;
-eq3 = dTdx(3,:)*g == 0;
-eq4 = dTdx(4,:)*g == gb;
+eq1 = dTdx(1,:)*gg == 0;
+eq2 = dTdx(2,:)*gg == 0;
+eq3 = dTdx(3,:)*gg == 0;
+eq4 = dTdx(4,:)*gg == gb;
 eq5 = T13 == 0;
 eq6 = T14 == 0;
 eq7 = T23 == 0;
@@ -61,24 +61,51 @@ eq8 = T24 == 0;
 
 
 
+%Jacobians of possible transforms
+J_T1 = [ 0               1   0  0          ;
+        -x4*(sin(x1))/l  0  -1  cos(x1)/l  ;
+         1               0   0  0          ;
+         0               0   1  0         ];
+
+J_T2 = [ 1               0   0  0          ;
+        -x4*(sin(x1))/l  0  -1  cos(x1)/l  ;
+         0               1   0  0          ;
+         0               0   0  1         ];
+
+%determinant of the Jacobians
+detJ_T1 = det(J_T1)
+detJ_T2 = det(J_T2)
 
 
+syms b_p_c b_p_v b_c_c b_c_v k_tanh u
 
+MM = [  m*(l^2)      -m*l*cos(x1)  ;
+       -m*l*cos(x1)   M+m         ];
 
+C = [ 0
+      m*l*sin(x1)*x3^2 ];
 
+G = [ -m*g*l*sin(x1)  ;
+       0             ];
 
+F = [ 0  ;
+      u ];
 
+B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
+      b_c_c*tanh(k_tanh*x4) + b_c_v*x4 ];
 
+f_3_4 = MM\(- C - B - G );
 
+f3_x = simplify( f_3_4(1) )
+f4_x = simplify( f_3_4(2) )
 
+syms eta1 eta2 eta3 xi
 
+T_inv = { eta1, eta3, (cos(eta1)/l)*xi - eta2, xi };
 
+f3 = simplify( subs(f3_x, { x1, x2, x3, x4 }, T_inv ) )
 
-
-
-
-
-
+f4 = simplify( subs(f4_x, { x1, x2, x3, x4 }, T_inv ) )
 
 
 
