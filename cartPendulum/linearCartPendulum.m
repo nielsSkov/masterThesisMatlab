@@ -55,7 +55,7 @@ B = subs(B);
 
 %-----controllability------------------------------------------------------
 
-%controllability (check equation)
+%controllability
 C = [ B A*B (A^2)*B (A^3)*B ]
 
 run('initCartPendulum')
@@ -66,7 +66,7 @@ vpa(subs(B),4)
 A = subs(A);
 B = subs(B);
 
-%controllability (check equation)
+%controllability
 C = vpa( [ B A*B (A^2)*B (A^3)*B ], 4 )
 
 rank = rank(C)

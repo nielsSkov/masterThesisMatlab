@@ -9,6 +9,8 @@ syms x1 x2 x3 x4 u
 syms k_tanh b_p_v b_p_c b_c_v b_c_c
 syms m M g l
 
+simulateReduced = 1;
+
 %state vector,
 % [ x1 ]    [  theta      ]
 % [ x2 ]  = [  x          ]
@@ -46,102 +48,47 @@ x_dot = f_x + g_x*u;
 
 %-----on regular form------------------------------------------------------
 
-% T = [ T1
-%       T2
-%       x1
-%       x3 ]
-
-% T_dot = T_dx*x_dot
-
-% T1_dot = T1_dx*g_x = 0   if T1 = x2 
-%                            then T1_dx = [ 0 1 0 0 ] so T1_dx*g_x = 0
-
-% T = [ x2
-%       T2
-%       x1
-%       x3 ]
-
-% T2_dot = T2_dx*g_x = 0   [ T2_dx1 T2_dx2 T2_dx3 T2_dx4 ] [ 0 0 g1 g2 ]^T
-%
-%                          [ 0 0 T2_dx3 T2_dx4 ] [ 0 0 g1 g2 ]^T
-%
-%      [1]                 T2_dx3*g1 + T2_dx4*g2  = 0
-
-g1 = g_x(3);
-g2 = g_x(4);
-
-f1 = f_x(3);
-f2 = f_x(4);
-
-%  g1 = cos(x1)/(l*(M + m - m*cos(x1)^2))
-
-%  g2 = 1/(M + m - m*cos(x1)^2)
-
-% for [1] to hold 
-%                   T2_dx3*g1 = T2_dx4*g2
-% choose
-%         T2_dx3 = -1           and
-%         T2_dx4 = cos(x1)/l
-% s.t.
-%         T2 = -int( 1 , dx3 ) + (cos(x1)/l)*int( 1 , dx4 )
-%
-%         T2 = -x3 + x4*cos(x1)/l
-
-% T = [  x2                       [ eta1
-%       -x3 + x4*cos(x1)/l    =     eta2
-%        x1                         eta3
-%        x3                ]        xi  ]
-
-% eta2 = -x3 + x4*cos(x1)/l   where  x1 = eta3   and   x3 = xi   so
-%
-% eta2 = -xi + x4*cos(eta3)/l
-%
-% x4 = (eta2 + xi )*l/cos(eta3)
-
-% T^-1 = [ x1        [ eta3
-%          x2     =    eta1
-%          x3          xi
-%          x4 ]        (eta2 + xi )*l/cos(eta3) ]
-
-% T_dt = [  x2_dot                                             [ eta1_dot 
-%          -x3_dot - x4*x1_dot*sin(x1)/l + x4_dot*cos(x1)/l  =   eta2_dot 
-%           x1_dot                                               eta3_dot 
-%           x3_dot                                         ]     xi_dot   ]
-
-% [ eta1_dot     [ x4
-%   eta2_dot   =   -(f1+g1) - x4*x3*sin(x1)/l + (f2+g2)*cos(x1)/l
-%   eta3_dot       x3
-%   xi_dot   ]     x3_dot ]
-
-% [ eta1_dot     [  x4
-%   eta2_dot   =   -f1 - x4*x3*sin(x1)/l + f2*cos(x1)/l
-%   eta3_dot        x3
-%   xi_dot   ]      f1+g1                               ]
-
-f_a = [  x4                                   ;
-        -f1 - x4*x3*sin(x1)/l + f2*cos(x1)/l  ;
-         x3                                  ];
-
-f_b = f1 + g1;
-
-g_b = cos(x1)/( l*( M + m - m*(cos(x1)^2) ));
-
-%regular form
-eta_dot = f_a;
-xi_dot  = f_b + g_b*u;
-
-%------regular form with change of cooredinates----------------------------
+%--transform-------------
+%         [ x1                        ]     [ eta1 ]
+% T    =  [ ( cos(x1)/l )*x4 - x3     ]  =  [ eta2 ]
+%         [ x2                        ]     [ eta3 ]
+%         [ x4                        ]     [ xi   ]
+%--inverse---------------
+%         [ eta1                      ]     [ x1   ]
+% T^-1 =  [ eta3                      ]  =  [ x2   ]
+%         [ ( cos(eta1)/l )*xi - eta2 ]     [ x3   ]
+%         [ xi                        ]     [ x4   ]
 
 syms eta1 eta2 eta3 xi
 
-etaXi = { eta3, eta1, xi, (eta2 + xi )*l/cos(eta3) };
+T_inv = { eta1, eta3, (cos(eta1)/l)*xi - eta2, xi };
 
-eta_dot = subs(eta_dot, { x1, x2, x3, x4 }, etaXi );
-eta_dot = simplify(eta_dot);
+f1 = simplify( subs(f_x(1), { x1, x2, x3, x4 }, T_inv ) );
+f2 = simplify( subs(f_x(2), { x1, x2, x3, x4 }, T_inv ) );
+f3 = simplify( subs(f_x(3), { x1, x2, x3, x4 }, T_inv ) );
+f4 = simplify( subs(f_x(4), { x1, x2, x3, x4 }, T_inv ) );
 
-xi_dot  = subs(xi_dot,  { x1, x2, x3, x4 }, etaXi );
+g1 = simplify( subs(g_x(1), { x1, x2, x3, x4 }, T_inv ) );
+g2 = simplify( subs(g_x(2), { x1, x2, x3, x4 }, T_inv ) );
+g3 = simplify( subs(g_x(3), { x1, x2, x3, x4 }, T_inv ) );
+g4 = simplify( subs(g_x(4), { x1, x2, x3, x4 }, T_inv ) );
 
-%-----symbolic linearization-----------------------------------------------
+%--transformed system----
+
+f_a = [ (cos(eta1)/l)*xi - eta2                                            ;
+       -(sin(eta1)/l)*((sin(eta1)/l)*xi - eta2)*xi + (cos(eta1)/l)*f4 - f3 ;
+        xi                                                                ];
+
+f_b = f4;
+
+g_b = g4;
+
+%--regular form----------
+eta_dot = simplify(  f_a          );
+xi_dot  = simplify(  f_b + g_b*u  );
+
+
+%-----reduced-order system linearization-----------------------------------
 
 eta = [ eta1 
         eta2 
@@ -149,27 +96,29 @@ eta = [ eta1
 
 J_eta = jacobian(eta_dot, eta);
 
-A = subs( J_eta, { eta1, eta2, eta3, xi, k_tanh }, { 0, 0, 0, 0, 1 } );
-
-A = simplify(A)
-
 J_xi = jacobian(eta_dot, xi);
 
-B = subs( J_xi, { eta1, eta2, eta3, xi, k_tanh }, { 0, 0, 0, 0, 1 } );
+eta1 = 0;   eta2 = 0;   eta3 = 0;   xi = 0;   k_tanh = 1;                  %#ok<NASGU>
 
-B = simplify(B)
+A = simplify( subs( J_eta ) )                                              %#ok<NOPTS>
 
-% -----designing linear state feedback controller---------------------------
+B = simplify( subs( J_xi ) )                                               %#ok<NOPTS>
+
+%-----designing linear state feedback controller---------------------------
 
 run('initCartPendulum.m')
 
-A = [ 0   l             0    ;
-      0   b_p_c/(l*m)  -g/l  ;
-      0   0             0   ];
+A = double( subs(A) );
+B = double( subs(B) );
 
-B = [ l                          ;
-      (b_p_v + b_p_c*l)/(l^2*m)  ;
-      1                         ];
+% A = [   0    -1              0  ;
+%        -g/l  -b_p_v/(l^2*m)  0  ;
+%         0     0              0 ];
+%  
+%  
+% B = [ 1/l                        ;
+%       (b_p_v + b_p_c*l)/(l^3*m)  ;
+%       1                         ];
 
 C = [ 1 1 1 ];
 
@@ -177,189 +126,122 @@ D = 0;
 
 linSys = ss(A,B,C,D);
 
-%
+%--controllability-------
+Con = vpa( [ B A*B (A^2)*B ], 4 )                                          %#ok<NOPTS>
 
-leg = char({'.......................'});
+rank = rank(Con)                                                           %#ok<NOPTS>
 
-%setting axis limits for single iteration plot
-limx_1 = [0 5];
-limy_1 = [-.5 2];
-%setting axis limits for many iteration plot
-limx_2 = [0 3];
-limy_2 = [-1 4];
-%limits on/off
-lim = 0;
-
-for j = 1:2
-if j == 1
-  %setting nr of iterations ( >1 to tune pole placement     )
-  iter = 1;      %          ( =1 to compare with linear sim )
-elseif j == 2
-  iter = 10;
+if rank == length(B)
+  disp('The system is controllable')
 end
 
-for i = 2:iter+1
-  %control gain
-  if iter > 1
-    poles = [ -i*.7-1; -i*.7-2; -i*.7-3 ];
-    %poles = [ -i*1/3; -i*2/3; -i*3/3 ];
-    k = place(A, B, poles);
-  else
-    %k = place(A, B, [ -6 -7 -8 ])  %most on x pos
-    %k = place(A, B, [ -2.8 -3.5 -4.2 ])
-    k = place(A, B, [ -10 -12 -14 ])
-    %k = place(A, B, [ -3 -7 -8 ])
-    %k = place(A, B, [ -1; -2; -3 ]);
-  end
-   -32.0774 ,  -2.7818 ,  31.8236  
-  
+%-----design of linear controller------------------------------------------
 
-  %-----simulation of reduced state system, eta_dot, using ode45-----------
-  
-  % T = [  x2                      [ eta1    [ x
-  %       -x3 + x4*cos(x1)/l    =    eta2  =  -theta_dot+x_dot*cos(theta)/l
-  %        x1                        eta3      theta
-  %        x3                ]       xi  ]     theta_dot ]
-  
-  %initial conditions for ode45
-  eta1_0 = 0; % =  x
-  eta2_0 = 0; % = -theta_dot+x_dot*cos(theta)/l
-  eta3_0 = .1; % =  theta
+poles = [ -3 -4 -5 ];
 
-  %sample time and final time [s]
-  Ts = .01;
-  T_final = 10;
+k = place(A, B, poles);
 
-  %initialization for ode45
-  tspan = 0:Ts:T_final;
-  init  = [ eta1_0 eta2_0 eta3_0 ];
+%storring for use in design of sliding manifold
+k1_final = k(1);
+k2_final = k(2);
+k3_final = k(3);
 
-  %lowering relative tollerence (default 1e-3) to avoid drifting along x
-  options = odeset('RelTol',1e-7);
+if simulateReduced
+%-----simulation of controlled reduced-order system------------------------
 
-  %simulating system using ode45
-  [t, eta] = ode45( @(t,eta)                              ...
-                    simReducedOrder( t, eta, k, M, m, l,  ...
-                                     g, k_tanh,           ...
-                                     b_p_c, b_p_v,        ...
-                                     b_c_c, b_c_v         ),  ...
-                    tspan, init, options                      );
+maxCatchAngle = deg2rad(5)
 
-  %assigning results of ode45 simulation
-  eta1 = eta(:,1);
-  eta2 = eta(:,2);
-  eta3 = eta(:,3);
+mxCA = maxCatchAngle;
+%initial conditions for ode45
+eta1_0 = mxCA;%  =  x1                  =  theta
+eta2_0 = 0;   %  = (cos(x1)/l)*x4 - x3  = (cos(theta)/l)*x_dot - theta_dot
+eta3_0 = 0;   %  =  x2                  =  x
 
-  %linear system simulation for comparison
-  sys_cl = ss(A-B*k,B,C,D);
+%sample time and final time [s]
+Ts = .01;
+T_final = 5;
 
-  u = zeros(size(tspan));
+%initialization for ode45
+tspan = 0:Ts:T_final;
+init  = [ eta1_0 eta2_0 eta3_0 ];
 
-  [ yy, tt, eta_lin ] = lsim(sys_cl,u,tspan,init);
+%lowering relative tollerence (default 1e-3) to avoid drifting along x
+options = odeset('RelTol',1e-7);
 
-  %linear simulation resolution
-  res = 10; %plotting every n'th data-point (higher number, lower res.)
+%simulating system using ode45
+[t, eta] = ode45( @(t,eta)                              ...
+                  simReducedOrder( t, eta, k, M, m, l,  ...
+                                   g, k_tanh,           ...
+                                   b_p_c, b_p_v,        ...
+                                   b_c_c, b_c_v         ),  ...
+                  tspan, init, options                      );
 
-  eta1_lin = eta_lin(1:res:end,1);
-  eta2_lin = eta_lin(1:res:end,2);
-  eta3_lin = eta_lin(1:res:end,3);
-  tt = tt(1:res:end);
+%assigning results of ode45 simulation
+eta1 = eta(:,1);% =  x1                  =  theta
+eta2 = eta(:,2);% = (cos(x1)/l)*x4 - x3  = (cos(theta)/l)*x_dot - theta_dot
+eta3 = eta(:,3);% =  x2                  =  x
 
-  %marker size for linear simulation
-  markerZ = 10;
-  
-  %generating legends for iterations > 1
-  if iter > 1
-    str=sprintf('[ \\ %.2f \\ \\ %.2f \\ \\ %.2f \\ ]',...
-                   poles(1),  poles(2),  poles(3));
-    leg(i,1:length(str))=str;
-  end
-  
-  if iter == 1
-    reducedOrderControl_h = figure;
-  elseif iter > 1 && i == 2
-    reducedOrderControlMany_h = figure;
-  end
-  
-  %plotting results
-  subplot(3,1,1), plot(t, eta1, 'linewidth', 1.5)
-  hold on
-  xlabel('$t$ [s]')
-  ylabel('$\eta_1$')
-  if iter == 1
-    subplot(3,1,1), plot(tt, eta1_lin, '.', 'markersize', markerZ)
-    legend( 'Controlled nonlinear Model' , 'Controlled Linear Model' )
-    if lim == 1
-      xlim(limx_1)
-      ylim(limy_1)
-    end
-    grid on; grid minor
-  end
-  if i == 11
-    legend( leg(2,:), leg(3,:), leg(4,:), leg(5,:), leg(6,:),  ...
-            leg(7,:), leg(8,:), leg(9,:), leg(10,:), leg(11,:) )
-    if lim == 1
-      xlim(limx_2)
-      ylim(limy_2)
-    end
-    grid on; grid minor
-  end
+%linear system simulation for comparison
+sys_cl = ss(A-B*k,B,C,D);
 
-  subplot(3,1,2), plot(t, eta2, 'linewidth', 1.5)
-  hold on
-  xlabel('$t$ [s]')
-  ylabel('$\eta_2$')
-  if iter == 1
-    subplot(3,1,2), plot(tt, eta2_lin, '.', 'markersize', markerZ)
-    legend( 'Controlled nonlinear Model' , 'Controlled Linear Model' )
-    if lim == 1
-      xlim(limx_1)
-      ylim(limy_1)
-    end
-    grid on; grid minor
-  end
-  if i == 11
-    legend( leg(2,:), leg(3,:), leg(4,:), leg(5,:), leg(6,:),  ...
-            leg(7,:), leg(8,:), leg(9,:), leg(10,:), leg(11,:) )
-    if lim == 1
-      xlim(limx_2)
-      ylim(limy_2)
-    end
-    grid on; grid minor
-  end
+u = zeros(size(tspan));
 
-  subplot(3,1,3), plot(t, eta3, 'linewidth', 1.5)
-  hold on
-  xlabel('$t$ [s]')
-  ylabel('$\eta_3$')
-  if iter == 1
-    subplot(3,1,3), plot(tt, eta3_lin, '.', 'markersize', markerZ)
-    legend( 'Controlled nonlinear Model' , 'Controlled Linear Model' )
-    if lim == 1
-      xlim(limx_1)
-      ylim(limy_1)
-    end
-    grid on; grid minor
-  end
-  if i == 11
-    legend( leg(2,:), leg(3,:), leg(4,:), leg(5,:), leg(6,:),  ...
-            leg(7,:), leg(8,:), leg(9,:), leg(10,:), leg(11,:) )
-    if lim == 1
-      xlim(limx_2)
-      ylim(limy_2)
-    end
-    grid on; grid minor
-  end
-  
+[ yy, tt, eta_lin ] = lsim(sys_cl,u,tspan,init);
+
+%linear simulation resolution
+res = 5; %plotting every n'th data-point (higher number, lower res.)
+
+eta1_lin = eta_lin(1:res:end,1);
+eta2_lin = eta_lin(1:res:end,2);
+eta3_lin = eta_lin(1:res:end,3);
+tt       = tt(1:res:end);
+
+%marker size for linear simulation
+markerZ = 8;
+
+%plotting results
+eta1_h = figure;
+axEta1 = gca;
+plot(t, eta1, 'linewidth', 1.5);
+hold on
+xlabel('$t$ [s]')
+ylabel('$\eta_1=\theta$ [rad]')
+plot(tt, eta1_lin, '.', 'markersize', markerZ)
+legend( 'Controlled nonlinear Model' , 'Controlled Linear Model' )
+grid on; grid minor
+
+eta2_h = figure;
+axEta2 = gca;
+plot(t, eta2, 'linewidth', 1.5);
+hold on
+xlabel('$t$ [s]')
+ylabel('$\eta_2$')
+plot(tt, eta2_lin, '.', 'markersize', markerZ)
+legend( 'Controlled nonlinear Model' , 'Controlled Linear Model' )
+grid on; grid minor
+
+eta3_h = figure;
+axEta3 = gca;
+plot(t, eta3, 'linewidth', 1.5);
+hold on
+xlabel('$t$ [s]')
+ylabel('$\eta_3=x$ [m]')
+plot(tt, eta3_lin, '.', 'markersize', markerZ)
+legend( 'Nonlinear Model Controlled' , 'Linear Model Controlled' )
+grid on; grid minor
+
+
+axesEta123 = [ axEta1 axEta2 axEta3 ];
+linkaxes(axesEta123, 'xy')
+
 end
-end
+%-----design of sliding manifold-------------------------------------------
 
-
-
-%%
 syms x1 x2 x3 x4
 syms k1 k2 k3 u
 syms eta1 eta2 eta3 xi
+syms k_tanh b_p_v b_p_c b_c_v b_c_c
+syms m M g l
 
 k = [ k1 k2 k3 ];
       
@@ -371,59 +253,48 @@ phi = -k*eta;
 
 s = xi - phi;
 
-s = subs( s, { eta1, eta2, eta3, xi }, { x2, -x3 + x4*cos(x1)/l, x1, x3 } )
+%converting to regular states using T^-1
+eta1 = x1;    eta2 = (cos(x1)/l)*x4 - x3;    eta3 = x2;    xi = x4;
 
+s = subs( s )                                                              %#ok<NOPTS>
 
-%changing to states (x1,...,x4) as cooredinates
-eta_dot = f_a;
-xi_dot = f_b + g_b*u;
+fx_a = simplify( subs( f_a ) );
+fx_b = simplify( subs( f_b ) );
+gx_b = simplify( subs( g_b ) );
 
-% s_dot = xi_dot + k*eta_dot;
+%symbolic control parameters
+rho     = k*fx_a + fx_b
 
-%rho including g_b in bound
-%rho = (k*f_a + f_b)/g_b;
-
-%rho not including g_b in bound
-rho = k*f_a + f_b
-
-g_b_inv = 1/g_b
-
-%%
+g_b_inv = 1/gx_b
 
 run('initCartPendulum.m')
 
-x1 = 0.1745; % 10 deg
+%setting bounds (notice that position and velocity of cart is irrelevant)
+x1 = maxCatchAngle;
 x2 = 0;
-x3 = pi;
+x3 = 2*pi;
 x4 = 0;
 
-k_s = [ -4.1914 -1.2197 12.0157 ];
-k1  = k_s(1);
-k2  = k_s(2);
-k3  = k_s(3);
+%rho only dependent on gain vector k
+rho_k = vpa( subs(rho) ,4)
 
-%updating omega(x) with numerical values
-rho = subs(rho);
-s = subs(s);
+k1 = k1_final;
+k2 = k2_final;
+k3 = k3_final;
 
-rho = vpa(simplify(rho),2);
-s = vpa(simplify(s),2);
+k = [ k1 k2 k3 ]
 
+%calculating rho for currently selected gain vector k
+rho = vpa( subs(rho) ,6)
 
-
+%slope of saturation function
 epsilon = 0.03
 
+%tuning parameter
 beta_0 = .1
 
-%beta = rho + beta_0
-
-%x_max
+beta = vpa( rho + beta_0 ,6)
 
 % sgn(s) ~ sat = min( 1, max(-1, (1/epsilon)*s))
 
-% u = - (g_b^(-1))*beta0*sign(s)
-
-% s = vpa(s,2)
-
-%phi = -k*eta;
-%s = xi + phi;
+% u = - g_b_inv*beta*sign(s)

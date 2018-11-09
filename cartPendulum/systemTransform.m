@@ -96,8 +96,8 @@ B = [ b_p_c*tanh(k_tanh*x3) + b_p_v*x3  ;
 
 f_3_4 = MM\(- C - B - G );
 
-f3_x = simplify( f_3_4(1) )
-f4_x = simplify( f_3_4(2) )
+f3_x = simplify( f_3_4(1) );
+f4_x = simplify( f_3_4(2) );
 
 syms eta1 eta2 eta3 xi
 

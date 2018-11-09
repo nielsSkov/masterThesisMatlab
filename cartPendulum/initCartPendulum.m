@@ -14,9 +14,3 @@ b_p_v = .4e-3;             % pendulum viscous friction   [N m s]
 k_tanh = 250;
 
 k_tau = 93.4e-3;           % motor torque constant       [N m A^-1]
-
-% K = [      ]; % poles in [   ]
-% 
-% k1 = K(1);
-% k2 = K(2);
-% k3 = K(3);
