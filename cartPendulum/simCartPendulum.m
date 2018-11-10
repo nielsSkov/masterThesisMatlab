@@ -25,7 +25,7 @@ function [ q_dot,         ...
   x4 = x_dot;
   
   %maximum catch angle
-  catchAngle = 0.7;
+  catchAngle = 0.1;
   x_old = 0;
   
   if slm && ( ( abs(x1) < catchAngle ) || ( abs(x1) > 2*pi-catchAngle ) )  %<-- catch controller
@@ -33,23 +33,23 @@ function [ q_dot,         ...
       x_old = x1;
       x1 = x1-2*pi;
     end
-    k_s     = [ -4.1914 -1.2197 12.0157 ];
+    k_s     = [ 4.5824   -0.8341   -1.9766 ];
     k1      = k_s(1);
     k2      = k_s(2);
     k3      = k_s(3);
     
-    g_b_inv = (l*(M + m - m*cos(x1)^2))/cos(x1);
+    g_b_inv = M + m - m*cos(x1)^2;
     
-    rho     = 20;
+    rho     = 4.5;
     beta0   = 0.1;
     beta    = rho + beta0;
     
-    s       = x3 + k1*x2 + k3*x1 - k2*(x3 - 3.0912*x4*cos(x1));
+    s       = x4 - k2*(x3 - (x4*cos(x1))/l) + k1*x1 + k3*x2;
     
     epsilon = 0.03;
-    sgnS    = min( 1, max(-1, (1/epsilon)*s));
+    satS    = min( 1, max(-1, (1/epsilon)*s));
     
-    u       = - g_b_inv*beta*sgnS;
+    u       = - satS*beta*g_b_inv;
     
     if abs(x_old) > 2*pi-catchAngle
       x1 = x_old;
@@ -157,7 +157,7 @@ function [ q_dot,         ...
   end
   
   if iaLim
-    i_peak = 5;
+    i_peak = 7;
     if abs(u*r/k_tau) > i_peak && noLim == 0
       i_a = sign(u)*i_peak;
     else

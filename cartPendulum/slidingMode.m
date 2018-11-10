@@ -4,12 +4,11 @@ clear all; close all; clc                                                  %#ok<
 cd ~/syncDrive/uni/thesis/matlab/cartPendulum
 
 run('latexDefaults.m')
+set(0,'defaultAxesFontSize',14)
 
 syms x1 x2 x3 x4 u
 syms k_tanh b_p_v b_p_c b_c_v b_c_c
 syms m M g l
-
-simulateReduced = 1;
 
 %state vector,
 % [ x1 ]    [  theta      ]
@@ -129,9 +128,9 @@ linSys = ss(A,B,C,D);
 %--controllability-------
 Con = vpa( [ B A*B (A^2)*B ], 4 )                                          %#ok<NOPTS>
 
-rank = rank(Con)                                                           %#ok<NOPTS>
+rankC = rank(Con)                                                          %#ok<NOPTS>
 
-if rank == length(B)
+if rankC == length(B)
   disp('The system is controllable')
 end
 
@@ -146,10 +145,9 @@ k1_final = k(1);
 k2_final = k(2);
 k3_final = k(3);
 
-if simulateReduced
 %-----simulation of controlled reduced-order system------------------------
 
-maxCatchAngle = deg2rad(5)
+maxCatchAngle = deg2rad(10)
 
 mxCA = maxCatchAngle;
 %initial conditions for ode45
@@ -176,6 +174,18 @@ options = odeset('RelTol',1e-7);
                                    b_c_c, b_c_v         ),  ...
                   tspan, init, options                      );
 
+%initialize control vector for storing results of following loop
+xi = zeros(size(t));
+
+%calculating/simulating input xi = phi(eta) = k eta
+for i = 1:length(t)
+  
+  [ ~, xi(i) ] = simReducedOrder( t(i), eta(i,:)', k, M, m, l, ...
+                                  g, k_tanh,                  ...
+                                  b_p_c, b_p_v,               ...
+                                  b_c_c, b_c_v                );
+end
+
 %assigning results of ode45 simulation
 eta1 = eta(:,1);% =  x1                  =  theta
 eta2 = eta(:,2);% = (cos(x1)/l)*x4 - x3  = (cos(theta)/l)*x_dot - theta_dot
@@ -189,11 +199,13 @@ u = zeros(size(tspan));
 [ yy, tt, eta_lin ] = lsim(sys_cl,u,tspan,init);
 
 %linear simulation resolution
-res = 5; %plotting every n'th data-point (higher number, lower res.)
+res = 1; %plotting every n'th data-point (higher number, lower res.)
 
 eta1_lin = eta_lin(1:res:end,1);
 eta2_lin = eta_lin(1:res:end,2);
 eta3_lin = eta_lin(1:res:end,3);
+xi_lin   = (-k*eta_lin')';
+xi_lin   = xi_lin(1:res:end);
 tt       = tt(1:res:end);
 
 %marker size for linear simulation
@@ -206,8 +218,10 @@ plot(t, eta1, 'linewidth', 1.5);
 hold on
 xlabel('$t$ [s]')
 ylabel('$\eta_1=\theta$ [rad]')
-plot(tt, eta1_lin, '.', 'markersize', markerZ)
-legend( 'Controlled nonlinear Model' , 'Controlled Linear Model' )
+plot(tt, eta1_lin, 'linewidth', 1.5);%, '.', 'markersize', markerZ)
+legend( 'Controlled nonlinear Model',  ...
+        'Controlled Linear Model',     ...
+        'location', 'southeast'           )
 grid on; grid minor
 
 eta2_h = figure;
@@ -216,8 +230,10 @@ plot(t, eta2, 'linewidth', 1.5);
 hold on
 xlabel('$t$ [s]')
 ylabel('$\eta_2$')
-plot(tt, eta2_lin, '.', 'markersize', markerZ)
-legend( 'Controlled nonlinear Model' , 'Controlled Linear Model' )
+plot(tt, eta2_lin, 'linewidth', 1.5);%, '.', 'markersize', markerZ)
+legend( 'Controlled nonlinear Model',  ...
+        'Controlled Linear Model',     ...
+        'location', 'southeast'           )
 grid on; grid minor
 
 eta3_h = figure;
@@ -226,15 +242,28 @@ plot(t, eta3, 'linewidth', 1.5);
 hold on
 xlabel('$t$ [s]')
 ylabel('$\eta_3=x$ [m]')
-plot(tt, eta3_lin, '.', 'markersize', markerZ)
-legend( 'Nonlinear Model Controlled' , 'Linear Model Controlled' )
+plot(tt, eta3_lin, 'linewidth', 1.5);%, '.', 'markersize', markerZ)
+legend( 'Nonlinear Model Controlled',  ...
+        'Linear Model Controlled',     ...
+        'location', 'southeast'           )
+grid on; grid minor
+
+xi_h = figure;
+axXi = gca;
+plot(t, xi, 'linewidth', 1.5);
+hold on
+xlabel('$t$ [s]')
+ylabel('$\phi(\mathbf{\eta}) = \xi = \dot{x}$ [m $\cdot$ s$^{-1}$]')
+plot(tt, xi_lin, 'linewidth', 1.5);%, '.', 'markersize', markerZ)
+legend( 'Nonlinear Simulation', ...
+        'Liner Simulation',     ...
+        'location', 'southeast'    )
 grid on; grid minor
 
 
 axesEta123 = [ axEta1 axEta2 axEta3 ];
 linkaxes(axesEta123, 'xy')
 
-end
 %-----design of sliding manifold-------------------------------------------
 
 syms x1 x2 x3 x4
@@ -272,29 +301,69 @@ run('initCartPendulum.m')
 %setting bounds (notice that position and velocity of cart is irrelevant)
 x1 = maxCatchAngle;
 x2 = 0;
-x3 = 2*pi;
+x3 = 0;  %assuming zero velocity at max catch angle
 x4 = 0;
 
 %rho only dependent on gain vector k
-rho_k = vpa( subs(rho) ,4)
+rho_k = vpa( subs(rho) ,4)                                                 %#ok<NOPTS>
 
 k1 = k1_final;
 k2 = k2_final;
 k3 = k3_final;
 
-k = [ k1 k2 k3 ]
+k = [ k1 k2 k3 ]                                                           %#ok<NOPTS>
 
 %calculating rho for currently selected gain vector k
-rho = vpa( subs(rho) ,6)
+rho = abs( vpa( subs(rho) ,6) )                                            %#ok<NOPTS>
 
 %slope of saturation function
-epsilon = 0.03
+epsilon = 0.03                                                             %#ok<NOPTS>
 
 %tuning parameter
-beta_0 = .1
+beta_0 = .1                                                                %#ok<NOPTS>
 
-beta = vpa( rho + beta_0 ,6)
+beta = vpa( rho + beta_0 ,6)                                               %#ok<NOPTS>
 
 % sgn(s) ~ sat = min( 1, max(-1, (1/epsilon)*s))
 
-% u = - g_b_inv*beta*sign(s)
+% u = - sat(s)*beta*g_b_inv
+
+g_b_inv = subs(g_b_inv);
+
+u_max = vpa( beta*g_b_inv  , 3)                                            %#ok<NOPTS>
+
+i_max = vpa( u_max*r/k_tau , 3)                                            %#ok<NOPTS>
+
+
+
+%% ----------SAVE PLOTS----------------------------------------------------
+
+%remember to float the windows before saving (for consistent scale)
+if 0
+  figurePath1 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/original/';              %#ok<UNRCH>
+  figurePath2 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/';
+  fileTypeOrig = "fig";
+  
+  for jj = 1:1:4
+    switch jj
+    case 1
+        figHandle=eta1_h;
+        fileName='eta1';
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 2
+        figHandle=eta2_h;
+        fileName='eta2';
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 3
+        figHandle=eta3_h;
+        fileName='eta3';
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 4
+        figHandle=xi_h;
+        fileName='xi';
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    end
+  end
+end
