@@ -1,50 +1,89 @@
-close all
-clear all
-clc
+clear all; close all; clc                                                  %#ok<CLALL>
 
-%add path to twin pendulum simulation
+
+%add path to pendulum simulation and relevant data
+addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/senseTool')
 addpath('~/syncDrive/uni/thesis/matlab/cartPendulum')
+addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/cartTest')
 
 %% ------------ READING DATA FROM FILE AND SETTING PARAMETERS -------------
 
-data1 = csvread('cartTest.csv');
+%data = csvread('testOffPointOne.csv');
+%data = csvread('testOffPointTwo.csv');
+data = csvread('testOffPointThree.csv');
+
+%data = csvread('testOffPointFour.csv');
+%data = csvread('testOffPointFive.csv');
+%data = csvread('testOffPointSix.csv');
+
+data123 = 1;
 
 %NOTE: All data should contained in colloum vectors
 
-%skip (f.eks. 3) lines in data1
-start = 3;
+%-----initial guesses---------
+
+%for test pointOne to pointThree
+if data123 == 1
+  b_c_c   = 3.5;
+  b_c_v   = 5;
+  bcc_sub = 1.5;
+  bcv_sub =0;
+
+  M       = 6;
+  
+  %for cropping test data
+  dataStart = 1198;
+  dataEnd   = 2669;
+else
+  %for test pointFour to pointSix
+  b_c_c   = 3.5;
+  b_c_v   = 5;
+  bcc_sub = .15;
+  bcv_sub =0;
+  
+  M       = 6;
+  
+  %for cropping test data
+  dataStart = 1228;
+  dataEnd   = 2669;
+end
+%to find where to crop:
+% plot(data(:,3))
 
 %time vector
-t = data1(start:end,1);
+t = data(dataStart:dataEnd,1);
 
 %setting input to zero
-u = zeros(size(t));
+u = data(dataStart:dataEnd,2);
 
 %output vector
-y = data1(start:end,2);
+y = data(dataStart:dataEnd,3);      %position of cart
+
+%velocity
+y_dot = data(dataStart:dataEnd,4);  %velocity of cart
 
 %input
 uin = [ t u ];
 
-%initial guess
-b_c_c = (3.021 + 2.746)/2;
-b_c_v = (1.937 + 1.422)/2;
-M     = 5.273+1.103;        %<--the 1.103 kg is the added motor
+par0 = [ b_c_c b_c_v M ]% bcc_sub bcv_sub];  %<--manually set model parameters for simulation
 
-par = [ b_c_c b_c_v M ];  %<--manually set model parameters for simulation
+%initial value from start of data
+x_0     = y(1);
+x_dot_0 = y_dot(1);
 
 %% -------- USING simTestName FUNCTION TO SIMULATE THE SYSTEM -------------
 
 %simulation of initial parameters
-Ynew = sim_cartPendulum( u, t, par );
+Ynew = sim_cartPendulum( u, t, par0 );
 
 %-------------------------- PLOTTING RESULTS ------------------------------
 
 %figure;
 
 %plot( t, u,    'linewidth',1.4, 'color','[ 1  0 0 ]' ), hold on;
-%plot( t, y,    'linewidth',1.4, 'color','[ 0 .5 0 ]' )
-%plot( t, Ynew, 'linewidth',1.4, 'color','[ 0  0 1 ]' ), hold off;
+% plot( t, y,    'linewidth',1.4, 'color','[ 0 .5 0 ]' )
+% hold on
+% plot( t, Ynew, 'linewidth',1.4, 'color','[ 0  0 1 ]' ), hold off;
 
 %legend('Input', 'Measurement', 'Simulation', 'location','southeast')
 
@@ -60,10 +99,12 @@ Ynew = sim_cartPendulum( u, t, par );
 u = u(:);
 y = y(:);
 
+process='_cartPendulum';
+
 save meas_cartPendulum t u y %creating meas'TestName'
 
 figure;
-run senseTool/mainest.m
+run mainest.m
 
 
 

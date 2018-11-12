@@ -108,7 +108,7 @@ function [ q_dot,         ...
     xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
   
   elseif con == -1
-    u = interp1(tvec,u,t);
+    u = interp1(tvec,u,t)
   end
   
   if con > 0 && energyCon == 1
