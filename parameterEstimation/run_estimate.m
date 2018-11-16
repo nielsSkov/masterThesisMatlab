@@ -4,13 +4,23 @@ clear all; close all; clc                                                  %#ok<
 %add path to pendulum simulation and relevant data
 addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/senseTool')
 addpath('~/syncDrive/uni/thesis/matlab/cartPendulum')
-addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/cartTest')
+addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest1')
+addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest2')
 
 %% ------------ READING DATA FROM FILE AND SETTING PARAMETERS -------------
 
+clear all; close all; clc
+%                                   first       last
+%                                   row  col    row   col
+data = csvread( '0m06.csv', 0, 0); %[ 1    0      0  4   ] );
+plot(data(:,1),data(:,3))
+
+
+%%
+
 %data = csvread('testOffPointOne.csv');
 %data = csvread('testOffPointTwo.csv');
-data = csvread('testOffPointThree.csv');
+%data = csvread('testOffPointThree.csv');
 
 %data = csvread('testOffPointFour.csv');
 %data = csvread('testOffPointFive.csv');
@@ -22,8 +32,6 @@ data123 = 1;
 
 %-----initial guesses---------
 
-%for test pointOne to pointThree
-if data123 == 1
   b_c_c   = 3.5;
   b_c_v   = 5;
   bcc_sub = 1.5;
@@ -32,26 +40,40 @@ if data123 == 1
   M       = 6;
   
   %for cropping test data
-  dataStart = 1198;
-  dataEnd   = 2669;
-else
-  %for test pointFour to pointSix
-  b_c_c   = 3.5;
-  b_c_v   = 5;
-  bcc_sub = .15;
-  bcv_sub =0;
-  
-  M       = 6;
-  
-  %for cropping test data
-  dataStart = 1228;
-  dataEnd   = 2669;
-end
+  dataStart = 1;
+  dataEnd   = length(data);%2669;
+
+
+%for test pointOne to pointThree
+% if data123 == 1
+%   b_c_c   = 3.5;
+%   b_c_v   = 5;
+%   bcc_sub = 1.5;
+%   bcv_sub =0;
+% 
+%   M       = 6;
+%   
+%   %for cropping test data
+%   dataStart = 1198;
+%   dataEnd   = 2669;
+% else
+%   %for test pointFour to pointSix
+%   b_c_c   = 3.5;
+%   b_c_v   = 5;
+%   bcc_sub = .15;
+%   bcv_sub =0;
+%   
+%   M       = 6;
+%   
+%   %for cropping test data
+%   dataStart = 1228;
+%   dataEnd   = 2669;
+% end
 %to find where to crop:
 % plot(data(:,3))
 
 %time vector
-t = data(dataStart:dataEnd,1);
+t = ( data(dataStart:dataEnd,1)-data(dataStart,1) )/1000000;
 
 %setting input to zero
 u = data(dataStart:dataEnd,2);

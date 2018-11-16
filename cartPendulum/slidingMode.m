@@ -136,7 +136,7 @@ end
 
 %-----design of linear controller------------------------------------------
 
-poles = [ -3 -4 -5 ];
+poles = [ -4 -6 -7 ];
 
 k = place(A, B, poles);
 
@@ -314,7 +314,7 @@ k3 = k3_final;
 k = [ k1 k2 k3 ]                                                           %#ok<NOPTS>
 
 %calculating rho for currently selected gain vector k
-rho = abs( vpa( subs(rho) ,6) )                                            %#ok<NOPTS>
+rho = vpa( abs( subs(rho) ) ,4)                                            %#ok<NOPTS>
 
 %slope of saturation function
 epsilon = 0.03                                                             %#ok<NOPTS>
