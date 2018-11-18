@@ -10,15 +10,12 @@ run('initCartPendulum.m')
 % b_p_c = par(1);
 % b_p_v = par(2);
 
-b_c_c = par(1);
-b_c_v = par(2);
-%bcc_sub = par(3);
-%bcv_sub = par(4);
-M     = par(3);
-%M     = 6.3760;
-bcc_sub = evalin('base', 'bcc_sub');
-bcv_sub = evalin('base', 'bcv_sub');
-%M       = evalin('base', 'M');
+b_c_c_p = par(1);
+b_c_c_m = par(2);
+b_c_v = par(3);
+%M     = par(4);
+%b_c_c_m = evalin('base', 'b_c_c_m');
+M       = evalin('base', 'M');
 
 %setting pendulum and length to be without mass for cart estimations
 m = 0;
@@ -40,7 +37,7 @@ options = odeset('RelTol',1e-7);
 %run ode45 simulation
 [~, q] = ode45( @(tODE,q) simCart( tODE, q, u, tvec, m, M, l, g,     ...
                                    k_tanh, r, k_tau, b_p_c, b_p_v,   ...
-                                   b_c_c, b_c_v, bcc_sub, bcv_sub    ), ...
+                                   b_c_c_p, b_c_c_m, b_c_v        ), ...
                       tspan, init, options                              );
 
 %assigning results of ode45 simulation

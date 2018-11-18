@@ -1,5 +1,6 @@
 clear all; close all; clc                                                  %#ok<CLALL>
 
+cd ~/syncDrive/uni/thesis/matlab/parameterEstimation;
 
 %add path to pendulum simulation and relevant data
 addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/senseTool')
@@ -9,71 +10,53 @@ addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest2')
 
 %% ------------ READING DATA FROM FILE AND SETTING PARAMETERS -------------
 
-clear all; close all; clc
-%                                   first       last
-%                                   row  col    row   col
-data = csvread( '0m06.csv', 0, 0); %[ 1    0      0  4   ] );
-plot(data(:,1),data(:,3))
+%initializing vectors for storring results
+b_ccp_vec = zeros(68,1);
+b_ccm_vec = zeros(68,1);
+b_cv_vec  = zeros(68,1);
+M_vec     = zeros(68,1);
+errn_vec  = zeros(68,1);
 
+%-----initial guesses for first run---------
+% b_c_c_p = 1.52;
+% b_c_c_m = 5.18;
+% b_c_v   = 9;
+% M       = 5.8;
 
-%%
+b_c_c_p =  2.07;
+b_c_c_m =  5.6;
+b_c_v   = 10.62;
 
-%data = csvread('testOffPointOne.csv');
-%data = csvread('testOffPointTwo.csv');
-%data = csvread('testOffPointThree.csv');
+M       =  6.28;
 
-%data = csvread('testOffPointFour.csv');
-%data = csvread('testOffPointFive.csv');
-%data = csvread('testOffPointSix.csv');
+for i = 5:72
 
-data123 = 1;
+%-----initial guesses is set to result of last estimate---------
+if i > 5
+  %only update guess if last fit was promissing
+  if errn < 7
+    b_c_c_p = pare(1);
+    b_c_c_m = pare(2);
+    b_c_v   = pare(3);
+  end
+end
 
-%NOTE: All data should contained in colloum vectors
+%this: %02i means two digit integer with leading zeros
+dataFile = sprintf('0m%02i.csv', i);
 
-%-----initial guesses---------
+data = csvread( dataFile, 0, 0);
 
-  b_c_c   = 3.5;
-  b_c_v   = 5;
-  bcc_sub = 1.5;
-  bcv_sub =0;
+%for cropping test data
+dataStart = 1760;
+dataEnd   = length(data)-190;
 
-  M       = 6;
-  
-  %for cropping test data
-  dataStart = 1;
-  dataEnd   = length(data);%2669;
-
-
-%for test pointOne to pointThree
-% if data123 == 1
-%   b_c_c   = 3.5;
-%   b_c_v   = 5;
-%   bcc_sub = 1.5;
-%   bcv_sub =0;
-% 
-%   M       = 6;
-%   
-%   %for cropping test data
-%   dataStart = 1198;
-%   dataEnd   = 2669;
-% else
-%   %for test pointFour to pointSix
-%   b_c_c   = 3.5;
-%   b_c_v   = 5;
-%   bcc_sub = .15;
-%   bcv_sub =0;
-%   
-%   M       = 6;
-%   
-%   %for cropping test data
-%   dataStart = 1228;
-%   dataEnd   = 2669;
-% end
-%to find where to crop:
-% plot(data(:,3))
+%choose initial condition in data at high velocity (ca 0.2 m s^-1)
+while data(dataStart,4) < 0.2
+  dataStart = dataStart+1;
+end
 
 %time vector
-t = ( data(dataStart:dataEnd,1)-data(dataStart,1) )/1000000;
+t = ( data(dataStart:dataEnd,1)-data(dataStart,1) );
 
 %setting input to zero
 u = data(dataStart:dataEnd,2);
@@ -82,38 +65,24 @@ u = data(dataStart:dataEnd,2);
 y = data(dataStart:dataEnd,3);      %position of cart
 
 %velocity
-y_dot = data(dataStart:dataEnd,4);  %velocity of cart
+y_dot = data(dataStart:dataEnd,4);  %velocity of cart (not used)
 
 %input
 uin = [ t u ];
 
-par0 = [ b_c_c b_c_v M ]% bcc_sub bcv_sub];  %<--manually set model parameters for simulation
+par0 = [ b_c_c_p b_c_c_m b_c_v ];%M ]  %set initial parameters for simulation
 
 %initial value from start of data
 x_0     = y(1);
 x_dot_0 = y_dot(1);
 
-%% -------- USING simTestName FUNCTION TO SIMULATE THE SYSTEM -------------
+%%-------- USING simTestName FUNCTION TO SIMULATE THE SYSTEM -------------
 
 %simulation of initial parameters
 Ynew = sim_cartPendulum( u, t, par0 );
 
-%-------------------------- PLOTTING RESULTS ------------------------------
+%close all; plot(t,y); hold on; plot(t,Ynew)
 
-%figure;
-
-%plot( t, u,    'linewidth',1.4, 'color','[ 1  0 0 ]' ), hold on;
-% plot( t, y,    'linewidth',1.4, 'color','[ 0 .5 0 ]' )
-% hold on
-% plot( t, Ynew, 'linewidth',1.4, 'color','[ 0  0 1 ]' ), hold off;
-
-%legend('Input', 'Measurement', 'Simulation', 'location','southeast')
-
-%grid on, grid minor;
-%set(gca, 'GridLineStyle',':', 'GridColor','k', 'GridAlpha',.6)
-
-%s = tf('s');
-%H = k/(tau*s+1)
 
 %% ------------- USING sensetool FOR PARAMETER ESTIMATION -----------------
 
@@ -125,9 +94,22 @@ process='_cartPendulum';
 
 save meas_cartPendulum t u y %creating meas'TestName'
 
+close all
 figure;
 run mainest.m
 
+%storring result for each iteration
+b_ccp_vec(i-4) = pare(1);
+b_ccm_vec(i-4) = pare(2);
+b_cv_vec(i-4)  = pare(3);
+%M_vec(i-4)     = pare(4);
+errn_vec(i-4)  = errn;
+
+%print progress
+printItr = sprintf('Iteration %i done, %i to go',i-4, 72-i);
+disp(printItr)
+
+end
 
 
 
