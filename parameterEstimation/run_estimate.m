@@ -29,16 +29,25 @@ b_c_v   = 10.62;
 
 M       =  6.28;
 
+%load old estimates for initial guesses
+loadTmp = load('estFrictionsAndErrn.mat');
+b_ccp_vec_old = vertcat(loadTmp.b_ccp_vec);
+b_ccm_vec_old = vertcat(loadTmp.b_ccm_vec);
+
+
+%if 0 -> manual tuning,  if 1 senseTool estimation
+sense = 1;
+currentRow = 0;
 for i = 5:72
 
 %-----initial guesses is set to result of last estimate---------
 if i > 5
-  %only update guess if last fit was promissing
-  if errn < 7
-    b_c_c_p = pare(1);
-    b_c_c_m = pare(2);
-    b_c_v   = pare(3);
-  end
+%   b_c_c_p = pare(1);
+%   b_c_c_m = pare(2);
+%   b_c_v   = pare(3);
+  b_c_c_p = b_ccp_vec_old(i-4);
+  b_c_c_m = b_ccm_vec_old(i-4);
+  b_c_v   = pare(3);
 end
 
 %this: %02i means two digit integer with leading zeros
@@ -86,32 +95,120 @@ Ynew = sim_cartPendulum( u, t, par0 );
 
 %% ------------- USING sensetool FOR PARAMETER ESTIMATION -----------------
 
-%making sure u and y is a column vector
-u = u(:);
-y = y(:);
+if sense
 
-process='_cartPendulum';
+  %making sure u and y is a column vector
+  u = u(:);
+  y = y(:);
 
-save meas_cartPendulum t u y %creating meas'TestName'
+  process='_cartPendulum';
 
-close all
-figure;
-run mainest.m
+  save meas_cartPendulum t u y %creating meas'TestName'
 
-%storring result for each iteration
-b_ccp_vec(i-4) = pare(1);
-b_ccm_vec(i-4) = pare(2);
-b_cv_vec(i-4)  = pare(3);
-%M_vec(i-4)     = pare(4);
-errn_vec(i-4)  = errn;
+  subplot(14,5,i-4)
 
-%print progress
-printItr = sprintf('Iteration %i done, %i to go',i-4, 72-i);
-disp(printItr)
+  subTitle=sprintf('x = 0m%02i', i);
+  title(subTitle)
+  set(gca,'FontSize',7.5)
 
+
+  %subfigure offset and scale parameters
+  x_offset = -.12;
+  y_offset =  .055;
+  x_scale  =  .05;
+  y_scale  =  .00;
+
+  %zero-indexed row/colon of figures
+  currentCol = mod((i-5),5)
+  if i == 5
+    currentRow = 0;
+  elseif currentCol == 0
+    currentRow = currentRow +1
+  end
+
+  %calculate offset and specify scale for each subplot
+  scaleAndPos = [ x_offset+(x_scale-.015)*currentCol ...
+                  y_offset-(y_scale+.005)*currentRow  ...
+                  x_scale  y_scale                   ];
+
+  %get current position
+  pos = get(gca, 'Position');
+
+  %modify position vector
+  pos = pos+scaleAndPos;
+
+  %set new position and scale
+  set(gca, 'Position', pos)
+
+  drawnow
+
+  %figure;
+  run mainest.m
+  
+  set(gca,'FontSize',7.5)
+  title(subTitle)
+  axis off, axis tight
+  drawnow
+
+  %storring result for each iteration
+  b_ccp_vec(i-4) = pare(1);
+  b_ccm_vec(i-4) = pare(2);
+  b_cv_vec(i-4)  = pare(3);
+  %M_vec(i-4)     = pare(4);
+  errn_vec(i-4)  = errn;
+
+  %print progress
+  printItr = sprintf('Iteration %i done, %i to go',i-4, 72-i);
+  disp(printItr)
+else
+   subplot(14,5,i-4), plot(t,y); hold on; plot(t,Ynew)
+
+  subTitle=sprintf('x = 0m%02i', i);
+  title(subTitle)
+  set(gca,'FontSize',7.5)
+
+  %subfigure offset and scale parameters
+  x_offset = -.12;
+  y_offset =  .055;
+  x_scale  =  .05;
+  y_scale  =  .00;
+
+  %zero-indexed row/colon of figures
+  currentCol = mod((i-5),5)
+  if i == 5
+    currentRow = 0;
+  elseif currentCol == 0
+    currentRow = currentRow +1
+  end
+
+  %calculate offset and specify scale for each subplot
+  scaleAndPos = [ x_offset+(x_scale-.015)*currentCol ...
+                  y_offset-(y_scale+.005)*currentRow  ...
+                  x_scale  y_scale                   ];
+
+  %get current position
+  pos = get(gca, 'Position');
+
+  %modify position vector
+  pos = pos+scaleAndPos;
+
+  %set new position and scale
+  set(gca, 'Position', pos)
+  
+  title(subTitle)
+  axis off, axis tight
+  drawnow
 end
 
 
+end
+
+if sense
+  save estFrictionsAndErrn b_ccp_vec b_ccm_vec b_cv_vec errn_vec
+end
+
+% loadTmp = load('estFrictions.mat')
+% b_cv_vec = vertcat(loadTmp.b_cv_vec)
 
 
 

@@ -22,8 +22,8 @@ if ~exist('ploty'),     ploty=2;                                      end
 if ~exist('par0'),      par0=[1.5 3];                                 end
 simmod=['sim',process];
 
-if ploty>0,  plot(t,y), ylabel('y'), xlabel('time'),
-   title('Measured system output'), pause(4),  end
+if ploty>0,  plot(t,y), ylabel('y'), xlabel('time'), axis off,
+   title('Measured system output'), set(gca,'FontSize',7.5), pause(4),  end
 
 [pare,errn,Hrn]=gausnewt(simmod,par0,u,y,t,ploty);		% Parameter estimation
 [Smin,Simin,R,Ri]=sens(Hrn);							% Sensitivity measures

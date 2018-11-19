@@ -27,7 +27,7 @@ function  [par, errn,Hrn] = gausnewt(simmod,par0,u,y,t,plottype,weight)
 %  26/11-02, MK: plot text adjusted
 
 par = par0(:);
-mumin = 0.01;     upddmin = 0.001;     noomax = 20; 
+mumin = 0.0001;     upddmin = 0.00001;     noomax = 20; 
 
 N = length(t);    [Ry,Cy] = size(y);   [Ru,Cu] = size(u);    NM = N*Cy;
 
@@ -63,21 +63,28 @@ ymn = ym*NORMMATR;  ymr = ymn(:);  errn = 100*norm(yr-ymr)/sqrt(NM);
 
 if Cy==1
    nn = 1:N;
-   plot(nn,y,nn,ym);
-   title('System and model output:  Start '),  pause(5)
+   plot(nn,y,nn,ym); axis off
+   title('System and model output:  Start '), set(gca,'FontSize',7.5), pause(5)
 else
    if plottype == 1
       nn = 1:N;   
-      plot(nn,yn,nn,ymn,':');
+      plot(nn,yn,nn,ymn,':'); axis off
    else
       nn = 1:NM;
-      plot(nn,yr,nn,ymr,':');
+      plot(nn,yr,nn,ymr,':'); axis off
    end
-   title('Normed system and model output: Start'),  pause(5)
+   title('Normed system and model output: Start'), set(gca,'FontSize',7.5), pause(5)
 end
 
 mu = 0.125;  noo = 1;
 updd = 1;                  %.
+
+if errn > 30,  mu = 1, end
+
+% niels_i = evalin('base', 'i');
+% if  11 < niels_i && niels_i < 20
+%   mu = 0.225;
+% end
 
 % Outer loop:
 while norm(updd) > upddmin
@@ -87,7 +94,7 @@ while norm(updd) > upddmin
   disp(tekst);    psi = psinf(u,t,par,simmod,NORMMATR);
   psir = psi*diag(par);
 
-  mu = 4*mu;  if mu>1,  mu=1;  end
+  mu = 4*mu; if errn > 20,  mu = 1; end,  if mu>1,  mu=1;  end
   updd = psir\(yr-ymr);        % updd = Rr^-1*Gr = [psir'*psir]^-1*[e*psir]
   disp(' ');
   disp('Relative parameter update = ');  disp(updd);
@@ -98,7 +105,7 @@ while norm(updd) > upddmin
        parny = par + par.*mu.*updd;
        ym = feval(simmod,u,t,parny);  ymn = ym*NORMMATR;  ymr = ymn(:);
        nyerrn = 100*norm(yr-ymr)/sqrt(NM);
-       mu = mu/2;
+       mu = mu/2
        if mu < mumin
          disp('iteration stopped - mu < mumin'), break
        end
@@ -110,15 +117,15 @@ while norm(updd) > upddmin
   % Plotting:
   figure(1)
   if Cy==1
-     plot(nn,y,nn,ym);      title('System and model output');
-     ylabel('y(k) and ym(k)');
+     plot(nn,y,nn,ym);      title('System and model output'); axis off
+     ylabel('y(k) and ym(k)'); set(gca,'FontSize',7.5)
   else
      if plottype == 1
-        plot(nn,yn ,nn, ymn,':');  ylabel('yn(k) and ymn(k)');
+        plot(nn,yn ,nn, ymn,':');  ylabel('yn(k) and ymn(k)'); axis off
      else
-        plot(nn,yr,nn,ymr,':');    ylabel('yr(k) and ymr(k)');
+        plot(nn,yr,nn,ymr,':');    ylabel('yr(k) and ymr(k)'); axis off
      end
-     title('Normed system and model output')
+     title('Normed system and model output'), set(gca,'FontSize',7.5)
   end
 
   xlabel('Sampling number');  
@@ -129,7 +136,7 @@ while norm(updd) > upddmin
   L = axis;    axis('auto');  
   xpkt = 0.14*(L(2) - L(1)) + L(1);
   ypkt = 0.90*(L(4) - L(3)) + L(3); 
-  text(xpkt,ypkt,['errn = ',num2str(aerrn),' %']);  pause(2)
+  %text(xpkt,ypkt,['errn = ',num2str(aerrn),' %']);  pause(2)
 
   disp(['Percentage errn = ',num2str(errn)]);
   disp(' '); 
