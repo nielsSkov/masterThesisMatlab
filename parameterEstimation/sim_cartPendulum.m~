@@ -12,10 +12,9 @@ run('initCartPendulum.m')
 
 b_c_c_p = par(1);
 b_c_c_m = par(2);
-%b_c_v   = par(3);
-%M       = par(4);
-
-b_c_v   = evalin('base', 'b_c_v');
+%b_c_v = par(3);
+%M     = par(4);
+%b_c_c_m = evalin('base', 'b_c_c_m');
 M       = evalin('base', 'M');
 
 %setting pendulum and length to be without mass for cart estimations

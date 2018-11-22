@@ -79,12 +79,7 @@ end
 mu = 0.125;  noo = 1;
 updd = 1;                  %.
 
-if errn > 30,  mu = 1, end
-
-% niels_i = evalin('base', 'i');
-% if  11 < niels_i && niels_i < 20
-%   mu = 0.225;
-% end
+if errn > 30,  mu = 1; end
 
 % Outer loop:
 while norm(updd) > upddmin
@@ -105,7 +100,7 @@ while norm(updd) > upddmin
        parny = par + par.*mu.*updd;
        ym = feval(simmod,u,t,parny);  ymn = ym*NORMMATR;  ymr = ymn(:);
        nyerrn = 100*norm(yr-ymr)/sqrt(NM);
-       mu = mu/2
+       mu = mu/2;
        if mu < mumin
          disp('iteration stopped - mu < mumin'), break
        end

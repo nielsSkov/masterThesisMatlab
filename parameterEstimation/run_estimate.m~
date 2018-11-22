@@ -10,7 +10,7 @@ addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest2')
 
 %%------------ READING DATA FROM FILE AND SETTING PARAMETERS -------------
 
-itrAll = 26;
+itrAll = 2;
 
 %initializing vectors for storring results
 b_ccp_vec = zeros(68,itrAll);
@@ -91,10 +91,10 @@ b_cv_vec_old  = vertcat(loadTmp.b_cv_vec);
 %if 0 -> manual tuning,  if 1 senseTool estimation
 sense = 1;
 for j = itrAll:-1:1
-close all
+figure
 
 currentRow = 0;
-for i = 5:72
+for i = 5:6
 
 %-----initial guesses is set to result of last estimate---------
 % if i > 5
@@ -119,8 +119,8 @@ dataFile = sprintf('0m%02i.csv', i);
 data = csvread( dataFile, 0, 0);
 
 %for cropping test data
-dataStart = 1760              -66*(itrAll-j);
-dataEnd   = length(data)-190  -66*(itrAll-j);
+dataStart = ; 1760              -66*(itrAll-j);
+dataEnd   = ;% length(data)-190  -66*(itrAll-j);
 
 %choose initial condition in data at high velocity (ca 0.2 m s^-1)
 while data(dataStart,4) < 0.2
