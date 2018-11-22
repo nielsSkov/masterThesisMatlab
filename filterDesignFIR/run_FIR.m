@@ -21,9 +21,15 @@ figure
 plot(t,theta)
 title('$\theta$')
 % 
+<<<<<<< HEAD
  figure
  plot(t,x)
  title('$x$')
+=======
+% figure
+% plot(t,x)
+% title('$x$')
+>>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
 %
 % figure
 % plot(t,x_dot)
@@ -179,7 +185,11 @@ plot(t,theta_dot_filt)
 
 
 
+<<<<<<< HEAD
 
+=======
+tic
+>>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
 %implementation of FIR filter (with ring buffer)
 
 in = zeros(1,M);
@@ -203,11 +213,16 @@ for i = 1:L
     offset = 0;
   end
 end
+<<<<<<< HEAD
 
+=======
+toc
+>>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
 scatter(t,theta_dot_filt,100,'.')
 
 
 
+<<<<<<< HEAD
 %%
 clear all, close all, clc
 
@@ -265,6 +280,18 @@ end
 
 scatter(t,theta_dot_filt,100,'.')
 plot(t,theta_dot_filt)
+=======
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
 
 
 

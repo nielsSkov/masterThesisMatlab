@@ -271,6 +271,7 @@ end
 
 end
 
+<<<<<<< HEAD
 
 
 
@@ -389,6 +390,167 @@ end
 % if sense
 %   save estFrictionsAndErrnAllFit2 b_ccp_vec b_ccm_vec b_cv_vec errn_vec
 % end
+=======
+>>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
 
 
+
+
+
+%---------results of many test---------------------------------------------
+
+loadTmpMany = load('estFrictionsAndErrnAllFit_many.mat');
+
+b_ccp_many = vertcat(loadTmpMany.b_ccp_vec);
+b_ccm_many = vertcat(loadTmpMany.b_ccm_vec);
+figure
+plot(b_ccp_many)
+hold on
+plot(b_ccm_many)
+plot(mean(b_ccm_many,2), 'lineWidth', 1.2)
+plot(mean(b_ccp_many,2), 'lineWidth', 1.2)
+grid on, grid minor
+
+errn_many = vertcat(loadTmpMany.errn_vec);
+figure
+plot(errn_many)
+hold on
+plot(mean(errn_many,2), 'lineWidth', 1.2)
+grid on, grid minor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% %close all
+% x_cart = ( 5:1:72 )';
+% 
+% figure
+% scatter(x_cart, b_ccm_vec, 100, '.')
+% hold on
+% scatter(x_cart, b_ccp_vec, 100, '.')
+% %plot(x_cart, b_cv_vec)
+% %plot(x_cart, errn_vec)
+% 
+% grid on, grid minor
+% xlabel('x [m]')
+% ylabel('coloumb friction')
+% 
+% %11DEG
+% p = polyfit(x_cart-5, b_ccm_vec-b_ccm_vec(1),11)
+% 
+% x = ( 5:1:72 )' -5;
+% y = p(1)*x.^11 + p(2)*x.^10 + p(3)*x.^9 + p(4)*x.^8 + p(5)*x.^7 + p(6)*x.^6 +...
+%     p(7)*x.^5 + p(8)*x.^4 + p(9)*x.^3 + p(10)*x.^2 + p(11)*x + p(12) + b_ccm_vec(1);
+% plot(x+5,y)
+% 
+% %11DEG
+% p = polyfit(x_cart-5, b_ccp_vec-b_ccp_vec(1),11)
+% 
+% x = ( 5:1:72 )' -5;
+% y = p(1)*x.^11 + p(2)*x.^10 + p(3)*x.^9 + p(4)*x.^8 + p(5)*x.^7 + p(6)*x.^6 +...
+%     p(7)*x.^5 + p(8)*x.^4 + p(9)*x.^3 + p(10)*x.^2 + p(11)*x + p(12) + b_ccp_vec(1);
+% plot(x+5,y)
+
+
+
+
+
+
+
+
+% %close all
+% x_cart = ( 5:1:72 )';
+% 
+% figure
+% scatter(x_cart, b_ccm_vec_old, 100, '.')
+% hold on
+% scatter(x_cart, b_ccp_vec_old, 100, '.')
+% %plot(x_cart, b_cv_vec_old)
+% %plot(x_cart, errn_vec_old)
+% 
+% grid on, grid minor
+% xlabel('x [m]')
+% ylabel('coloumb friction')
+% 
+% %11DEG
+% p = polyfit(x_cart-5, b_ccm_vec_old-b_ccm_vec_old(1),11)
+% 
+% x = ( 5:1:72 )' -5;
+% y = p(1)*x.^11 + p(2)*x.^10 + p(3)*x.^9 + p(4)*x.^8 + p(5)*x.^7 + p(6)*x.^6 +...
+%     p(7)*x.^5 + p(8)*x.^4 + p(9)*x.^3 + p(10)*x.^2 + p(11)*x + p(12) + b_ccm_vec_old(1);
+% plot(x+5,y)
+% 
+% %11DEG
+% p = polyfit(x_cart-5, b_ccp_vec_old-b_ccp_vec_old(1),11)
+% 
+% x = ( 5:1:72 )' -5;
+% y = p(1)*x.^11 + p(2)*x.^10 + p(3)*x.^9 + p(4)*x.^8 + p(5)*x.^7 + p(6)*x.^6 +...
+%     p(7)*x.^5 + p(8)*x.^4 + p(9)*x.^3 + p(10)*x.^2 + p(11)*x + p(12) + b_ccp_vec_old(1);
+% plot(x+5,y)
+
+
+
+
+% xStart = 5;
+% xEnd   = 18;
+% x = ( xStart:.1:xEnd )' -xStart;
+% p = polyfit(x_cart(xStart-4:xEnd)-xStart, b_ccm_vec_old(xStart-4:xEnd)-b_ccm_vec_old(xStart-4),3)
+% y =  p(1)*x.^3 + p(2)*x.^2 + p(3)*x + p(4) + b_ccm_vec_old(xStart-4);
+% plot(x+xStart,y)
+% 
+% xStart = 18;
+% xEnd   = 27;
+% x = ( xStart:.1:xEnd )' -xStart;
+% p = polyfit(x_cart(xStart-4:xEnd)-xStart, b_ccm_vec_old(xStart-4:xEnd)-b_ccm_vec_old(xStart-4),3)
+% y =  p(1)*x.^3 + p(2)*x.^2 + p(3)*x + p(4) + b_ccm_vec_old(xStart-4);
+% plot(x+xStart,y)
+
+%10DEG
+% p = polyfit(x_cart-5, b_ccp_vec_old-2.07,10)
+% 
+% x = ( 5:.1:72 )' -5;
+% y = p(1)*x.^10 + p(2)*x.^9 + p(3)*x.^8 + p(4)*x.^7 + p(5)*x.^6 +...
+%     p(6)*x.^5 + p(7)*x.^4 + p(8)*x.^3 + p(9)*x.^2 + p(10)*x + p(11) + 2.07;
+% plot(x+5,y)
+
+
+%13DEG
+% p = polyfit(x_cart-5, b_ccp_vec_old-2.07,13)
+% 
+% x = ( 5:.1:72 )' -5;
+% y = p(1)*x.^13 + p(2)*x.^12 + p(3)*x.^11 + p(4)*x.^10 + p(5)*x.^9 + p(6)*x.^8 + p(7)*x.^7 + p(8)*x.^6 +...
+%     p(9)*x.^5 + p(10)*x.^4 + p(11)*x.^3 + p(12)*x.^2 + p(13)*x + p(14) + 2.07;
+% plot(x+5,y)
+
+
+%15DEG
+% p = polyfit(x_cart-5, b_ccp_vec_old-2.07,15)
+% 
+% x = ( 5:.1:72 )' -5;
+% y = p(1)*x.^15 + p(2)*x.^14 + p(3)*x.^13 + p(4)*x.^12 + p(5)*x.^11 + p(6)*x.^10 + p(7)*x.^9 + p(8)*x.^8 + p(9)*x.^7 + p(10)*x.^6 +...
+%     p(11)*x.^5 + p(12)*x.^4 + p(13)*x.^3 + p(14)*x.^2 + p(15)*x + p(16) + 2.07;
+
+
+% if sense
+%   save estFrictionsAndErrnAllFit2 b_ccp_vec b_ccm_vec b_cv_vec errn_vec
+% end
 
