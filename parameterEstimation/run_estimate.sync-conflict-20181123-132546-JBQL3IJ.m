@@ -29,8 +29,7 @@ errn_vec  = zeros(68,itrAll);
 % b_c_c_m =  5.6;
 % b_c_v   = 10.62;
 % 
-M     = 6.28;
-b_c_v = 10.414;
+M       =  6.28;
 
 %load old estimates for initial guesses
 loadTmp = load('estFrictionsAndErrnAllFit.mat');
@@ -274,6 +273,52 @@ end
 
 
 
+
+
+
+%---------results of many test---------------------------------------------
+
+loadTmpMany = load('estFrictionsAndErrnAllFit_many.mat');
+
+b_ccp_many = vertcat(loadTmpMany.b_ccp_vec);
+b_ccm_many = vertcat(loadTmpMany.b_ccm_vec);
+figure
+plot(b_ccp_many)
+hold on
+plot(b_ccm_many)
+plot(mean(b_ccm_many,2), 'lineWidth', 1.2)
+plot(mean(b_ccp_many,2), 'lineWidth', 1.2)
+grid on, grid minor
+
+errn_many = vertcat(loadTmpMany.errn_vec);
+figure
+plot(errn_many)
+hold on
+plot(mean(errn_many,2), 'lineWidth', 1.2)
+grid on, grid minor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 % %close all
 % x_cart = ( 5:1:72 )';
 % 
@@ -387,91 +432,4 @@ end
 % if sense
 %   save estFrictionsAndErrnAllFit2 b_ccp_vec b_ccm_vec b_cv_vec errn_vec
 % end
-
-
-
-
-
-
-%---------results of many test---------------------------------------------
-
-
-loadTmpMany = load('estFrictionsAndErrnAllFit_many.mat');
-
-b_ccp_many = vertcat(loadTmpMany.b_ccp_vec);
-b_ccm_many = vertcat(loadTmpMany.b_ccm_vec);
-errn_many  = vertcat(loadTmpMany.errn_vec);
-
-figure
-plot(b_ccp_many)
-hold on
-plot(b_ccm_many)
-
-figure
-plot(mean(b_ccm_many,2), 'lineWidth', 1.2)
-hold on
-plot(mean(b_ccp_many,2), 'lineWidth', 1.2)
-
-
-
-b_ccm_weighed_mean = zeros(length(b_ccm_many),1);
-b_ccp_weighed_mean = zeros(length(b_ccp_many),1);
-
-normalizedErrn = zeros(size(errn_many));
-for i = 1:length(errn_many(:,1))
-  normalizedErrn(i,:) = errn_many(i,:)./sum( errn_many(i,:) );
-end
-
-for i = 1:length(b_ccm_many(:,1))
-  b_ccm_weighed_mean(i) = sum( normalizedErrn(i,:).*b_ccm_many(i,:) );
-  b_ccp_weighed_mean(i) = sum( normalizedErrn(i,:).*b_ccp_many(i,:) );
-end
-
-
-plot(b_ccm_weighed_mean, 'lineWidth', 1.2)
-plot(b_ccp_weighed_mean, 'lineWidth', 1.2)
-grid on, grid minor
-
-
-figure
-plot(errn_many)
-grid on, grid minor
-
-%final lookup vectors
-
-%position
-pos = [ 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.13, 0.14, ...
-        0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 0.24, ...
-        0.25, 0.26, 0.27, 0.28, 0.29, 0.30, 0.31, 0.32, 0.33, 0.34, ...
-        0.35, 0.36, 0.37, 0.38, 0.39, 0.40, 0.41, 0.42, 0.43, 0.44, ...
-        0.45, 0.46, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.53, 0.54, ...
-        0.55, 0.56, 0.57, 0.58, 0.59, 0.60, 0.61, 0.62, 0.63, 0.64, ...
-        0.65, 0.66, 0.67, 0.68, 0.69, 0.70, 0.71, 0.72 ]
-
-%negative b_cc
-bm = [ 5.6263, 5.6912, 5.0210, 4.7789, 4.5369, 4.5226, 4.3667, 3.6637, ...
-       3.3560, 3.3377, 2.9555, 2.8196, 2.6894, 2.6508, 2.7522, 2.7978, ...
-       3.1890, 2.9839, 3.2756, 3.5558, 3.5269, 4.3655, 4.5228, 4.4821, ...
-       4.2200, 4.0933, 3.4397, 3.3830, 3.0173, 3.0530, 2.8399, 2.5662, ...
-       2.3793, 2.6272, 1.9711, 2.0432, 1.8917, 1.6675, 1.9137, 1.8585, ...
-       1.9262, 2.4228, 2.2988, 2.6986, 2.7103, 2.9014, 2.9634, 2.7753, ...
-       2.7122, 2.4782, 2.5381, 2.0629, 2.1222, 2.3033, 2.3858, 2.7245, ...
-       2.2818, 2.5743, 2.4700, 2.5944, 2.8320, 2.8006, 2.7077, 2.7269, ...
-       2.5346, 2.8446, 2.7306, 2.5191 ]
-
-%positive b_cc
-bp= [ 2.0599, 2.0059, 2.1820, 2.2164, 2.2342, 2.2546, 2.2178, 2.2195, ...
-      2.4184, 2.4506, 2.7560, 2.8778, 2.8485, 2.8498, 3.0238, 3.2066, ...
-      3.1093, 3.1399, 2.8875, 2.7890, 2.6054, 1.9920, 1.9811, 1.9713, ...
-      1.9721, 1.9877, 2.1605, 2.2211, 2.2249, 2.1049, 2.3816, 2.4523, ...
-      2.6783, 2.4560, 2.9049, 2.9076, 3.1950, 3.2866, 3.1905, 3.2095, ...
-      3.2441, 3.1898, 2.6971, 2.8141, 2.4427, 2.2702, 2.1833, 2.2546, ...
-      2.2863, 2.6159, 2.5990, 2.6953, 2.8589, 3.3110, 3.2057, 3.5125, ...
-      3.2856, 3.3000, 2.9808, 2.9562, 3.0018, 2.7540, 2.7749, 2.7897, ...
-      3.0878, 2.8514, 2.9757, 3.0784 ]
-
-%test to see they match ( if ans = 0 then good! )
-round(b_ccm_weighed_mean-bm',4)
-round(b_ccp_weighed_mean-bp',4)
-
 
