@@ -1,0 +1,61 @@
+clear all; close all; clc                                                  %#ok<CLALL>
+
+%change path to directory containing the project files
+cd ~/syncDrive/uni/thesis/matlab/testResults
+
+addpath('~/syncDrive/uni/thesis/matlab/testResults/data/swingUpAndCatch')
+addpath('~/syncDrive/uni/thesis/matlab/testResults/data/slidingMode')
+
+run('latexDefaults.m')
+
+
+data = csvread('swingAndSlide_xconON.csv');
+
+dataStart = 1;
+dataEnd   = length(data);
+
+t         = data( dataStart:dataEnd,  1 );
+x1        = data( dataStart:dataEnd,  2 );
+x1_FIR    = data( dataStart:dataEnd,  3 );
+x2        = data( dataStart:dataEnd,  4 );
+x2_FIR    = data( dataStart:dataEnd,  5 );
+x3        = data( dataStart:dataEnd,  6 );
+x3_FIR    = data( dataStart:dataEnd,  7 );
+x4        = data( dataStart:dataEnd,  8 );
+x4_FIR    = data( dataStart:dataEnd,  9 );
+ia_noComp = data( dataStart:dataEnd, 10 );
+ia        = data( dataStart:dataEnd, 11 );
+
+figure
+plot( t, x1 )
+hold on
+plot( t, x1_FIR )
+xlabel('$x_1$')
+
+figure
+plot( t, x2 )
+hold on
+plot( t, x2_FIR )
+xlabel('$x_1$')
+
+figure
+plot( t, x3 )
+hold on
+plot( t, x3_FIR )
+xlabel('$x_1$')
+
+figure
+plot( t, x4 )
+hold on
+plot( t, x4_FIR )
+xlabel('$x_1$')
+
+figure
+plot( t, ia )
+hold on
+plot( t, ia_noComp)
+
+figure
+plot( t, ia-ia_noComp)
+
+

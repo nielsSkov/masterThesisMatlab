@@ -22,8 +22,7 @@ slm   = 1; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
 iaLim = 1; %<-limmit actuation peak on/off
 conX  = 1; %<-select whether or not to control x-position/velocity
-con   = 4; %<-controller selection where,
-%
+con   = 0; %<-controller selection where,
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
 %             2 - sign-based controller (Åström)    <--WARNING! VERY slow..
@@ -47,10 +46,17 @@ end
 %initial conditions for ode45 based on controller choise
 switch con
   case 0
-    theta_0      = 2*pi-.2;
-    x_0          = 0;
-    theta_dot_0  = -pi;
-    x_dot_0      = 0;
+    if slm == 0
+      theta_0      = 2*pi-.2;
+      x_0          = 0;
+      theta_dot_0  = -pi;
+      x_dot_0      = 0;
+    else
+      theta_0      = 0.1;
+      x_0          = 0;
+      theta_dot_0  = 0;
+      x_dot_0      = 0;
+    end
   case 1
     theta_0      = pi-.1;
     x_0          = 0;
@@ -194,6 +200,8 @@ if 0
   elseif con == 4 && conX == 1
     testID='_4_conX';
   end
+  
+  testID = '_slidingMode';
   
   if plotOrbit == 1
     figHandle=h_orbit;

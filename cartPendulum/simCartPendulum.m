@@ -25,35 +25,34 @@ function [ q_dot,         ...
   x4 = x_dot;
   
   %maximum catch angle
-  catchAngle = 0.1;
-  x_old = 0;
+  catchAngle = 0.13;
   
-  if slm && ( ( abs(x1) < catchAngle ) || ( abs(x1) > 2*pi-catchAngle ) )  %<-- catch controller
-    if abs(x1) > 2*pi-catchAngle
-      x_old = x1;
-      x1 = x1-2*pi;
-    end
-    k_s     = [ 4.5824   -0.8341   -1.9766 ];
+  %creating wrapped vertion of angle for sliding mode
+  x1Wrap = mod( (x1 + pi), 2*pi );
+  if x1Wrap < 0
+    x1Wrap = x1Wrap + 2*pi;
+  end
+  x1Wrap = x1Wrap - pi;
+  
+  if slm && ( abs(x1Wrap) < catchAngle  ) %<-- catch controller
+
+    k_s     = [ 7.3918 -1.3414 -5.5344 ];
     k1      = k_s(1);
     k2      = k_s(2);
     k3      = k_s(3);
     
-    g_b_inv = M + m - m*cos(x1)^2;
+    g_b_inv = M + m - m*cos(x1Wrap)^2;
     
     rho     = 4.5;
     beta0   = 0.1;
     beta    = rho + beta0;
     
-    s       = x4 - k2*(x3 - (x4*cos(x1))/l) + k1*x1 + k3*x2;
+    s       = x4 - k2*(x3 - (x4*cos(x1Wrap))/l) + k1*x1Wrap + k3*x2;
     
     epsilon = 0.03;
     satS    = min( 1, max(-1, (1/epsilon)*s));
     
     u       = - satS*beta*g_b_inv;
-    
-    if abs(x_old) > 2*pi-catchAngle
-      x1 = x_old;
-    end
 
     energyCon = 0; %<--|
   else             %   |
@@ -83,7 +82,7 @@ function [ q_dot,         ...
     k = 2.7;                            %   controller (Åström)
     epsilon = .01;
     if noLim
-      E_delta = E_delta+.004;
+      E_delta = E_delta-.004;
       k = k+2.7;
     end
     sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*cos(x1)*x3)) );
@@ -102,7 +101,7 @@ function [ q_dot,         ...
     u_max = i_max*k_tau/r;
     a_max = u_max/(M+m) -.1;
     if noLim
-      E_delta = E_delta+.0015;
+      E_delta = E_delta-.0015;
       a_max = a_max*2;
     end
     xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
