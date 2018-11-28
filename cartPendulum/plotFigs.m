@@ -76,12 +76,12 @@ xlabel('$t$ [s]')
 ylabel('$i_a$ [A]')
 hold on
 plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
-i_max = 4.44; %4.58;
+i_max = 4.58;
 xlim([min(t) max(t)])
 ylim([min(i_a)-.5 max(i_a)+.5])
 plot(xlim,[i_max i_max], 'r', 'linewidth', 1.5 )
 legend( 'Motor Current',          ...
-        'Rolling RMS of $i_a$',   ...
+        'Moving RMS of $i_a$',    ...
         'Max Continuous Current', ...
         'location', 'southeast'   )
 

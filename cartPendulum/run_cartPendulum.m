@@ -163,10 +163,11 @@ for i = 1:length(t)
                                                  b_p_c, b_p_v,          ...
                                                  b_c_c, b_c_v, fComp    );
 end
-
+h_phase
 %rolling rms of i_a
-for i = 1:length(t)
-  ia_rms(i) = rms( i_a(1:i) );
+windowSize = 1/Ts;  %= 1 s long window
+for i = 1:length(t)-windowSize
+  ia_rms(i) = rms( i_a(i:i+windowSize) );
 end
 
 run('plotFigs.m')
