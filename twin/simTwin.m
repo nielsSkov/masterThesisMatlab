@@ -15,6 +15,11 @@ function [ q_dot,          ...
     previousU = 0;
   end
   
+  persistent catchAngle;
+  if isempty(catchAngle)
+    catchAngle = 0.0156;
+  end
+  
   theta1       = q(1);
   theta2       = q(2);
   x            = q(3);
@@ -29,13 +34,6 @@ function [ q_dot,          ...
   x5 = theta2_dot;
   x6 = x_dot;
   
-  X = [ x1  ;
-        x2  ;
-        x3  ;
-        x4  ;
-        x5  ;
-        x6 ];
-
   catchTwin = 1;
   conX      = 1;
   fComp     = 0;
@@ -52,9 +50,16 @@ function [ q_dot,          ...
     x2Wrap = x2Wrap + 2*pi;
   end
   x2Wrap = x2Wrap - pi;
+  
+    X = [ x1Wrap  ;
+          x2Wrap  ;
+          x3  ;
+          x4  ;
+          x5  ;
+          x6 ];
 
   %maximum catch angle
-  catchAngle = 0.05;
+  %catchAngle = 0.005;
   
 
   %difference in energy with cooredinate system fixed at pivot point
@@ -75,11 +80,13 @@ function [ q_dot,          ...
   %total energy
   E_T = T + U; %(function output)
   
-  kLQR = [ -1520.75  1432.56  8.09  -271.18  197.77  15.94 ];
+  kLQR = [ -2050.12  1831.28  32.36  -365.43  252.89  43.45 ];
   
+  catchAngle
+  abs(x1Wrap)+abs(x2Wrap)
   
-  if catchTwin && ( abs(x1Wrap+x2Wrap) < catchAngle  )%<-- catch controller
-
+  if catchTwin && ( (abs(x1Wrap)+abs(x2Wrap)) < catchAngle  )%<-- catch controller
+    catchAngle = .8;
     u = -kLQR*X;
 
     energyCon = 0; %<--|
@@ -91,8 +98,10 @@ con = 1;
     u = 0;
   
   elseif con == 1 && energyCon == 1  %<--rudementary controller (Åström)
-    k1 = 15;
-    k2 = 15;
+    k1 = 16.86;
+    k2 = 16.86;
+    E_delta1 = E_delta1-.0326;
+    E_delta2 = E_delta2-.0326;
     xDotDot = -k1*E_delta1*m1*l1*cos(x1)*x4 -k2*E_delta2*m2*l2*cos(x2)*x5
   
   elseif con == 2 && energyCon == 1  %<--sign-based controller (Åström)
@@ -191,7 +200,7 @@ con = 1;
   i_a = u*r/k_tau;  %(function output)
   
   iaMax = 8;
-  if abs(i_a) > iaMax
+  if abs(i_a) > iaMax && energyCon == 1
     i_a = sign(i_a)*iaMax;
     u = i_a*k_tau/r;
   end
