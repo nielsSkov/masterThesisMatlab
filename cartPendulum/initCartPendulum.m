@@ -1,6 +1,6 @@
 m    = .100+.075+.026;     % mass of pendulum            [kg]
-M    = 5.273;              % mass of cart                [kg]
-l    = 0.3235;             % length                      [m]
+M    = 6.28;               % mass of cart                [kg]
+l    = 0.3235; %0.3348;    % length                      [m]
 g    = 9.82;               % gravitational acceleration  [m s^-2]
 
 r = 0.028;                 % radius of pulley            [m]

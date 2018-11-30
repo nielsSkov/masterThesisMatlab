@@ -10,6 +10,7 @@ function [ q_dot,         ...
                                                 b_p_c, b_p_v,          ...
                                                 b_c_c, b_c_v, fComp    )
   persistent previousU;
+  
   if isempty(previousU)
     previousU = 0;
   end
@@ -24,8 +25,7 @@ function [ q_dot,         ...
   x3 = theta_dot;
   x4 = x_dot;
   
-  %maximum catch angle
-  catchAngle = 0.13;
+  catchAngle = 0.13; %when catch enable, stay in catch
   
   %creating wrapped vertion of angle for sliding mode
   x1Wrap = mod( (x1 + pi), 2*pi );
@@ -35,7 +35,7 @@ function [ q_dot,         ...
   x1Wrap = x1Wrap - pi;
   
   if slm && ( abs(x1Wrap) < catchAngle  ) %<-- catch controller
-
+    
     k_s     = [ 7.3918 -1.3414 -5.5344 ];
     k1      = k_s(1);
     k2      = k_s(2);
@@ -43,7 +43,7 @@ function [ q_dot,         ...
     
     g_b_inv = M + m - m*cos(x1Wrap)^2;
     
-    rho     = 4.5;
+    rho     = 6.2;
     beta0   = 0.1;
     beta    = rho + beta0;
     
@@ -52,7 +52,7 @@ function [ q_dot,         ...
     epsilon = 0.03;
     satS    = min( 1, max(-1, (1/epsilon)*s));
     
-    u       = - satS*beta*g_b_inv;
+    u       =  -satS*beta*g_b_inv;
 
     energyCon = 0; %<--|
   else             %   |
@@ -99,7 +99,7 @@ function [ q_dot,         ...
     end
     i_max = 4.58;
     u_max = i_max*k_tau/r;
-    a_max = u_max/(M+m) -.1;
+    a_max = u_max/(M+m);
     if noLim
       E_delta = E_delta-.0015;
       a_max = a_max*2;
@@ -107,7 +107,7 @@ function [ q_dot,         ...
     xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
   
   elseif con == -1
-    u = interp1(tvec,u,t)
+    u = interp1(tvec,u,t);
   end
   
   if con > 0 && energyCon == 1
@@ -146,13 +146,14 @@ function [ q_dot,         ...
                  x4 ];
     
     %control signal (force)
-    u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2) -  ...
-        - m*l*cos(x1)*thetaDD_predict + lin_u  ;
+    u = (M+m)*xDotDot + m*l*sin(x1)*(x3^2)   ...
+      - m*l*cos(x1)*thetaDD_predict + lin_u  ;
     
-    %friction compensation
-    if fComp
-      u = u + b_c_c*tanh(k_tanh*x4) + b_c_v*x4;
-    end
+  end
+  
+  %cart friction compensation
+  if fComp
+    u = u + b_c_c*tanh(k_tanh*x4) + b_c_v*x4;
   end
   
   if iaLim
@@ -189,7 +190,7 @@ function [ q_dot,         ...
   theta_dot_dot = q_dot(3);
   x_dot_dot     = q_dot(4);
   previousU     = u; %persistant (for next loop)
-  E_T = (M*x4^2)/2 + (m*x4^2)/2 + ...
-      + (l^2*m*x3^2)/2 + M*g*l  + ...
+  E_T = (M*x4^2)/2 + (m*x4^2)/2  ...
+      + (l^2*m*x3^2)/2 + M*g*l   ...
       + g*l*m + g*l*m*cos(x1) - l*m*x3*x4*cos(x1);
 end

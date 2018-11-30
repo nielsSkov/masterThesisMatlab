@@ -9,7 +9,7 @@ addpath('~/syncDrive/uni/thesis/matlab/testResults/data/swingUp')
 
 run('latexDefaults.m')
 
-run('initCartPendulum.m')
+run('~/syncDrive/uni/thesis/matlab/cartPendulum/initCartPendulum.m')
 
 %x-vector for friction lookup
 xx = (.05:.01:.72)';
@@ -631,17 +631,14 @@ if 0
     testID='_slideEKFproblem';
   elseif dataNr == 5
     testID='_swingNslide';
-  elseif dataNr == 6
-    testID='_swingNslide';
   end
-  
-  testID = '_slidingMode';
 
   for jj = 1:1:8
-    if jj == 4
+    if dataNr == 4
       figHandle=h_states;
       fileName=strcat('states',testID);
       saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+      return
     else
     switch jj
     case 1

@@ -22,14 +22,14 @@ slm   = 1; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
 iaLim = 1; %<-limmit actuation peak on/off
 conX  = 1; %<-select whether or not to control x-position/velocity
-con   = 0; %<-controller selection where,
+con   = 4; %<-controller selection where,
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
 %             2 - sign-based controller (Åström)    <--WARNING! VERY slow..
 %             3 - sat-approximation of 2
 %             4 - sat-based controller (Åström)
 
-documentation = 1; %figures are plottet seperately if documentation is on
+documentation = 0; %figures are plottet seperately if documentation is on
 
 if noFriction
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
@@ -163,7 +163,7 @@ for i = 1:length(t)
                                                  b_p_c, b_p_v,          ...
                                                  b_c_c, b_c_v, fComp    );
 end
-h_phase
+
 %rolling rms of i_a
 windowSize = 1/Ts;  %= 1 s long window
 for i = 1:length(t)-windowSize

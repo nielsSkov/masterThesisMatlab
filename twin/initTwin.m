@@ -1,7 +1,7 @@
 m1   = .100+.075+.026;     % mass of pendulum 1          [kg]
-m2   = .100;               % mass of pendulum 2          [kg]
-M    = 5.273;              % mass of cart                [kg]
-l1   = 0.3235;             % length                      [m]
+m2   = .100+.075+.026+.05; % mass of pendulum 2          [kg]
+M    = 6.28;               % mass of cart                [kg]
+l1   = 0.3235;  %0.3348;   % length                      [m]
 l2   = 0.2;                % length                      [m]
 g    = 9.82;               % gravitational acceleration  [m s^-2]
 

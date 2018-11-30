@@ -69,9 +69,9 @@ B = subs(B);
 %controllability
 C = vpa( [ B A*B (A^2)*B (A^3)*B ], 4 )
 
-rank = rank(C)
+rankC = rank(C)
 
-if rank == length(x)
+if rankC == length(x)
   disp('The system is controllable')
 end
 
