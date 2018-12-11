@@ -6,14 +6,11 @@ cd ~/syncDrive/uni/thesis/matlab/parameterEstimation;
 addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/senseTool')
 addpath('~/syncDrive/uni/thesis/matlab/cartPendulum')
 addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest1')
-
-%only add one of these paths
 addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest2')
-%addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/compTest')
 
 %%------------ READING DATA FROM FILE AND SETTING PARAMETERS -------------
 
-itrAll = 1;
+itrAll = 34;
 
 %initializing vectors for storring results
 b_ccp_vec = zeros(68,itrAll);
@@ -32,11 +29,12 @@ errn_vec  = zeros(68,itrAll);
 % b_c_c_m =  5.6;
 % b_c_v   = 10.62;
 % 
-M     = 6.28-.3;
+M     = 6.28;
 %b_c_v = 10.414;
 
 %load old estimates for initial guesses
-loadTmp = load('estFrictionsAndErrnAllFit.mat');
+loadTmp = load('estFrictionsAndErrnAllFit2.mat');
+%loadTmp = load('estFrictionsAndErrnMany_new.mat');
 
 b_ccp_vec_old = vertcat(loadTmp.b_ccp_vec);
 b_ccm_vec_old = vertcat(loadTmp.b_ccm_vec);
@@ -93,35 +91,31 @@ b_ccm_vec_old = vertcat(loadTmp.b_ccm_vec);
 
 
 %if 0 -> manual tuning,  if 1 senseTool estimation
-sense = 0;
+sense = 1;
 %switch outher iterations on or off
-outherItr = 0;
+outherItr = 1;
 %plot all or just one
-plotAll = 0;
+plotAll = 1;
 
 if outherItr == 0
   itrAll = 1;
 end
 for j = itrAll:-1:1
 close all
-
+%figure
 
 currentRow = 0;
-for i = 6:6
+for i = 5:72
 
 %-----initial guesses is set to result of last estimate---------
 % if i > 5
 %   b_c_c_p = pare(1);
 %   b_c_c_m = pare(2);
-%   b_c_v   = pare(3);
 % end
 
 if j == itrAll || outherItr == 0
-  %b_c_c_p = b_ccp_vec_old(i-4)+1.1;
-  b_c_c_p = b_ccp_vec_old(i-4)-.59  +1.13;
-  %b_c_c_m = b_ccm_vec_old(i-4)+1.05;
-  b_c_c_m = b_ccm_vec_old(i-4)-.44  +1;
-  %b_c_v   = b_cv_vec_old(i-4);
+  b_c_c_p = b_ccp_vec_old(i-4)-.59  +1.019;
+  b_c_c_m = b_ccm_vec_old(i-4)-.44  +.8;
 else
   b_c_c_p = b_ccp_vec(i-4,j+1);
   b_c_c_m = b_ccm_vec(i-4,j+1);
@@ -135,11 +129,11 @@ data = csvread( dataFile, 0, 0);
 
 %for cropping test data
 if outherItr
-  dataStart = 1760              -66*(itrAll-j);
-  dataEnd   = length(data)-190  -66*(itrAll-j);
+  dataStart = 2250              -66*(itrAll-j);
+  dataEnd   = length(data)-396  -66*(itrAll-j);
 else
-  dataStart = 1000;
-  dataEnd   = length(data)-1000;
+  dataStart = 2250;
+  dataEnd   = length(data)-396;
 end
 
 %choose initial condition in data at high velocity (ca 0.2 m s^-1)
@@ -150,11 +144,8 @@ end
 %time vector
 t = ( data(dataStart:dataEnd,1)-data(dataStart,1) );
 
-%setting input to zero
+%input vector
 u = data(dataStart:dataEnd,2);
-%u = data(dataStart:dataEnd,9);
-%frictionComp = data(dataStart:dataEnd,8);
-%u = u+frictionComp;
 
 %output vector
 y = data(dataStart:dataEnd,3);      %position of cart
@@ -323,6 +314,145 @@ end
 
 
 
+%---------results of new many test and smoothing of results----------------
+if 0
+%%
+clear all, close all, clc
+  
+loadTmpMany = load('estFrictionsAndErrnMany_new.mat');
+
+b_ccp_many = vertcat(loadTmpMany.b_ccp_vec);
+b_ccm_many = vertcat(loadTmpMany.b_ccm_vec);
+errn_many  = vertcat(loadTmpMany.errn_vec);
+
+x = (.05:.01:.72)';
+
+figure
+plot(x, b_ccp_many)
+hold on
+plot(x, b_ccm_many)
+grid on, grid minor
+
+figure
+plot(x, mean(b_ccm_many,2), 'lineWidth', 1.2)
+hold on
+plot(x, mean(b_ccp_many,2), 'lineWidth', 1.2)
+
+b_ccm_weighed_mean = zeros(length(b_ccm_many),1);
+b_ccp_weighed_mean = zeros(length(b_ccp_many),1);
+
+normalizedErrn = zeros(size(errn_many));
+for i = 1:length(errn_many(:,1))
+  normalizedErrn(i,:) = errn_many(i,:)./sum( errn_many(i,:) );
+end
+
+for i = 1:length(b_ccm_many(:,1))
+  b_ccm_weighed_mean(i) = sum( normalizedErrn(i,:).*b_ccm_many(i,:) );
+  b_ccp_weighed_mean(i) = sum( normalizedErrn(i,:).*b_ccp_many(i,:) );
+end
+
+
+plot(x, b_ccm_weighed_mean, 'lineWidth', 1.2)
+plot(x, b_ccp_weighed_mean, 'lineWidth', 1.2)
+grid on, grid minor
+
+
+figure
+plot(x, errn_many)
+grid on, grid minor
+
+
+
+figure
+hold on
+
+linIntp_p = fit( x, b_ccp_weighed_mean, 'linearinterp' )
+linIntp_m = fit( x, b_ccm_weighed_mean, 'linearinterp' )
+
+xx = .05:.001:.72;
+yy_p = linIntp_p(xx);
+yy_m = linIntp_m(xx);
+
+scatter( xx, yy_p, 40, '.', 'r' )
+scatter( xx, yy_m, 40, '.', 'r' )
+
+smoothness = 20;
+
+smoothedCurve_p = smooth(yy_p, smoothness);
+smoothedCurve_m = smooth(yy_m, smoothness);
+
+plot(xx, smoothedCurve_p, 'linewidth', 1.8)
+plot(xx, smoothedCurve_m, 'linewidth', 1.8)
+
+smoothDownSample_p = downsample(smoothedCurve_p,10);
+smoothDownSample_m = downsample(smoothedCurve_m,10);
+
+plot(x, smoothDownSample_p, 'linewidth', 1.8)
+plot(x, smoothDownSample_m, 'linewidth', 1.8)
+grid on, grid minor
+
+
+figure
+plot(x, smoothDownSample_p, 'linewidth', 1.8)
+hold on
+plot(x, smoothDownSample_m, 'linewidth', 1.8)
+grid on, grid minor
+
+fprintf('p =\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f\n\n', smoothDownSample_p)
+fprintf('m =\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f\n\n', smoothDownSample_m)
+fprintf('x =\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f,\n %.4f, %.4f, %.4f, %.4f\n\n', x)
+
+
+%%
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -448,15 +578,14 @@ end
 % b_ccm_vec = b_ccm_vec(:,1);
 % errn_vec  = errn_vec(:,1);
 % 
-% save estFrictionsAndErrn_new_atEnd b_ccp_vec b_ccm_vec errn_vec
+%save estFrictionsAndErrnMany_new b_ccp_vec b_ccm_vec errn_vec
 
 
 
 
 
-
-%-----result of new fit with smoothing-------------------------------------
 if 0
+%% -----result of new fit with smoothing-----------------------------------
 %clear all, close all, clc
 loadTmpNew = load('estFrictionsAndErrn_new_atEnd.mat');
 
@@ -515,8 +644,9 @@ plot(x, smoothDownSample_m, 'linewidth', 1.8)
 % 3.7359, 3.6128, 3.4879, 3.2808, 3.2330, 3.3469, 3.5011, 3.5922, 
 % 3.5100, 3.5486, 3.6085, 3.7025, 3.8501, 3.8784, 3.8333, 3.7636, 
 % 3.7292, 3.8079, 3.7853, 3.6189
-end
 
+%%
+end
 
 %---------results of many test and smoothing of results--------------------
 if 0
@@ -631,15 +761,7 @@ plot(x, p, 'linewidth', 1.8)
 grid on, grid minor
 
 %%
-
-
-
-
 end
-
-
-
-
 
 
 if 0

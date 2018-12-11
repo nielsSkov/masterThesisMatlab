@@ -7,6 +7,8 @@ run('latexDefaults.m')
 
 data = csvread('testForFIR.csv');
 
+matlabBlue = [ 0 0.4470 0.7410 ];
+
 dataStart = 780;
 dataEnd   = length(data);
 
@@ -20,16 +22,10 @@ x_dot     = data( dataStart:dataEnd, 5 );
 figure
 plot(t,theta)
 title('$\theta$')
-% 
-<<<<<<< HEAD
+%
  figure
  plot(t,x)
  title('$x$')
-=======
-% figure
-% plot(t,x)
-% title('$x$')
->>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
 %
 % figure
 % plot(t,x_dot)
@@ -37,6 +33,7 @@ title('$\theta$')
 
 
 %-------FFT of signal------------------------------------------------------
+close all
 
 Fs = 149.925;           % Sampling frequency                    
 T = 1/Fs;               % Sampling period       
@@ -108,7 +105,7 @@ omega_c = 11.95;
 %                           --|>  h(1), h(2), ..., h(M)          <|
 %
 
-M = 16; %window size
+M = 10; %window size
 
 h = zeros(1,M);
 
@@ -157,39 +154,160 @@ title('$\dot{\theta}$')
 
 
 
-%averaging filter with equal weights
-h = ones(1,M)*(1/M);
 
-%implementation of FIR filter
-tic
-in = zeros(1,M);
 
-theta_dot_filt = zeros(length(theta_dot),1);
 
-for i = 1:length(theta_dot)
-  
-  for j = length(in):-1:2  %shift right
-    in(j) = in(j-1);
+
+
+
+%%
+%clear all; close all; clc                                                  %#ok<CLALL>
+
+%change path to directory containing the project files
+cd ~/syncDrive/uni/thesis/matlab/filterDesignFIR
+
+run('latexDefaults.m')
+
+isTest = 0;
+
+alpha = 0.3;
+
+data = csvread('testForFIR.csv');
+
+matlabBlue   = [ 0       0.4470  0.7410 ];
+matlabPurple = [ 0.4940  0.1840  0.5560 ];
+
+dataStart = 780;
+dataEnd   = length(data);
+
+t         = data( dataStart:dataEnd, 1 );
+theta     = data( dataStart:dataEnd, 2 );
+x         = data( dataStart:dataEnd, 3 );
+theta_dot = data( dataStart:dataEnd, 4 );
+x_dot     = data( dataStart:dataEnd, 5 );
+
+for jj = 2:2
+
+  %window size
+  if jj == 1
+    N = 5;
+  elseif jj ==2
+    N = 15
   end
-  in(1) = theta_dot(i);
-  
-  for j = 1:length(in)
-    theta_dot_filt(i) = theta_dot_filt(i) + in(j)*h(j);
+
+  %averaging filter with equal weights
+  h = ones(1,N)*(1/N);
+
+  %implementation of FIR filter
+  in = zeros(1,N);
+
+  theta_dot_filt = zeros(length(theta_dot),1);
+
+  for i = 1:length(theta_dot)
+
+    for j = length(in):-1:2  %shift right
+      in(j) = in(j-1);
+    end
+    in(1) = theta_dot(i);
+
+    for j = 1:length(in)
+      theta_dot_filt(i) = theta_dot_filt(i) + in(j)*h(j);
+    end
   end
+
+  if jj == 1
+    figure(1);
+  else
+    h_thetaDot = figure(1);
+  end
+  if jj == 1
+    plot(t,theta_dot, 'linewidth', 1, 'color', matlabBlue )
+    hold on
+    plot(t,theta_dot_filt, 'linewidth', 1.5, 'color', [ 0 .55 0 ] )
+  elseif jj == 2
+    plot(t,theta_dot_filt, 'linewidth', 1.5, 'color', matlabPurple )
+  end
+  axis([ 47.2181  49.1199  -2.2425  2.3969 ])
+  xlabel('$t$ [s]')
+  ylabel('$\dot{\theta}$ [rad s$^{-1}$]')
+  if jj == 2
+    legend( 'Numerical Differentiation', ...
+            'With MA Filter, $N = 5$',   ...
+            'With MA Filter, $N = 15$',  ...
+            'location', 'southeast'      )
+    grid on, grid minor
+  end
+
+
+
+  %implementation of FIR filter
+  in = zeros(1,N);
+
+  x_dot_filt = zeros(length(x_dot),1);
+  %xEst       = zeros(length(x_dot),1);
+
+  for i = 1:length(x_dot)
+
+    for j = length(in):-1:2  %shift right
+      in(j) = in(j-1);
+    end
+    in(1) = x_dot(i);
+
+    for j = 1:length(in)
+      x_dot_filt(i) = x_dot_filt(i) + in(j)*h(j);
+      %if i == 1
+      %  xEst(i) = x_dot_filt(i);
+      %else
+      %  xEst(i) = alpha*x_dot_filt(i) + ( 1 - alpha )*xEst(i-1);
+      %end
+    end
+  end
+
+  if j == 1
+    figure(2);
+  else
+    h_xDot = figure(2);
+  end
+  if jj == 1
+    plot(t,x_dot, 'linewidth', 1, 'color', matlabBlue )
+    hold on
+    plot(t,x_dot_filt, 'linewidth', 1.5, 'color', [ 0 .55 0 ] )
+  elseif jj == 2
+    plot(t,x_dot_filt, 'linewidth', 1.5, 'color', matlabPurple )
+  end
+  axis([ 33.6448  35.2543  -0.0141  0.0143 ])
+  xlabel('$t$ [s]')
+  ylabel('$\dot{x}$ [m s$^{-1}$]')
+  if jj == 2
+    legend( 'Numerical Differentiation', ...
+            'With MA Filter, $N = 5$',   ...
+            'With MA Filter, $N = 15$',  ...
+            'location', 'southeast'      )
+    grid on, grid minor
+  end
+
+%exponential smoothing 
+%  xEst = alpha*x + ( 1 - alpha )*xEstPrev
+
+  figure
+  plot(t,x_dot_filt, 'linewidth', 1.5, 'color', matlabBlue ), hold on
+  plot(t,xEst, 'linewidth', 1.5, 'color', matlabPurple )
 end
-toc
-%add average filtered signal
-plot(t,theta_dot_filt)
+%%
 
 
 
 
 
-<<<<<<< HEAD
 
-=======
-tic
->>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
+
+
+
+
+
+
+if 0
+%%
 %implementation of FIR filter (with ring buffer)
 
 in = zeros(1,M);
@@ -213,18 +331,28 @@ for i = 1:L
     offset = 0;
   end
 end
-<<<<<<< HEAD
 
-=======
-toc
->>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
-scatter(t,theta_dot_filt,100,'.')
+%scatter(t,theta_dot_filt,100,'.')
+%%
+end
 
 
 
-<<<<<<< HEAD
+
+
 %%
 clear all, close all, clc
+
+isTest = 1;
+
+%change path to directory containing the project files
+cd ~/syncDrive/uni/thesis/matlab/filterDesignFIR
+
+run('latexDefaults.m')
+
+data = csvread('testForFIR.csv');
+
+matlabBlue = [ 0 0.4470 0.7410 ];
 
 testData = csvread('ringFIRtest1.csv');
 
@@ -236,51 +364,109 @@ x2    = testData(:,5);
 x3FIR = testData(:,6);
 x4FIR = testData(:,7);
 
-figure
-plot(t,x3)
+h_thetaDot = figure
 hold on
-plot(t,x3FIR)
+%scatter(t,x3,45,'.')
+plot(t,x3, 'linewidth', 1, 'color', matlabBlue )
+plot(t,x3FIR, 'linewidth', 1.2, 'color', [ 0 .55 0 ] )
+axis([10.0456   14.4826  -11.5628   10.6954])
+xlabel('$t$ [s]')
+ylabel('$\dot{\theta}$ [rad s$^{-1}$]')
+legend( 'Numerical Differentiation', ...
+        'With MA Filter',            ...
+        'location', 'southwest'      )
+grid on, grid minor
 
-figure
-plot(t,x4)
+h_xDot = figure
 hold on
-plot(t,x4FIR)
-
+%scatter(t,x4,45,'.')
+plot(t,x4, 'linewidth', 1, 'color', matlabBlue )
+plot(t,x4FIR, 'linewidth', 1.2, 'color', [ 0 .55 0 ] )
+axis([3.2661 5.1720 -0.5447 0.3469])
+xlabel('$t$ [s]')
+ylabel('$\dot{x}$ [m s$^{-1}$]')
+legend( 'Numerical Differentiation', ...
+        'With MA Filter',            ...
+        'location', 'southwest'      )
+grid on, grid minor
 
 %implementation of FIR filter (with ring buffer)
 
 L = length(x4);
 
-M = 5; %window size
+N = 5; %window size
 
-in = zeros(1,M);
+in = zeros(1,N);
 
 theta_dot_filt = zeros(length(x4),1);
 
 offset = 0;
 
 %averaging filter with equal weights
-h = ones(1,M)*(1/M);
+h = ones(1,N)*(1/N);
 
 for i = 1:L
   
   in(offset     +1) = x4(i);     % +1 for matlab
   
-  for j = offset:M+offset-1
-    ringDex = mod(j,M)       +1;  % +1 for matlab
+  for j = offset:N+offset-1
+    ringDex = mod(j,N)       +1;  % +1 for matlab
     
     theta_dot_filt(i) = theta_dot_filt(i) + in(ringDex)*h(ringDex);
   end
   
   offset = offset+1;
-  if offset == M;
+  if offset == N
     offset = 0;
   end
 end
 
-scatter(t,theta_dot_filt,100,'.')
-plot(t,theta_dot_filt)
-=======
+%scatter(t,theta_dot_filt,100,'.')
+%plot(t,theta_dot_filt)
+
+
+
+
+
+
+
+%exponential filter
+% xEst = alpha*x + ( 1 - alpha )*xEstPrev
+
+
+
+
+
+
+%% ----------SAVE PLOTS----------------------------------------------------
+
+%remember to float the windows before saving (for consistent scale)
+if 0
+  figurePath1 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/original/';  %#ok<UNRCH>
+  figurePath2 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/';
+  fileTypeOrig = "fig";
+  
+  if isTest
+    testID='MA_test';
+  else
+    testID='MA_design';
+  end
+  
+  for jjj = 1:2
+    switch jjj
+    case 1
+        figHandle=h_xDot;
+        fileName=strcat('xDot',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 2
+        figHandle=h_thetaDot;
+        fileName=strcat('thetaDot',testID);
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    end
+  end
+end
 
 
 
@@ -290,8 +476,6 @@ plot(t,theta_dot_filt)
 
 
 
-
->>>>>>> 8d5ece76bf74097d71416d15472bff273110fe25
 
 
 

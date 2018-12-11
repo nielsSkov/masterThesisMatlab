@@ -14,13 +14,14 @@ function [ q_dot ]  = simCart( t, q, u, tvec, m, M, l, g,        ...
   
   if x_dot > 0 || ( x_dot == 0 && vDirec == 1 )
     b_c_c = b_c_c_p;
-    b_c_v = 0;
   elseif x_dot < 0 || ( x_dot == 0 && vDirec == -1 )
     b_c_c = b_c_c_m;
-    b_c_v = 0;
+    
   end
-
-  %  x_dot_dot = (v + b_c_c*tanh(k_tanh*x_dot) + b_c_v*x_dot)/M
+  
+  b_c_v = 0;
+  
+  %  x_dot_dot = (v - b_c_c*tanh(k_tanh*x_dot) - b_c_v*x_dot)/M
   
   % z1 = x ==> z1_dot = x_dot ==>  z1_dot = z2 = x_dot , z2_dot = x_dot_dot 
 
