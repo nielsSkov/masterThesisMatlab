@@ -9,6 +9,7 @@ run('initCartPendulum.m')
 %setting estimated parameters
 b_p_c = par(1);            % pendulum coulomb friction   [N m]
 b_p_v = par(2);            % pendulum viscous friction   [N m s]
+m     = par(3);
 
 %setting initial values for simulation
 theta_0     = evalin('base', 'theta_0');

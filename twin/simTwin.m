@@ -17,7 +17,7 @@ function [ q_dot,          ...
   
   persistent catchAngle;
   if isempty(catchAngle)
-    catchAngle = 0.0156;
+    catchAngle = 0.0156+.09;
   end
   
   theta1       = q(1);
@@ -57,11 +57,7 @@ function [ q_dot,          ...
           x4  ;
           x5  ;
           x6 ];
-
-  %maximum catch angle
-  %catchAngle = 0.005;
   
-
   %difference in energy with cooredinate system fixed at pivot point
   J1 = m1*(l1^2);
   J2 = m2*(l2^2);
@@ -80,10 +76,7 @@ function [ q_dot,          ...
   %total energy
   E_T = T + U; %(function output)
   
-  kLQR = [ -2050.12  1831.28  32.36  -365.43  252.89  43.45 ];
-  
-  catchAngle
-  abs(x1Wrap)+abs(x2Wrap)
+  kLQR = [ -1995.80  1802.84  29.42  -352.36  248.62  39.53 ];
   
   if catchTwin && ( (abs(x1Wrap)+abs(x2Wrap)) < catchAngle  )%<-- catch controller
     catchAngle = .8;
@@ -98,8 +91,8 @@ con = 1;
     u = 0;
   
   elseif con == 1 && energyCon == 1  %<--rudementary controller (Åström)
-    k1 = 16.86;
-    k2 = 16.86;
+    k1 = 16.86-.2;
+    k2 = 16.86-.2;
     E_delta1 = E_delta1-.0326;
     E_delta2 = E_delta2-.0326;
     xDotDot = -k1*E_delta1*m1*l1*cos(x1)*x4 -k2*E_delta2*m2*l2*cos(x2)*x5
@@ -135,7 +128,7 @@ con = 1;
     u_max = i_max*k_tau/r;
     a_max = u_max/(M+m1+m2);
     
-    xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ))
+    xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
 
   end
   
