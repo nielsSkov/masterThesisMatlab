@@ -1,21 +1,22 @@
 %
 %                    addjustment from
-%        measured        estimate
-m1     = .100+.075+.026  +0.0225;  % mass of pendulum 1          [kg]
-l1     = 0.3235          -.00658;  % length of pendulum 1        [m]
+%    measured            estimate
+m1 = .100+.075+.026      +.02250;  % mass of pendulum 1          [kg]
+l1 = .3218               -.00490;  % length of pendulum 1        [m]
 
-%        measured/guess  (estimate)
-m2     = .100+.075+.026+.05;       % mass of pendulum 2          [kg]
-l2     = .2;                       % length of pendulum 2        [m]
+%                    addjustment from
+%    measured            estimate
+m2 = .100+.075+.026+.05  +.00000;  % mass of pendulum 2          [kg]
+l2 = .2000               -.00000;  % length of pendulum 2        [m]
 
-%        estimated
-M      = 6.28;                     % mass of cart                [kg]
+%    estimated
+M  = 6.28;                         % mass of cart                [kg]
 
-%        gravity in Denmark
-g      = 9.82;                     % gravitational acceleration  [m s^-2]
+%    gravity in Denmark
+g  = 9.82;                         % gravitational acceleration  [m s^-2]
 
-%        measured
-r      = 0.028;                    % radius of pulley            [m]
+%    measured
+r  = .028;                         % radius of pulley            [m]
 
 % cart friction is more complex
 % (see parameter estimation)
@@ -34,4 +35,4 @@ b_p2_v =  .5e-3;                   % pendulum 2 viscous friction [N m s]
 k_tanh = 250;                      %tanh constant                [1]
 
 %        from datasheet
-k_tau  = 93.4e-3;                  % motor torque constant       [N m A^-1]
+k_tau  = 93.4e-3;                  % motor torque constzant       [N m A^-1]
