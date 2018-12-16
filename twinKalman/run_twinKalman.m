@@ -68,7 +68,7 @@ run('initTwin.m')
 
 A = double(subs(A))
 B = double(subs(B))
-C = zeros(1,6);
+C = ones(1,6);
 D = 0;
 
 %% -------Discrete Time Model----------------------------------------------
@@ -187,6 +187,44 @@ grid on, grid minor
 % plot(tDis,D_x_dot)
 
 
+%% -------INITIALIZATION---------------------------------------------------
+
+P0 = [ 0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0    ];
+
+%should come from [measurement] @ initialization
+x0 = [ 0
+       0
+       0
+       0
+       0
+       0 ];
+
+xEst(k-1) = x0;
+P(k-1)    = P0;
+
+%% -------PREDICTION-------------------------------------------------------
+
+%calculating priori/predicted estimate
+xPred(k)  = Ad*xEst(k-1) + Bd*u(k);
+
+%error covariance (measure of uncertainty in the predicted states)
+P_pred(k) = Ad*P(k-1)*Ad' + Q;
+
+%% -------UPDATE-----------------------------------------------------------
+
+%calculate Kalman gain
+K(k) = P_pred(k)*Cd'*(( Cd*P_pred(K)*Cd' + R )^(-1));
+
+xEst = xPred(k) + K(k)*( y(k) - Cd*xPred(k) );
+
+P(k) = ( I - K(k)*Cd )*P_pred(k);
+
+
 %% -------SIMULATION USING ODE45-------------------------------------------
 
 run('initTwin.m')
@@ -223,14 +261,16 @@ init  = [ theta1_0 theta2_0 x_0 theta1_dot_0 theta2_dot_0 x_dot_0 ];
 %lowering relative tollerence (default 1e-3) to avoid drifting along x
 options = odeset('RelTol',1e-7);
 
+noiseOn = 0;
+
 %run ode45 simulation
-[t, q] = ode45( @(t,q)                                     ...
-                simTwin( t, q, m1, m2, M, l1, l2,     ...
+[t, q] = ode45( @(t,q)                                           ...
+                simTwin( t, q, m1, m2, M, l1, l2,          ...
                          g, k_tanh, r, k_tau,              ...
                          b_p1_c, b_p1_v,                   ...
                          b_p2_c, b_p2_v,                   ...
-                         b_c_c, b_c_v                   ), ...
-                tspan, init, options                           );
+                         b_c_c, b_c_v, noiseOn       ),    ...
+                tspan, init, options                             );
 
 %assigning results of ode45 simulation
 theta1      =  q(:,1);
@@ -241,27 +281,55 @@ theta2_dot  =  q(:,5);
 x_dot       =  q(:,6);
 
 %initializing 2nd derivatives and amature current
-theta1_dot_dot = zeros(size(t));
-theta2_dot_dot = zeros(size(t));
-x_dot_dot      = zeros(size(t));
-i_a            = zeros(size(t));
-ia_rms         = zeros(size(t));
-E_delta        = zeros(size(t));
-E_T            = zeros(size(t));
+theta1_dot_dot   = zeros(size(t));
+theta2_dot_dot   = zeros(size(t));
+x_dot_dot        = zeros(size(t));
+i_a              = zeros(size(t));
+ia_rms           = zeros(size(t));
+E_delta          = zeros(size(t));
+E_T              = zeros(size(t));
+
+noise_theta1     = zeros(size(t));
+noise_theta2     = zeros(size(t));
+noise_x          = zeros(size(t));
+noise_theta1_dot = zeros(size(t));
+noise_theta2_dot = zeros(size(t));
+noise_x_dot      = zeros(size(t));
+
+x1Est            = zeros(size(t));
+x2Est            = zeros(size(t));
+x3Est            = zeros(size(t));
+x4Est            = zeros(size(t));
+x5Est            = zeros(size(t));
+x6Est            = zeros(size(t));
+
+noiseOn = 1;
 
 %calculating/simulating 2nd derivatives
 for i = 1:length(t)
 
-  [ ~, theta1_dot_dot(i),  ...
-        theta2_dot_dot(i), ...
-        x_dot_dot(i),      ...
-        i_a(i),            ...
-        E_delta(i),        ...
+  [ ~, theta1_dot_dot(i),     ...
+        theta2_dot_dot(i),    ...
+        x_dot_dot(i),         ...
+        noise_theta1(i),      ...
+        noise_theta2(i),      ...
+        noise_x(i),           ...
+        noise_theta1_dot(i),  ...
+        noise_theta2_dot(i),  ...
+        noise_x_dot(i),       ...
+        x1Est(i),             ...
+        x2Est(i),             ...
+        x3Est(i),             ...
+        x4Est(i),             ...
+        x5Est(i),             ...
+        x6Est(i),             ...
+        i_a(i),               ...
+        E_delta(i),           ...
         E_T(i)     ]   = simTwin( t(i), q(i,:), m1, m2, M, l1, l2,  ...
                                   g, k_tanh, r, k_tau,              ...
                                   b_p1_c, b_p1_v,                   ...
                                   b_p2_c, b_p2_v,                   ...
-                                  b_c_c, b_c_v                      );
+                                  b_c_c, b_c_v, noiseOn             );
 end
 
 windowSize = 1/Ts;  %= 1 s long window
@@ -269,7 +337,42 @@ for i = 1:length(t)-windowSize
   ia_rms(i) = rms( i_a(i:i+windowSize) );
 end
 
-run('plotFigs.m')
+%run('plotFigs.m')
+
+figure
+plot( t, noise_x, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$x$ [m]')
+xlim([min(t) max(t)])
+
+figure
+plot( t, noise_x_dot, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
+xlim([min(t) max(t)])
+
+figure
+plot( t, noise_theta1, 'linewidth', 1.5 )
+hold on
+plot( t, noise_theta2, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\theta$ [rad]')
+xlim([min(t) max(t)])
+legend( '$\theta_1$', '$\theta_2$', 'location', 'southeast' )
+
+figure
+plot( t, noise_theta1_dot, 'linewidth', 1.5 )
+hold on
+plot( t, noise_theta2_dot, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
+xlim([min(t) max(t)])
+legend( '$\dot{\theta}_1$', '$\dot{\theta}_2$', 'location', 'southeast' )
+
 
 %% ----------ANIMATION-----------------------------------------------------
 

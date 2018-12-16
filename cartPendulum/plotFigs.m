@@ -39,7 +39,10 @@ plot( t, theta, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\theta$ [rad]')
+ax = gca; ax.YDir = 'reverse'; %reverse y-axis for angle
+yPI = 1; xPI = 0; run('piAxes.m')
 xlim([min(t) max(t)])
+ylim([ -.5 2*pi])
 
 if documentation == 0
   axThetaD = subplot(3,1,2);
@@ -50,7 +53,9 @@ plot( t, theta_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
+yPI = 1; xPI = 0; run('piAxes.m')
 xlim([min(t) max(t)])
+ylim([min(theta_dot)-.5 max(theta_dot)+.5 ])
 
 if documentation == 0
   axThetaDD = subplot(3,1,3);
@@ -61,7 +66,9 @@ plot( t, theta_dot_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\ddot{\theta}$ [rad$\cdot$s$^{-2}$]')
+%yPI = 1; xPI = 0; run('piAxes.m')
 xlim([min(t) max(t)])
+ylim([min(theta_dot_dot)-.5 max(theta_dot_dot)+.5 ])
 
 if documentation == 0
   axesXTheta = [ axX axXD axXDD axTheta axThetaD axThetaDD ];
@@ -96,7 +103,7 @@ if con == 1 || con == 2 || con == 4
 end
 plot( theta, theta_dot, 'linewidth', 1.5, 'color', matlabBlue )
 grid on
-run('piAxes.m')
+yPI = 1; xPI = 1; run('piAxes.m')
 axis equal
 thetaLim = max( abs(min(theta_dot)), max(theta_dot) );
 axis([-3*pi 5*pi -thetaLim-.5 thetaLim+.5])
@@ -148,7 +155,7 @@ if plotOrbit
   grid on, grid minor
   xlabel('$\theta$')
   ylabel('$\dot{\theta}$')
-  run('piAxes.m')
+  yPI = 1; xPI = 1; run('piAxes.m')
   axis equal
   x3Lim = max( abs(min(x3_2)), max(x3_1) );
   axis([-3*pi 5*pi -x3Lim-.5 x3Lim+.5])

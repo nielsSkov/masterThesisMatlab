@@ -89,13 +89,14 @@ b_ccm_vec_old = vertcat(loadTmp.b_ccm_vec);
 % b_ccm_vec_old(71-4) = b_ccm_vec_old(71-4)+.10;
 % b_ccm_vec_old(72-4) = b_ccm_vec_old(72-4)+.01;
 
+minMax = zeros(68,1);
 
 %if 0 -> manual tuning,  if 1 senseTool estimation
-sense = 1;
+sense = 0;
 %switch outher iterations on or off
-outherItr = 1;
+outherItr = 0;
 %plot all or just one
-plotAll = 1;
+plotAll = 0;
 
 if outherItr == 0
   itrAll = 1;
@@ -149,6 +150,8 @@ u = data(dataStart:dataEnd,2);
 
 %output vector
 y = data(dataStart:dataEnd,3);      %position of cart
+
+minMax(i) = max(y)-min(y);          %mean(minMax(5:end)) = 0.0268 m
 
 %velocity
 y_dot = data(dataStart:dataEnd,4);  %velocity of cart (not used)
@@ -807,4 +810,35 @@ b_c_v = 10.414;
 round(b_ccm_weighed_mean-bm',4)
 round(b_ccp_weighed_mean-bp',4)
 
+end
+
+
+
+
+
+
+
+
+
+
+
+
+%% ----------SAVE PLOTS----------------------------------------------------
+
+%remember to float the windows before saving (for consistent scale)
+if 0
+  figurePath1 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/original/';  %#ok<UNRCH>
+  figurePath2 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/';
+  fileTypeOrig = "fig";
+  
+  for jj = 1:1
+    switch jj
+    case 1
+        figHandle=gcf;
+        fileName='manyEst';
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    end
+  end
 end

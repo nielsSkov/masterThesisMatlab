@@ -29,7 +29,7 @@ con   = 4; %<-controller selection where,
 %             3 - sat-approximation of 2
 %             4 - sat-based controller (Åström)
 
-documentation = 0; %figures are plottet seperately if documentation is on
+documentation = 1; %figures are plottet seperately if documentation is on
 
 if noFriction
   b_c_c = 0; b_c_v = 0; b_p_c = 0; b_p_v = 0;
@@ -202,7 +202,8 @@ if 0
     testID='_4_conX';
   end
   
-  testID = '_slidingMode';
+  %testID = '_slidingMode';
+  testID = '_swingAndCatch';
   
   if plotOrbit == 1
     figHandle=h_orbit;
