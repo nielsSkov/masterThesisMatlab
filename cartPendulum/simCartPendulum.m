@@ -36,7 +36,7 @@ function [ q_dot,         ...
   
   if slm && ( abs(x1Wrap) < catchAngle  ) %<-- catch controller
     
-    k_s     = [ 7.3918 -1.3414 -5.5344 ];
+    k_s     = [ 7.2025 -1.2930 -5.4218 ];
     k1      = k_s(1);
     k2      = k_s(2);
     k3      = k_s(3);
@@ -71,7 +71,7 @@ function [ q_dot,         ...
     xDotDot = -k*E_delta*cos(x1)*x3;
   
   elseif con == 2 && energyCon == 1  %<--sign-based controller (Åström)
-    k = 2.7;
+    k = 2.4;
     sgn = sign(-E_delta*cos(x1)*x3);
     if sgn == 0 && E_delta ~= 0
       sgn = 1;

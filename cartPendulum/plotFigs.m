@@ -1,3 +1,16 @@
+
+% crop1 = length(t(t<13.51))+110;
+% x             = x(1:crop1);
+% x_dot         = x_dot(1:crop1);
+% x_dot_dot     = x_dot_dot(1:crop1);
+% theta         = theta(1:crop1);
+% theta_dot     = theta_dot(1:crop1);
+% theta_dot_dot = theta_dot_dot(1:crop1);
+% i_a           = i_a(1:crop1);
+% ia_rms        = ia_rms(1:crop1);
+% E_delta       = E_delta(1:crop1);
+% t             = t(1:crop1);
+
 %plot all states
 h_x = figure;
 if documentation == 0
@@ -7,7 +20,7 @@ plot( t, x, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$x$ [m]')
-xlim([min(t) max(t)])
+xlim([min(t) max(t)-1.1])
 
 if documentation == 0
   axXD = subplot(3,1,2);
@@ -18,7 +31,7 @@ plot( t, x_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
-xlim([min(t) max(t)])
+xlim([min(t) max(t)-1.1])
 
 if documentation == 0
   axXDD = subplot(3,1,3);
@@ -29,7 +42,7 @@ plot( t, x_dot_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\ddot{x}$ [m$\cdot$s$^{-2}$]')
-xlim([min(t) max(t)])
+xlim([min(t) max(t)-1.1])
 
 h_theta = figure;
 if documentation == 0
@@ -40,9 +53,13 @@ grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\theta$ [rad]')
 ax = gca; ax.YDir = 'reverse'; %reverse y-axis for angle
-yPI = 1; xPI = 0; run('piAxes.m')
-xlim([min(t) max(t)])
-ylim([ -.5 2*pi])
+if ~(con == 0 && slm == 1)
+  yPI = 1; xPI = 0; run('piAxes.m')
+end
+xlim([min(t) max(t)-1.1])
+if ~(con == 0 && slm == 1)
+  ylim([ -.5 2*pi])
+end
 
 if documentation == 0
   axThetaD = subplot(3,1,2);
@@ -53,8 +70,10 @@ plot( t, theta_dot, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
-yPI = 1; xPI = 0; run('piAxes.m')
-xlim([min(t) max(t)])
+if ~(con == 0 && slm == 1)
+  yPI = 1; xPI = 0; run('piAxes.m')
+end
+xlim([min(t) max(t)-1.1])
 ylim([min(theta_dot)-.5 max(theta_dot)+.5 ])
 
 if documentation == 0
@@ -67,7 +86,7 @@ grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\ddot{\theta}$ [rad$\cdot$s$^{-2}$]')
 %yPI = 1; xPI = 0; run('piAxes.m')
-xlim([min(t) max(t)])
+xlim([min(t) max(t)-1.1])
 ylim([min(theta_dot_dot)-.5 max(theta_dot_dot)+.5 ])
 
 if documentation == 0
@@ -84,11 +103,11 @@ ylabel('$i_a$ [A]')
 hold on
 plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
 i_max = 4.58;
-xlim([min(t) max(t)])
+xlim([min(t) max(t)-1.1])
 ylim([min(i_a)-.5 max(i_a)+.5])
 plot(xlim,[i_max i_max], 'r', 'linewidth', 1.5 )
 legend( 'Motor Current',          ...
-        'Moving RMS of $i_a$',    ...
+        'Moving Average RMS of $i_a$',    ...
         'Max Continuous Current', ...
         'location', 'southeast'   )
 
@@ -101,7 +120,8 @@ if con == 1 || con == 2 || con == 4
   run('addPhasePortrait.m')
   hold on
 end
-plot( theta, theta_dot, 'linewidth', 1.5, 'color', matlabBlue )
+plot( theta(1:end-110), theta_dot(1:end-110), ...
+      'linewidth', 1.5, 'color', matlabBlue     )
 grid on
 yPI = 1; xPI = 1; run('piAxes.m')
 axis equal
@@ -121,7 +141,8 @@ plot( t, E_delta, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$E_\Delta$ [J]')
-xlim([min(t) max(t)])
+xlim([min(t) max(t)-1.1])
+ylim([min(E_delta) max(E_delta)+.2])
 if documentation == 1
   pbaspect(aspectRatioPhasePlot)
 end

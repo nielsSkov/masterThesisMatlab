@@ -19,19 +19,19 @@ switch con
     if conX
       axis([ -1 1 0 1 ])
     else
-      axis([ -2 .5 0 1 ])
+      axis([ -1 .5 0 1 ])
     end
   case 2
     if conX
       axis([ -1 1 0 1 ])
     else
-      axis([ -.2 11.5 0 1 ])
+      axis([ -.2 9.5 0 1 ])
     end
   case 3
     if conX
       axis([ -1 1 0 1 ])
     else
-      axis([ -.2 6 0 1 ])
+      axis([ -.2 7 0 1 ])
     end
   case 4
     if conX
@@ -54,7 +54,7 @@ tic;
 res = 2; % deviding resolution of simulation data with res
 
 %Animation Loop
-for i = 2:length(t)  /res
+for i = 2:length(t(1:end-110))  /res
 
   i = i*res;
 

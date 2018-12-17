@@ -335,6 +335,8 @@ u_max = vpa( beta*g_b_inv  , 3)                                            %#ok<
 i_max = vpa( u_max*r/k_tau , 3)                                            %#ok<NOPTS>
 
 
+%reset font size to factory default
+set(0, 'defaultAxesFontSize', get(0, 'factoryAxesFontSize') )
 
 %% ----------SAVE PLOTS----------------------------------------------------
 

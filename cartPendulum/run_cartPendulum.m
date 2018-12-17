@@ -18,11 +18,11 @@ noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-slm   = 1; %<-enable/disable sliding mode catch controller
+slm   = 0; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
-iaLim = 1; %<-limmit actuation peak on/off
-conX  = 1; %<-select whether or not to control x-position/velocity
-con   = 4; %<-controller selection where,
+iaLim = 0; %<-limmit actuation peak on/off
+conX  = 0; %<-select whether or not to control x-position/velocity
+con   = 2; %<-controller selection where,
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
 %             2 - sign-based controller (Åström)    <--WARNING! VERY slow..
@@ -85,32 +85,32 @@ Ts      = .01;
 %choose simulation length based on controller choise
 switch con
   case 0
-    T_final = 10;
+    T_final = 10          +1.1;  %<--the +1.1 is margin for MA of i_a
   case 1
     if conX
-      T_final = 6.82;
+      T_final = 6.82      +1.1;
     else
-      T_final = 20;
+      T_final = 20        +1.1;
     end
   case 2
     if conX
-      T_final = 6.82;
+      T_final = 6.82      +1.1;
     else
-      T_final = 15;
+      T_final = 13.5      +1.1;
     end
   case 3
     if conX
-      T_final = 6.82;
+      T_final = 6.82      +1.1;
       %T_final = 20;  %<--to show x-position/velocity control reaching zero
     else
-      T_final = 7.5;
+      T_final = 7.5       +1.1;
     end
   case 4
     if conX
-      T_final = 6.75+1.5;
+      T_final = 9.45      +1.1;
       %T_final = 20;  %<--to show x-position/velocity control reaching zero
     else
-      T_final = 7.5;
+      T_final = 8.6       +1.1;
     end
 end
 
@@ -184,6 +184,7 @@ if 0
   figurePath2 = ...
     '~/syncDrive/uni/thesis/report/report/figures/';
   fileTypeOrig = "fig";
+  
   if con == 1 && conX == 0
     testID='_1_noConX';
   elseif con == 1 && conX == 1
@@ -196,14 +197,15 @@ if 0
     testID='_3_noConX';
   elseif con == 3 && conX == 1
     testID='_3_conX';
-  elseif con == 4 && conX == 0
+  elseif con == 4 && conX == 0 && slm ~= 1
     testID='_4_noConX';
-  elseif con == 4 && conX == 1
+  elseif con == 4 && conX == 1 && slm ~= 1
     testID='_4_conX';
+  elseif con == 4 && conX == 1 && slm == 1
+    testID='_swingAndCatch';
+  elseif con == 0 && conX == 0 && slm == 1
+    testID='_slidingMode';
   end
-  
-  %testID = '_slidingMode';
-  testID = '_swingAndCatch';
   
   if plotOrbit == 1
     figHandle=h_orbit;
