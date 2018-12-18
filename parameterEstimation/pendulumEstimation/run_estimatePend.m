@@ -18,22 +18,50 @@ sense = 1;
 %choos weather or not to iterate over data with different initial points
 itrAll = 0;
 
+%choose which pendulum to estimate
+estP1 = 0;
+
 %initial guess
-b_p_c = 0.0040053;             % pendulum coulomb friction   [N m]
-b_p_v = 0.00045821;             % pendulum viscous friction   [N m s]
-m = .2186;
+if estP1
+  b_p_c = 0.0040053;              % pendulum 1 coulomb friction   [N m]
+  b_p_v = 0.00045821;             % pendulum 1 viscous friction   [N m s]
+  m = .2186;           estL = 0;
+  %l = 0.3235 -.00658; estL = 1;
+else
+  b_p_c = 0.00567;                % pendulum 2 coulomb friction   [N m]
+  b_p_v = 0.00010;                % pendulum 2 viscous friction   [N m s]
+  %m = .2510+.0132;    estL = 0;
+  %l = .2   -.000;     estL = 1;
+  estL = -1;
+end
+
+%     0.0057
+%     0.0001
+% m   +.015
+% l   0.2006
 
 %this: %02i means two digit integer with leading zeros
-dataFile = 'test1pend1.csv';
-%dataFile = 'test1pend2.csv';
+dataFilePend1 = 'test1pend1.csv';
+dataFilePend2 = 'test1pend2.csv';
 
-data = csvread( dataFile, 0, 0);
+dataPend1 = csvread( dataFilePend1, 0, 0);
+dataPend2 = csvread( dataFilePend2, 0, 0);
 
 %calculating number of iterations
-period  = 267;  % [samples]
+if estP1
+  period  = 267;  % [samples]
+else
+  period  = 138;
+end
 
-nrOfItr = floor(length(data)/period) -10;
-nrOfItr = 3;
+if estP1
+  %nrOfItr = floor(length(dataPend1)/period) -10;
+  nrOfItr = 3;
+else
+  %nrOfItr = floor(length(dataPend2)/period) -10;
+  nrOfItr = 1;
+end
+
 if itrAll
   finalItr = 3;
 else
@@ -47,37 +75,67 @@ b_p_v_save = zeros(nrOfItr,1);
 for i = nrOfItr:-1:finalItr
   
   %for cropping test data
-  dataStart = i*period;
+  if estP1
+    dataStart = i*period;
+  else
+    dataStart = period*3;
+  end
 
   %choose initial condition in data at high velocity (ca 4 rad s^-1)
-  while abs(data(dataStart,3)) > 0
-    dataStart = dataStart-1;
+  if estP1
+    while abs(dataPend1(dataStart,3)) > 0
+      dataStart = dataStart-1;
+    end
+    dataEnd   = dataStart+2500+7000;
+  else
+    while abs(dataPend2(dataStart,3)) > 0
+      dataStart = dataStart-1;
+    end
+    dataEnd    = 6000;
   end
   
-  dataEnd   = dataStart+2500+7000;
+  if estP1
+    %time vector
+    t = ( dataPend1(dataStart:dataEnd,1)-dataPend1(dataStart,1) );
 
-  %time vector
-  t = ( data(dataStart:dataEnd,1)-data(dataStart,1) );
+    %input vector
+    u = zeros(size(t)); %no input
 
-  %input vector
-  u = zeros(size(t)); %no input
+    %output vector
+    y = dataPend1(dataStart:dataEnd,2);      %angle of pendulum
 
-  %output vector
-  y = data(dataStart:dataEnd,2);      %angle of pendulum
+    %velocity
+    y_dot = dataPend1(dataStart:dataEnd,3);  %velocity of pendulum (not used)
+  else
+    %time vector
+    t = ( dataPend2(dataStart:dataEnd,1)-dataPend2(dataStart,1) );
 
-  %velocity
-  y_dot = data(dataStart:dataEnd,3);  %velocity of pendulum (not used)
+    %input vector
+    u = zeros(size(t)); %no input
 
+    %output vector
+    y = dataPend2(dataStart:dataEnd,2);      %angle of pendulum
+
+    %velocity
+    y_dot = dataPend2(dataStart:dataEnd,3);  %velocity of pendulum (not used)
+  end
+  
   %input
   uin = [ t u ];
 
   %use previous estimate as initial guess
-  if i < nrOfItr
-    b_p_c = b_p_c_save(i+1);
-    b_p_v = b_p_v_save(i+1);
-  end
+%   if i < nrOfItr
+%     b_p_c = b_p_c_save(i+1);
+%     b_p_v = b_p_v_save(i+1);
+%   end
   
-  par0 = [ b_p_c b_p_v m ]  %set initial parameters for simulation
+  if estL == 1
+    par0 = [ b_p_c b_p_v l ]  %set initial parameters for simulation
+  elseif estL == 0
+    par0 = [ b_p_c b_p_v m ]  %set initial parameters for simulation
+  else
+    par0 = [ b_p_c b_p_v ]    %set initial parameters for simulation
+  end
 
   %initial values from start of data
   theta_0     = y(1);
@@ -160,7 +218,7 @@ if 0
     switch jjj
     case 1
         figHandle=gcf;
-        fileName='pendulum1Est';
+        fileName='pendulum2Est';
         saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
     end
   end

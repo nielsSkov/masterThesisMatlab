@@ -6,10 +6,25 @@ function  y = sim_pendulum(u,t,par)
 %setting known parameters for cart pendulum
 run('initCartPendulum.m')
 
+estP1 = evalin('base', 'estP1');
+estL  = evalin('base', 'estL');
+
+if estP1
+  m = m1;
+  l = l1;
+else
+  m = m2;
+  l = l2;
+end
+
 %setting estimated parameters
 b_p_c = par(1);            % pendulum coulomb friction   [N m]
 b_p_v = par(2);            % pendulum viscous friction   [N m s]
-m     = par(3);
+if estL == 1
+  l   = par(3);
+elseif estL == 0
+  m   = par(3);
+end
 
 %setting initial values for simulation
 theta_0     = evalin('base', 'theta_0');
