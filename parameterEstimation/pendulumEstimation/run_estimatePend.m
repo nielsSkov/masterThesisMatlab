@@ -19,7 +19,7 @@ sense = 1;
 itrAll = 0;
 
 %choose which pendulum to estimate
-estP1 = 0;
+estP1 = 1;
 
 %initial guess
 if estP1

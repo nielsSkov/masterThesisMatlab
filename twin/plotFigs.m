@@ -119,7 +119,9 @@ if documentation == 0
 else
   h_Edelta = figure;
 end
-plot( t, E_delta, 'linewidth', 1.5 )
+plot( t, E_delta1, 'linewidth', 1.5 )
+hold on
+plot( t, E_delta2, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$E_\Delta$ [J]')
@@ -127,6 +129,7 @@ xlim([min(t) max(t)])
 if documentation == 1
   pbaspect(aspectRatioPhasePlot)
 end
+legend( '$E_{\Delta_1}$', '$E_{\Delta_2}$', 'location', 'southeast' )
 
 % figure
 % xlim([min(t) max(t)])

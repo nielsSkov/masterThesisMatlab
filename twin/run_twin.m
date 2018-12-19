@@ -23,8 +23,7 @@ end
 
 %----------SIMULATION ODE45------------------------------------------------
 
-%!!!!!IS SET TO 1 IN simTwin.m!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-con = 4; %select control in sim, first trajectory
+con = 3; %select control in sim, first trajectory
 
 %initial conditions for ode45
 if con == 0
@@ -35,8 +34,22 @@ if con == 0
   theta2_dot_0     = 0;
   x_dot_0          = 0;
 elseif con == 1
-  theta1_0         = -.02;
-  theta2_0         =  .023;
+  theta1_0         = pi;
+  theta2_0         = pi;
+  x_0              = 0;
+  theta1_dot_0     = 0;
+  theta2_dot_0     = 0;
+  x_dot_0          = 0;
+elseif con == 2
+  theta1_0         = pi;
+  theta2_0         = pi;
+  x_0              = 0;
+  theta1_dot_0     = 0;
+  theta2_dot_0     = 0;
+  x_dot_0          = 0;
+elseif con == 3
+  theta1_0         = pi+.05;
+  theta2_0         = pi+.05;
   x_0              = 0;
   theta1_dot_0     = 0;
   theta2_dot_0     = 0;
@@ -56,7 +69,11 @@ Ts      = .01;
 if con == 0
   T_final = 10;
 elseif con == 1
-  T_final = 7;
+  T_final = 15;
+elseif con == 2
+  T_final = 10;
+elseif con == 3
+  T_final = 15;
 elseif con == 4
   T_final = 10;
 end
@@ -91,7 +108,8 @@ theta2_dot_dot = zeros(size(t));
 x_dot_dot      = zeros(size(t));
 i_a            = zeros(size(t));
 ia_rms         = zeros(size(t));
-E_delta        = zeros(size(t));
+E_delta1       = zeros(size(t));
+E_delta2       = zeros(size(t));
 E_T            = zeros(size(t));
 
 %calculating/simulating 2nd derivatives
@@ -101,7 +119,8 @@ for i = 1:length(t)
         theta2_dot_dot(i), ...
         x_dot_dot(i),      ...
         i_a(i),            ...
-        E_delta(i),        ...
+        E_delta1(i),       ...
+        E_delta2(i),       ...
         E_T(i)     ]   = simTwin( t(i), q(i,:), con, m1, m2, M, l1, l2, ...
                                   g, k_tanh, r, k_tau,                  ...
                                   b_p1_c, b_p1_v,                       ...
@@ -115,7 +134,8 @@ for i = 1:length(t)-windowSize
 end
 
 
-%run('plotFigs.m')
+run('plotFigs.m')
+
 
 %% ----------ANIMATION-----------------------------------------------------
 run('animation.m')

@@ -18,6 +18,10 @@ switch con
     axis([ -1 1 0 1 ])
   case 1
     axis([ -1 1 0 1 ])
+  case 2
+    axis([ -1 1 0 1 ])
+  case 3
+    axis([ -1 1 0 1 ])
   case 4
     axis([ -1 1 0 1 ])
 end

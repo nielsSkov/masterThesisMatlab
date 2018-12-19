@@ -3,7 +3,8 @@ function [ q_dot,          ...
            theta2_dot_dot, ...
            x_dot_dot,      ...
            i_a,            ...
-           E_delta,        ...
+           E_delta1,       ...
+           E_delta2,       ...
            E_T             ]  = simTwin( t, q, con, m1, m2, M, l1, l2,  ...
                                          g, k_tanh, r, k_tau,           ...
                                          b_p1_c, b_p1_v,                ...
@@ -17,7 +18,7 @@ function [ q_dot,          ...
   
   persistent catchAngle;
   if isempty(catchAngle)
-    catchAngle = 0.0156+.09;
+    catchAngle = 0.15;
   end
   
   theta1       = q(1);
@@ -51,21 +52,21 @@ function [ q_dot,          ...
   end
   x2Wrap = x2Wrap - pi;
   
-    X = [ x1Wrap  ;
-          x2Wrap  ;
-          x3  ;
-          x4  ;
-          x5  ;
-          x6 ];
+  X = [ x1Wrap  ;
+        x2Wrap  ;
+        x3      ;
+        x4      ;
+        x5      ;
+        x6     ];
   
   %difference in energy with cooredinate system fixed at pivot point
   J1 = m1*(l1^2);
   J2 = m2*(l2^2);
-  E_delta = (1/2)*J1*(x4^2) + (1/2)*J2*(x5^2)        ... %(function output)
-          + m1*g*l1*(cos(x1) - 1) +  m2*g*l2*(cos(x2) - 1);
-  E_delta1 = (1/2)*J1*(x4^2) + m1*g*l1*(cos(x1) - 1);
-  E_delta2 = (1/2)*J2*(x5^2) + m2*g*l2*(cos(x2) - 1);  
-  
+
+  %local energy difference with fixed coordinate system
+  E_delta1 = (1/2)*J1*(x4^2) + m1*g*l1*(cos(x1) - 1);  %(function output)
+  E_delta2 = (1/2)*J2*(x5^2) + m2*g*l2*(cos(x2) - 1);  %(function output)
+
   %kinetic energy
   T = .5*M*x6^2 + .5*m1*(x6 - l1*cos(x1)*x4)^2 + .5*m1*(-l1*sin(x1)*x4)^2  ...
                 + .5*m2*(x6 - l2*cos(x2)*x5)^2 + .5*m2*(-l2*sin(x2)*x5)^2;
@@ -76,64 +77,91 @@ function [ q_dot,          ...
   %total energy
   E_T = T + U; %(function output)
   
-  kLQR = [ -1995.80  1802.84  29.42  -352.36  248.62  39.53 ];
+  kLQR = [  -2218.52  1988.13  36.72  -391.63  272.40  47.26  ];
   
   if catchTwin && ( (abs(x1Wrap)+abs(x2Wrap)) < catchAngle  )%<-- catch controller
     catchAngle = .8;
     u = -kLQR*X;
+    
+    i_a = u*r/k_tau;
+    
+    iaMax = 8;
+    if abs(i_a) > iaMax
+      i_a = sign(i_a)*iaMax;
+      u = i_a*k_tau/r;
+    end
 
     energyCon = 0; %<--|
-  else             %   |
-    energyCon = 1; %<-- switch to select between energy control and
-  end              %    catch controller depending on angle
-con = 1;
+  else             %   | switch to select between energy control and
+    energyCon = 1; %<--| catch controller depending on angle
+  end
+
   if con == 0 && energyCon == 1      %<--no controller - only model
     u = 0;
   
-  elseif con == 1 && energyCon == 1  %<--rudementary controller (Åström)
-    k1 = 16.86-.2;
-    k2 = 16.86-.2;
+  elseif con == 1 && energyCon == 1  %<--rudementary controller
+    
     E_delta1 = E_delta1-.0326;
     E_delta2 = E_delta2-.0326;
-    xDotDot = -k1*E_delta1*m1*l1*cos(x1)*x4 -k2*E_delta2*m2*l2*cos(x2)*x5
+    
+    G = m1*l1*E_delta1*cos(x1)*x4 + m2*l2*E_delta2*cos(x2)*x5;
+    
+    k = 7.5;
+    xDotDot = -k*G;
   
-  elseif con == 2 && energyCon == 1  %<--sign-based controller (Åström)
-    k = 2.7;
-    sgn = sign(-E_delta*(m1*l1*cos(x1)*x4 + m2*l2*cos(x2)*x5));
-    if sgn == 0 && E_delta ~= 0
-      sgn = 1;
-    end
-    xDotDot = k*sgn;
-  
-  elseif con == 3 && energyCon == 1  %<--approximated sign-based
-    k = 2.7;                            %   controller (Åström)
+  elseif con == 2 && energyCon == 1  %<--sign-approx controller
+    
+    k = 2;
+    
     epsilon = .01;
-    if noLim
-      E_delta = E_delta-.004;
-      k = k+2.7;
-    end
-    sgn = min( 1,max(-1,(1/epsilon)*(-E_delta*(m1*l1*cos(x1)*x4 + m2*l2*cos(x2)*x5))) );
-    if sgn == 0 && E_delta ~= 0
-      sgn = 1;
-    end
+    
+    G = m1*l1*E_delta1*cos(x1)*x4 + m2*l2*E_delta2*cos(x2)*x5;
+    
+    sgn = min( 1,max(-1,(1/epsilon)*(-G)) );
+    
+    if sgn == 0, sgn = 1; end
+    
     xDotDot = k*sgn;
   
-  elseif con == 4 && energyCon == 1   %<--sat-based controller (Åström)
-    k = 1;
-    sgn = sign((m1*l1*cos(x1)*x4 + m2*l2*cos(x2)*x5));
-    if sgn == 0
-      sgn = 1;
-    end
+  elseif con == 3 && energyCon == 1  %<--sat-based controller (Åström)
+    
+    k = 19.5;
+    
+    E_delta1 = E_delta1-.027;
+    E_delta2 = E_delta2-.027;
+    
+    G = m1*l1*E_delta1*cos(x1)*x4 + m2*l2*E_delta2*cos(x2)*x5;
+    
+    %if abs(G) < 0.1, G = 1; end
+    
     i_max = 4.58;
     u_max = i_max*k_tau/r;
     a_max = u_max/(M+m1+m2);
     
-    xDotDot = min( a_max, max(-a_max, -k*E_delta*sgn ));
-
-  end
+    xDotDot = min( a_max, max(-a_max, -k*G ));
   
+  elseif con == 4 && energyCon == 1   %<--sat-based controller
+    
+    k = 25;
+    
+    sgn1 = sign(cos(x1)*x4);
+    sgn2 = sign(cos(x2)*x5);
+    
+    if sgn1 == 0, sgn1 = 1; end
+    if sgn2 == 0, sgn2 = 1; end
+    
+    E_delta1 = E_delta1-.1;
+    E_delta2 = E_delta2-.1;
+    
+    G = m1*l1*E_delta1*sgn1 + m2*l2*E_delta2*sgn2;
+    
+    i_max = 4.58;
+    u_max = i_max*k_tau/r;
+    a_max = u_max/(M+m1+m2);
+    
+    xDotDot = min( a_max, max(-a_max, -k*G ));
 
-  
+  end  
   
   if con > 0 && energyCon == 1
     MM = [  m1*(l1^2)       0              -m1*l1*cos(x1)  ;
@@ -188,15 +216,8 @@ con = 1;
   if fComp
     u = u + b_c_c*tanh(k_tanh*x4) + b_c_v*x4;
   end
-
   
   i_a = u*r/k_tau;  %(function output)
-  
-  iaMax = 8;
-  if abs(i_a) > iaMax && energyCon == 1
-    i_a = sign(i_a)*iaMax;
-    u = i_a*k_tau/r;
-  end
   
   MM = [  m1*(l1^2)       0              -m1*l1*cos(x1)  ;
           0               m2*(l2^2)      -m2*l2*cos(x2)  ;
