@@ -18,7 +18,7 @@ function [ q_dot,          ...
   
   persistent catchAngle;
   if isempty(catchAngle)
-    catchAngle = 0.15;
+    catchAngle = 0.1;
   end
   
   theta1       = q(1);
@@ -77,7 +77,7 @@ function [ q_dot,          ...
   %total energy
   E_T = T + U; %(function output)
   
-  kLQR = [  -2218.52  1988.13  36.72  -391.63  272.40  47.26  ];
+  kLQR = [ -2005.64  1823.86  27.31  -354.10  249.88  37.16 ];
   
   if catchTwin && ( (abs(x1Wrap)+abs(x2Wrap)) < catchAngle  )%<-- catch controller
     catchAngle = .8;
@@ -125,41 +125,51 @@ function [ q_dot,          ...
   
   elseif con == 3 && energyCon == 1  %<--sat-based controller (Åström)
     
-    k = 19.5;
+    k1 = 25;
+    k2 = 17.5;
     
-    E_delta1 = E_delta1-.027;
-    E_delta2 = E_delta2-.027;
+    if catchTwin
+      E_delta1 = E_delta1-.027;
+      E_delta2 = E_delta2-.027;
+    else
+      k1 = 19.5;
+      k2 = k1;
+    end
     
-    G = m1*l1*E_delta1*cos(x1)*x4 + m2*l2*E_delta2*cos(x2)*x5;
-    
-    %if abs(G) < 0.1, G = 1; end
+    G = k1*m1*l1*E_delta1*cos(x1)*x4 + k2*m2*l2*E_delta2*cos(x2)*x5;
     
     i_max = 4.58;
     u_max = i_max*k_tau/r;
     a_max = u_max/(M+m1+m2);
     
-    xDotDot = min( a_max, max(-a_max, -k*G ));
+    xDotDot = min( a_max, max(-a_max, -G ));
   
   elseif con == 4 && energyCon == 1   %<--sat-based controller
     
-    k = 25;
+    if catchTwin
+      k1 = 25;
+      k2 = 17;
+      E_delta1 = E_delta1-.030;
+      E_delta2 = E_delta2-.028;
+    else
+      k1 = 16;
+      k2 = k1;
+      E_delta1 = E_delta1-.022;
+      E_delta2 = E_delta2-.022;
+    end
     
-    sgn1 = sign(cos(x1)*x4);
-    sgn2 = sign(cos(x2)*x5);
-    
-    if sgn1 == 0, sgn1 = 1; end
-    if sgn2 == 0, sgn2 = 1; end
-    
-    E_delta1 = E_delta1-.1;
-    E_delta2 = E_delta2-.1;
-    
-    G = m1*l1*E_delta1*sgn1 + m2*l2*E_delta2*sgn2;
+    %this is just a way of applying max current for the first 0.1 s
+    if abs(pi-x1) < .05 && abs(pi-x2) < .05
+      G = -2.5;
+    else
+      G = k1*m1*l1*E_delta1*cos(x1)*x4 + k2*m2*l2*E_delta2*cos(x2)*x5;
+    end
     
     i_max = 4.58;
     u_max = i_max*k_tau/r;
     a_max = u_max/(M+m1+m2);
     
-    xDotDot = min( a_max, max(-a_max, -k*G ));
+    xDotDot = min( a_max, max(-a_max, -G ));
 
   end  
   

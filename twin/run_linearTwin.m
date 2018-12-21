@@ -138,13 +138,13 @@ Dd = disSys.D;
 %% -------LQR Design-------------------------------------------------------
 
 % theta1_max    [rad]       theta2_max    [rad]       x_max        [m]
-  x1Max = 0.01;             x2Max = 0.01;             x3Max = 0.01;
+  x1Max = 0.001;             x2Max = 0.001;             x3Max = 0.001;
 
 % theta1Dot_max [rad s^-1]  theta2Dot_max [rad s^-1]  xDot_max     [m s^-1] 
-  x4Max = 1;                x5Max = 1;                x6Max = 0.1;
+  x4Max = 1;                x5Max = 1;                x6Max = 1;
 
-iaMax  = 4.85/40;         % [A] ,  max continuous = 4.85 A
-uMax   = iaMax*k_tau/r;   % [N]
+%iaMax  = 0.01;         % [A] ,  max continuous = 4.85 A
+uMax   = 0.03; %iaMax*k_tau/r;   % [N]
 
 Q = ...
 [ 1/(x1Max^2) 0           0           0           0           0            ;

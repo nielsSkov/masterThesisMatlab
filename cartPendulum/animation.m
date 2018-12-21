@@ -45,7 +45,7 @@ end
 scatter(axAni, xp(1), yp(1), '.', 'b')
 xpLast = xp(1);
 ypLast = yp(1);
-cart = rectangle('Position',[ x(1)-.15 yc-.07 .3 .14 ]);
+cart = rectangle(axAni,'Position',[ x(1)-.15 yc-.07 .3 .14 ]);
 rod1 = plot(axAni, [ x(1) xp(1) ] , [ yc yp(1) ], 'k', 'linewidth', 3);
 drawnow
 
