@@ -22,8 +22,8 @@ b_c_c  = 0;                        % cart coulomb friction       [N]
 b_c_v  = 0;                        % cart viscous friction       [N m^-1 s]
 
 %        estimated
-%b_p_c  = 4.1e-3;                   % pendulum coulomb friction   [N m]
-%b_p_v  =  .5e-3;                   % pendulum viscous friction   [N m s]
+b_p_c  = 4.1e-3;                   % pendulum coulomb friction   [N m]
+b_p_v  =  .5e-3;                   % pendulum viscous friction   [N m s]
 
 %        for steap slope of tanh
 k_tanh = 250;                      %tanh constant                [1]
