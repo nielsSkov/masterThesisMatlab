@@ -6,7 +6,7 @@ cd ~/syncDrive/uni/thesis/matlab/parameterEstimation;
 addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/senseTool')
 addpath('~/syncDrive/uni/thesis/matlab/cartPendulum')
 addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest1')
-addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest2')
+addpath('~/syncDrive/uni/thesis/matlab/parameterEstimation/data/cartTest3')
 
 %%------------ READING DATA FROM FILE AND SETTING PARAMETERS -------------
 
@@ -32,6 +32,37 @@ errn_vec  = zeros(68,itrAll);
 M     = 6.28;
 %b_c_v = 10.414;
 
+%to save results
+%
+%save( 'fileName.mat', 'b_ccm_vec', 'b_ccp_vec', 'errn_vec' )
+
+if 0
+%%
+close all
+loadTmp   = load('newTestWithProblems.mat');
+b_ccp_vec = vertcat(loadTmp.b_ccp_vec);
+b_ccm_vec = vertcat(loadTmp.b_ccm_vec);
+errn_vec  = vertcat(loadTmp.errn_vec);
+
+sizeOfData = size(b_ccm_vec);
+
+figure
+hold on
+plot(mean(b_ccp_vec,2))
+plot(mean(b_ccm_vec,2))
+
+for i = 1:sizeOfData(1) %68
+  for j = 1:sizeOfData(2) %34
+    if errn_vec(i,j) < 0.3
+      scatter(i,b_ccp_vec(i,j))
+      scatter(i,b_ccm_vec(i,j))
+      drawnow
+    end
+  end
+end
+end
+%%
+
 %load old estimates for initial guesses
 loadTmp = load('estFrictionsAndErrnAllFit2.mat');
 %loadTmp = load('estFrictionsAndErrnMany_new.mat');
@@ -42,61 +73,170 @@ b_ccm_vec_old = vertcat(loadTmp.b_ccm_vec);
 %b_cv_vec_old  = vertcat(loadTmp.b_cv_vec);
 %errn_vec_old = vertcat(loadTmp.errn_vec);
 
-
 %manual finetuning based on estFrictionsAndErrn.mat
-% b_ccm_vec_old(7-4)  = b_ccm_vec_old(7-4) -.02;
-% b_ccm_vec_old(11-4) = b_ccm_vec_old(11-4)-.01;
-% b_ccm_vec_old(13-4) = b_ccm_vec_old(13-4)-.04;
-% b_ccm_vec_old(16-4) = b_ccm_vec_old(16-4)-.06;
-% b_ccm_vec_old(15-4) = b_ccm_vec_old(15-4)-.08;
-% b_ccm_vec_old(17-4) = b_ccm_vec_old(17-4)-.20;
-% b_ccm_vec_old(18-4) = b_ccm_vec_old(18-4)-.24;
-% b_ccm_vec_old(25-4) = b_ccm_vec_old(25-4)+.04;
-% b_ccm_vec_old(26-4) = b_ccm_vec_old(26-4)+.06;
-% b_ccm_vec_old(22-4) = b_ccm_vec_old(22-4)+.04;
+% b_ccm_vec_old(5-4)  = b_ccm_vec_old(5-4) - .49;
+% b_ccm_vec_old(6-4)  = b_ccm_vec_old(6-4) - .80;
+% b_ccm_vec_old(7-4)  = b_ccm_vec_old(7-4) - .00;
+% b_ccm_vec_old(8-4)  = b_ccm_vec_old(8-4) - .20;
+% b_ccp_vec_old(9-4)  = b_ccp_vec_old(9-4) - .80;
 % 
-% b_ccm_vec_old(21-4) = b_ccm_vec_old(21-4)+.02;
-% b_ccm_vec_old(27-4) = b_ccm_vec_old(27-4)+.04;
-% b_ccm_vec_old(30-4) = b_ccm_vec_old(30-4)-.08;
-% b_ccm_vec_old(31-4) = b_ccm_vec_old(31-4)-.03;
-% b_ccm_vec_old(33-4) = b_ccm_vec_old(33-4)-.02;
-% b_ccm_vec_old(34-4) = b_ccm_vec_old(34-4)-.39;
-% b_ccm_vec_old(36-4) = b_ccm_vec_old(36-4)-.16;
-% b_ccm_vec_old(37-4) = b_ccm_vec_old(37-4)+.04;
-% b_ccm_vec_old(39-4) = b_ccm_vec_old(39-4)-.36;
-% b_ccm_vec_old(40-4) = b_ccm_vec_old(40-4)-.12;
+% b_ccp_vec_old(10-4) = b_ccp_vec_old(10-4)-1.00;
+% b_ccp_vec_old(11-4) = b_ccp_vec_old(11-4)-1.35;
+% b_ccp_vec_old(12-4) = b_ccp_vec_old(12-4)-1.65;
+% b_ccp_vec_old(13-4) = b_ccp_vec_old(13-4)-1.90;
+% b_ccp_vec_old(14-4) = b_ccp_vec_old(14-4)-1.80;
+% b_ccp_vec_old(15-4) = b_ccp_vec_old(15-4)-2.00;
+% b_ccp_vec_old(16-4) = b_ccp_vec_old(16-4)-2.64;
+% b_ccp_vec_old(17-4) = b_ccp_vec_old(17-4)-2.60;
+% b_ccp_vec_old(18-4) = b_ccp_vec_old(18-4)-2.80;
+% b_ccp_vec_old(19-4) = b_ccp_vec_old(19-4)-2.40;
 % 
-% b_ccm_vec_old(41-4) = b_ccm_vec_old(41-4)-.05;
-% b_ccm_vec_old(42-4) = b_ccm_vec_old(42-4)-.245;
-% b_ccm_vec_old(44-4) = b_ccm_vec_old(44-4)-.08;
-% b_ccm_vec_old(46-4) = b_ccm_vec_old(46-4)+.50;
-% b_ccm_vec_old(48-4) = b_ccm_vec_old(48-4)+.50;
-% b_ccm_vec_old(49-4) = b_ccm_vec_old(49-4)+.50;
-% b_ccm_vec_old(50-4) = b_ccm_vec_old(50-4)+.20;
-% b_ccm_vec_old(51-4) = b_ccm_vec_old(51-4)+.20;
-% b_ccm_vec_old(53-4) = b_ccm_vec_old(53-4)-.04;
+% b_ccp_vec_old(20-4) = b_ccp_vec_old(20-4)-2.30;
+% b_ccp_vec_old(21-4) = b_ccp_vec_old(21-4)-2.35;
+% b_ccp_vec_old(22-4) = b_ccp_vec_old(22-4)-2.40;
+% b_ccp_vec_old(23-4) = b_ccp_vec_old(23-4)-2.40;
+% b_ccp_vec_old(24-4) = b_ccp_vec_old(24-4)-2.10;
+% b_ccp_vec_old(25-4) = b_ccp_vec_old(25-4)-2.30;
+% b_ccp_vec_old(26-4) = b_ccp_vec_old(26-4)-0.70;
+% b_ccp_vec_old(27-4) = b_ccp_vec_old(27-4)-0.90;
+% b_ccp_vec_old(28-4) = b_ccp_vec_old(28-4)-1.10;
+% b_ccp_vec_old(29-4) = b_ccp_vec_old(29-4)-1.40;
 % 
-% b_ccm_vec_old(56-4) = b_ccm_vec_old(56-4)-.38;
-% b_ccm_vec_old(60-4) = b_ccm_vec_old(60-4)+.40;
-% b_ccm_vec_old(62-4) = b_ccm_vec_old(62-4)+.28;
-% b_ccm_vec_old(63-4) = b_ccm_vec_old(63-4)+.02;
-% b_ccm_vec_old(64-4) = b_ccm_vec_old(64-4)+.03;
-% b_ccm_vec_old(65-4) = b_ccm_vec_old(65-4)+.40;
-% b_ccm_vec_old(66-4) = b_ccm_vec_old(66-4)+.02;
-% b_ccm_vec_old(69-4) = b_ccm_vec_old(69-4)-.10;
+% b_ccp_vec_old(30-4) = b_ccp_vec_old(30-4)-2.00;
+% b_ccp_vec_old(31-4) = b_ccp_vec_old(31-4)-2.55;
 % 
-% b_ccm_vec_old(70-4) = b_ccm_vec_old(70-4)+.20;
-% b_ccm_vec_old(71-4) = b_ccm_vec_old(71-4)+.10;
-% b_ccm_vec_old(72-4) = b_ccm_vec_old(72-4)+.01;
+% b_ccp_vec_old(32-4) = b_ccp_vec_old(32-4)-1.72;
+% b_ccm_vec_old(32-4) = b_ccm_vec_old(32-4)+1.22;
+% 
+% b_ccp_vec_old(33-4) = b_ccp_vec_old(33-4)-1.72;
+% b_ccm_vec_old(33-4) = b_ccm_vec_old(33-4)+1.36;
+% 
+% b_ccp_vec_old(34-4) = b_ccp_vec_old(34-4)-1.72;
+% b_ccm_vec_old(34-4) = b_ccm_vec_old(34-4)+0.75;
+% 
+% b_ccp_vec_old(35-4) = b_ccp_vec_old(35-4)-1.72;
+% b_ccm_vec_old(35-4) = b_ccm_vec_old(35-4)+.75;
+% 
+% b_ccp_vec_old(36-4) = b_ccp_vec_old(36-4)-1.72;
+% b_ccm_vec_old(36-4) = b_ccm_vec_old(36-4)+.5;
+% 
+% b_ccp_vec_old(37-4) = b_ccp_vec_old(37-4)-1.2;
+% b_ccm_vec_old(37-4) = b_ccm_vec_old(37-4)+.8;
+% 
+% b_ccp_vec_old(38-4) = b_ccp_vec_old(38-4)-1.05;
+% b_ccm_vec_old(38-4) = b_ccm_vec_old(38-4)+0;
+% 
+% b_ccp_vec_old(39-4) = b_ccp_vec_old(39-4)-1.65;
+% b_ccm_vec_old(39-4) = b_ccm_vec_old(39-4)+0.0;
+% 
+% b_ccp_vec_old(40-4) = b_ccp_vec_old(40-4)-1.35;
+% b_ccm_vec_old(40-4) = b_ccm_vec_old(40-4)+0.0;
+% 
+% b_ccp_vec_old(41-4) = b_ccp_vec_old(41-4)-1.5;
+% b_ccm_vec_old(41-4) = b_ccm_vec_old(41-4)+0.0;
+% 
+% b_ccp_vec_old(42-4) = b_ccp_vec_old(42-4)-1.7;
+% b_ccm_vec_old(42-4) = b_ccm_vec_old(42-4)+0.0;
+% 
+% b_ccp_vec_old(43-4) = b_ccp_vec_old(43-4)-1.4;
+% b_ccm_vec_old(43-4) = b_ccm_vec_old(43-4)+0.0;
+% 
+% b_ccp_vec_old(44-4) = b_ccp_vec_old(44-4)-2.2;
+% b_ccm_vec_old(44-4) = b_ccm_vec_old(44-4)+0.0;
+% 
+% b_ccp_vec_old(45-4) = b_ccp_vec_old(45-4)-2.5;
+% b_ccm_vec_old(45-4) = b_ccm_vec_old(45-4)+0.0;
+% 
+% b_ccp_vec_old(46-4) = b_ccp_vec_old(46-4)-2.35;
+% b_ccm_vec_old(46-4) = b_ccm_vec_old(46-4)+0.0;
+% 
+% b_ccp_vec_old(47-4) = b_ccp_vec_old(47-4)-2.4;
+% b_ccm_vec_old(47-4) = b_ccm_vec_old(47-4)+0.0;
+% 
+% b_ccp_vec_old(48-4) = b_ccp_vec_old(48-4)-1.9;
+% b_ccm_vec_old(48-4) = b_ccm_vec_old(48-4)+0.0;
+% 
+% b_ccp_vec_old(49-4) = b_ccp_vec_old(49-4)-1.2;
+% b_ccm_vec_old(49-4) = b_ccm_vec_old(49-4)+0.9;
+% 
+% b_ccp_vec_old(50-4) = b_ccp_vec_old(50-4)-1.2;
+% b_ccm_vec_old(50-4) = b_ccm_vec_old(50-4)+0.75;
+% 
+% b_ccp_vec_old(51-4) = b_ccp_vec_old(51-4)-1;
+% b_ccm_vec_old(51-4) = b_ccm_vec_old(51-4)+0.5;
+% 
+% b_ccp_vec_old(52-4) = b_ccp_vec_old(52-4)-1;
+% b_ccm_vec_old(52-4) = b_ccm_vec_old(52-4)+0.2;
+% 
+% b_ccp_vec_old(53-4) = b_ccp_vec_old(53-4)-.85;
+% b_ccm_vec_old(53-4) = b_ccm_vec_old(53-4)+0.2;
+% 
+% b_ccp_vec_old(54-4) = b_ccp_vec_old(54-4)-1.15;
+% b_ccm_vec_old(54-4) = b_ccm_vec_old(54-4)+0.2;
+% 
+% b_ccp_vec_old(55-4) = b_ccp_vec_old(55-4)-1.05;
+% b_ccm_vec_old(55-4) = b_ccm_vec_old(55-4)+0.2;
+% 
+% b_ccp_vec_old(56-4) = b_ccp_vec_old(56-4)-.8;
+% b_ccm_vec_old(56-4) = b_ccm_vec_old(56-4)+0.6;
+% 
+% b_ccp_vec_old(57-4) = b_ccp_vec_old(57-4)-.8;
+% b_ccm_vec_old(57-4) = b_ccm_vec_old(57-4)+0.65;
+% 
+% b_ccp_vec_old(58-4) = b_ccp_vec_old(58-4)-.65;
+% b_ccm_vec_old(58-4) = b_ccm_vec_old(58-4)+0.65;
+% 
+% b_ccp_vec_old(59-4) = b_ccp_vec_old(59-4)-.65;
+% b_ccm_vec_old(59-4) = b_ccm_vec_old(59-4)+0.65;
+% 
+% b_ccp_vec_old(60-4) = b_ccp_vec_old(60-4)-.75;
+% b_ccm_vec_old(60-4) = b_ccm_vec_old(60-4)+0.65;
+% 
+% b_ccp_vec_old(61-4) = b_ccp_vec_old(61-4)-.75;
+% b_ccm_vec_old(61-4) = b_ccm_vec_old(61-4)+1.20;
+% 
+% b_ccp_vec_old(62-4) = b_ccp_vec_old(62-4)-.75;
+% b_ccm_vec_old(62-4) = b_ccm_vec_old(62-4)+1.20;
+% 
+% b_ccp_vec_old(63-4) = b_ccp_vec_old(63-4)-.75;
+% b_ccm_vec_old(63-4) = b_ccm_vec_old(63-4)+1.05;
+% 
+% b_ccp_vec_old(64-4) = b_ccp_vec_old(64-4)-.75;
+% b_ccm_vec_old(64-4) = b_ccm_vec_old(64-4)+.78;
+% 
+% b_ccp_vec_old(65-4) = b_ccp_vec_old(65-4)-.95;
+% b_ccm_vec_old(65-4) = b_ccm_vec_old(65-4)+.88;
+% 
+% b_ccp_vec_old(66-4) = b_ccp_vec_old(66-4)-.95;
+% b_ccm_vec_old(66-4) = b_ccm_vec_old(66-4)+1.01;
+% 
+% b_ccp_vec_old(67-4) = b_ccp_vec_old(67-4)-.95;
+% b_ccm_vec_old(67-4) = b_ccm_vec_old(67-4)+1.13;
+% 
+% b_ccp_vec_old(68-4) = b_ccp_vec_old(68-4)-.95;
+% b_ccm_vec_old(68-4) = b_ccm_vec_old(68-4)+1.0;
+% 
+% b_ccp_vec_old(69-4) = b_ccp_vec_old(69-4)-.95;
+% b_ccm_vec_old(69-4) = b_ccm_vec_old(69-4)+1.45;
+% 
+% b_ccp_vec_old(70-4) = b_ccp_vec_old(70-4)-.95;
+% b_ccm_vec_old(70-4) = b_ccm_vec_old(70-4)+1.25;
+% 
+% b_ccp_vec_old(71-4) = b_ccp_vec_old(71-4)-.95;
+% b_ccm_vec_old(71-4) = b_ccm_vec_old(71-4)+1.2;
+% 
+% b_ccp_vec_old(72-4) = b_ccp_vec_old(72-4)-.95;
+% b_ccm_vec_old(72-4) = b_ccm_vec_old(72-4)+.9;
+
 
 minMax = zeros(68,1);
 
 %if 0 -> manual tuning,  if 1 senseTool estimation
-sense = 0;
+sense = 1;
 %switch outher iterations on or off
-outherItr = 0;
+outherItr = 1;
 %plot all or just one
-plotAll = 0;
+plotAll = 1;
 
 if outherItr == 0
   itrAll = 1;
@@ -115,8 +255,8 @@ for i = 5:72
 % end
 
 if j == itrAll || outherItr == 0
-  b_c_c_p = b_ccp_vec_old(i-4)-.59  +1.019;
-  b_c_c_m = b_ccm_vec_old(i-4)-.44  +.8;
+  b_c_c_p = b_ccp_vec_old(i-4); %-.59  +1.019;
+  b_c_c_m = b_ccm_vec_old(i-4); %-.44  +.8;
 else
   b_c_c_p = b_ccp_vec(i-4,j+1);
   b_c_c_m = b_ccm_vec(i-4,j+1);

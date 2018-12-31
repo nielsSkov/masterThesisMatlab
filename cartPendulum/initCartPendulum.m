@@ -1,11 +1,11 @@
 %
 %                    addjustment from
 %        measured        estimate
-m1     = .100+.075+.026  +0.0225;  % mass of pendulum 1          [kg]
-l1     = 0.3235          -.00658;  % length of pendulum 1        [m]
+m     = .100+.075+.026  +0.0225;  % mass of pendulum 1          [kg]
+l     = 0.3235          -.00658;  % length of pendulum 1        [m]
 
-m2     = .100+.075+.026+.05 +.0132;  % mass of pendulum 2          [kg]
-l2     = .2                 -.0000; % length of pendulum 2        [m]
+%m2     = .100+.075+.026+.05 +.0132;  % mass of pendulum 2          [kg]
+%l2     = .2                 -.0000; % length of pendulum 2        [m]
 
 %        estimated
 M      = 6.28;                     % mass of cart                [kg]

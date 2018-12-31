@@ -68,7 +68,9 @@ run('initTwin.m')
 
 A = double(subs(A))
 B = double(subs(B))
-C = ones(1,6);
+C = [ 1 0 0 0 0 0
+      0 1 0 0 0 0
+      0 0 1 0 0 0 ];
 D = 0;
 
 %% -------Discrete Time Model----------------------------------------------
@@ -187,44 +189,6 @@ grid on, grid minor
 % plot(tDis,D_x_dot)
 
 
-%% -------INITIALIZATION---------------------------------------------------
-
-P0 = [ 0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0    ];
-
-%should come from [measurement] @ initialization
-x0 = [ 0
-       0
-       0
-       0
-       0
-       0 ];
-
-xEst(k-1) = x0;
-P(k-1)    = P0;
-
-%% -------PREDICTION-------------------------------------------------------
-
-%calculating priori/predicted estimate
-xPred(k)  = Ad*xEst(k-1) + Bd*u(k);
-
-%error covariance (measure of uncertainty in the predicted states)
-P_pred(k) = Ad*P(k-1)*Ad' + Q;
-
-%% -------UPDATE-----------------------------------------------------------
-
-%calculate Kalman gain
-K(k) = P_pred(k)*Cd'*(( Cd*P_pred(K)*Cd' + R )^(-1));
-
-xEst = xPred(k) + K(k)*( y(k) - Cd*xPred(k) );
-
-P(k) = ( I - K(k)*Cd )*P_pred(k);
-
-
 %% -------SIMULATION USING ODE45-------------------------------------------
 
 run('initTwin.m')
@@ -261,7 +225,6 @@ init  = [ theta1_0 theta2_0 x_0 theta1_dot_0 theta2_dot_0 x_dot_0 ];
 %lowering relative tollerence (default 1e-3) to avoid drifting along x
 options = odeset('RelTol',1e-7);
 
-noiseOn = 0;
 
 %run ode45 simulation
 [t, q] = ode45( @(t,q)                                           ...
@@ -269,7 +232,7 @@ noiseOn = 0;
                          g, k_tanh, r, k_tau,              ...
                          b_p1_c, b_p1_v,                   ...
                          b_p2_c, b_p2_v,                   ...
-                         b_c_c, b_c_v, noiseOn       ),    ...
+                         b_c_c, b_c_v                ),    ...
                 tspan, init, options                             );
 
 %assigning results of ode45 simulation
@@ -289,74 +252,189 @@ ia_rms           = zeros(size(t));
 E_delta          = zeros(size(t));
 E_T              = zeros(size(t));
 
-noise_theta1     = zeros(size(t));
-noise_theta2     = zeros(size(t));
-noise_x          = zeros(size(t));
-noise_theta1_dot = zeros(size(t));
-noise_theta2_dot = zeros(size(t));
-noise_x_dot      = zeros(size(t));
-
-x1Est            = zeros(size(t));
-x2Est            = zeros(size(t));
-x3Est            = zeros(size(t));
-x4Est            = zeros(size(t));
-x5Est            = zeros(size(t));
-x6Est            = zeros(size(t));
-
-noiseOn = 1;
-
 %calculating/simulating 2nd derivatives
 for i = 1:length(t)
 
   [ ~, theta1_dot_dot(i),     ...
         theta2_dot_dot(i),    ...
         x_dot_dot(i),         ...
-        noise_theta1(i),      ...
-        noise_theta2(i),      ...
-        noise_x(i),           ...
-        noise_theta1_dot(i),  ...
-        noise_theta2_dot(i),  ...
-        noise_x_dot(i),       ...
-        x1Est(i),             ...
-        x2Est(i),             ...
-        x3Est(i),             ...
-        x4Est(i),             ...
-        x5Est(i),             ...
-        x6Est(i),             ...
         i_a(i),               ...
         E_delta(i),           ...
         E_T(i)     ]   = simTwin( t(i), q(i,:), m1, m2, M, l1, l2,  ...
                                   g, k_tanh, r, k_tau,              ...
                                   b_p1_c, b_p1_v,                   ...
                                   b_p2_c, b_p2_v,                   ...
-                                  b_c_c, b_c_v, noiseOn             );
+                                  b_c_c, b_c_v                      );
 end
 
-windowSize = 1/Ts;  %= 1 s long window
+windowSize = ceil(1/Ts);  %= 1 s long window
 for i = 1:length(t)-windowSize
   ia_rms(i) = rms( i_a(i:i+windowSize) );
 end
 
+%calculating input vector from applied current
+u = i_a.*k_tau./r;
+
+%% -------ADD NOISE--------------------------------------------------------
+
+%estimated
+%measurement noise covariance
+R_full = ...
+[ 7.7114e-07  1.2205e-08 -3.5968e-10  1.0540e-04  7.7524e-07  3.2161e-07  ;
+  1.2205e-08  9.2307e-07 -3.1029e-09  6.9161e-06  1.1652e-04  4.4608e-08  ;
+ -3.5968e-10 -3.1029e-09  1.0616e-09  1.3746e-07  2.3827e-07  9.4527e-08  ;
+  1.0540e-04  6.9161e-06  1.3746e-07  3.7390e-02  1.2350e-03  8.4425e-05  ;
+  7.7524e-07  1.1652e-04  2.3827e-07  1.2350e-03  3.8354e-02  3.4860e-05  ;
+  3.2161e-07  4.4608e-08  9.4527e-08  8.4425e-05  3.4860e-05  3.0262e-05 ];
+
+x1 = theta1;
+x2 = theta2;
+x3 = x;
+x4 = theta1_dot;
+x5 = theta2_dot;
+x6 = x_dot;
+
+for i = 1:length(t)
+  v_n = mvnrnd( [ x1(i) x2(i) x3(i) x4(i) x5(i) x6(i) ], R_full, 1 );
+  x1(i) = v_n(1);
+  x2(i) = v_n(2);
+  x3(i) = v_n(3);
+  x4(i) = v_n(4);
+  x5(i) = v_n(5);
+  x6(i) = v_n(6);
+end
+
+% %create variables for nummerical differentiations
+% x_numDot      = zeros(size(t));
+% theta1_numDot = zeros(size(t));
+% theta2_numDot = zeros(size(t));
+% 
+% %initialize
+% x_numDot(1)      = x(1);
+% theta1_numDot(1) = theta1(1);
+% theta2_numDot(1) = theta2(1);
+% 
+% %calculate nummerical differentiations
+% for i = 2:length(t)
+%   theta1_numDot(i) = ( x1(i)+x1(i-1) )/Ts;
+%   theta2_numDot(i) = ( x2(i)+x2(i-1) )/Ts;
+%   x_numDot(i)      = ( x3(i)+x3(i-1) )/Ts;
+% end
+
+
+%% -------KALMAN FILTER----------------------------------------------------
+
+%>>
+%>>>>---INITIALIZATION---------------------------------------------------
+%>>
+
+P0 = [ 0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0     ;
+       0     0     0     0     0     0    ];
+
+
+%guessed
+%process noise (disturbance) covariance
+Q = [ 1e+1  0     0     0     0     0     ;
+      0     1e+1  0     0     0     0     ;
+      0     0     1e+1  0     0     0     ;
+      0     0     0     1e+1  0     0     ;
+      0     0     0     0     1e+1  0     ;
+      0     0     0     0     0     1e+1 ];
+
+%estimated
+%measurement noise covariance
+R = [ 7.7114e-07  1.2205e-08 -3.5968e-10  ;
+      1.2205e-08  9.2307e-07 -3.1029e-09  ;
+     -3.5968e-10 -3.1029e-09  1.0616e-09 ];
+
+% Ad = [ 1.0007e+00  2.7512e-05  0  6.6677e-03 -1.6497e-07           0  ;
+%        3.8817e-05  1.0011e+00  0 -1.2727e-07  6.6632e-03           0  ;
+%        7.7711e-06  8.7217e-06  1 -2.5479e-08 -5.2298e-08  6.6700e-03  ;
+%        2.1397e-01  8.2496e-03  0  9.9930e-01 -4.9467e-05           0  ;
+%        1.1639e-02  3.4024e-01  0 -3.8162e-05  9.9796e-01           0  ;
+%        2.3302e-03  2.6152e-03  0 -7.6400e-06 -1.5681e-05  1.0000e+00 ];
+% 
+% Bd = [ 1.1173e-05  ;
+%        1.7692e-05  ;
+%        3.5419e-06  ;
+%        3.3502e-03  ;
+%        5.3050e-03  ;
+%        1.0620e-03 ];
+% 
+% Cd = [ 1.0004e+000 13.7562e-006 0   3.3338e-003 -82.4866e-009 0.0000e+000  ;
+%       19.4087e-006  1.0006e+000 0 -63.6358e-009   3.3316e-003 0.0000e+000  ;
+%        3.8855e-006  4.3608e-006 1 -12.7397e-009 -26.1489e-009 3.3350e-003 ];
+
+
+%should come from [measurement] @ initialization
+x0 = [ x1(1) ;
+       x2(1) ;
+       x3(1) ;
+       0     ;
+       0     ;
+       0    ];
+
+xEst   = zeros([ length(x0), length(t) ]);
+xPred  = zeros([ length(x0), length(t) ]);
+P      = zeros([ size(P0),   length(t) ]);
+K      = zeros([ size(Cd'),  length(t) ]);
+
+y = [ x1'  ;
+      x2'  ;
+      x3' ];
+
+xEst(:,1) = x0;
+P(:,:,1)  = P0;
+
+
+for k = 2:length(t)
+
+  %>>
+  %>>>>---PREDICTION-------------------------------------------------------
+  %>>
+
+  %calculating priori/predicted estimate
+  xPred(:,k) = Ad*xEst(:,k-1) + Bd*u(k);
+
+  %error covariance (measure of uncertainty in the predicted states)
+  P(:,:,k)     = Ad*P(:,:,k-1)*Ad' + Q;
+
+  %>>
+  %>>>>---UPDATE-----------------------------------------------------------
+  %>>
+
+  %calculate Kalman gain
+  K(:,:,k)  = P(:,:,k)*Cd'/( Cd*P(:,:,k)*Cd' + R );
+
+  xEst(:,k) = xPred(:,k) + K(:,:,k)*( y(:,k) - Cd*xPred(:,k) );
+
+  P(:,:,k)  = ( eye(6) - K(:,:,k)*Cd )*P(:,:,k);
+
+end
+
+%Kalman filter results
+x1Est = xEst(1,:)';
+x2Est = xEst(2,:)';
+x3Est = xEst(3,:)';
+x4Est = xEst(4,:)';
+x5Est = xEst(5,:)';
+x6Est = xEst(6,:)';
+
+
+%% -------PLOT FIGURES-----------------------------------------------------
+
 %run('plotFigs.m')
 
 figure
-plot( t, noise_x, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$x$ [m]')
-xlim([min(t) max(t)])
-
-figure
-plot( t, noise_x_dot, 'linewidth', 1.5 )
-grid on, grid minor
-xlabel('$t$ [s]')
-ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
-xlim([min(t) max(t)])
-
-figure
-plot( t, noise_theta1, 'linewidth', 1.5 )
+plot( t, x1, 'linewidth', 1.5 )
 hold on
-plot( t, noise_theta2, 'linewidth', 1.5 )
+plot( t, x2, 'linewidth', 1.5 )
+plot( t, x1Est, 'linewidth', 1.5 )
+plot( t, x2Est, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\theta$ [rad]')
@@ -364,19 +442,192 @@ xlim([min(t) max(t)])
 legend( '$\theta_1$', '$\theta_2$', 'location', 'southeast' )
 
 figure
-plot( t, noise_theta1_dot, 'linewidth', 1.5 )
+plot( t, x3, 'linewidth', 1.5 )
 hold on
-plot( t, noise_theta2_dot, 'linewidth', 1.5 )
+plot( t, x3Est, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$x$ [m]')
+xlim([min(t) max(t)])
+
+figure
+plot( t, x4, 'linewidth', 1.5 )
+hold on
+plot( t, x5, 'linewidth', 1.5 )
+hold on
+plot( t, x4Est, 'linewidth', 1.5 )
+plot( t, x5Est, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
 xlim([min(t) max(t)])
 legend( '$\dot{\theta}_1$', '$\dot{\theta}_2$', 'location', 'southeast' )
 
+figure
+plot( t, x6, 'linewidth', 1.5 )
+hold on
+plot( t, x6Est, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
+xlim([min(t) max(t)])
 
-%% ----------ANIMATION-----------------------------------------------------
 
-run('animation.m')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%% -------FIRST ATTEMPT (FAILED)-------------------------------------------
+
+if 0
+  P = [ 0     0     0     0     0     0     ;
+        0     0     0     0     0     0     ;
+        0     0     0     0     0     0     ;
+        0     0     0     0     0     0     ;
+        0     0     0     0     0     0     ;
+        0     0     0     0     0     0    ];
+
+%guessed
+%process noise (disturbance) covariance
+R1 = [ 1e+1  0     0     0     0     0     ;
+       0     1e+1  0     0     0     0     ;
+       0     0     1e+1  0     0     0     ;
+       0     0     0     1e+1  0     0     ;
+       0     0     0     0     1e+1  0     ;
+       0     0     0     0     0     1e+1 ];
+  
+R = 5;
+
+%estimated
+%measurement noise covariance
+Q = ...
+[ 7.7114e-07  1.2205e-08 -3.5968e-10  1.0540e-04  7.7524e-07  3.2161e-07  ;
+  1.2205e-08  9.2307e-07 -3.1029e-09  6.9161e-06  1.1652e-04  4.4608e-08  ;
+ -3.5968e-10 -3.1029e-09  1.0616e-09  1.3746e-07  2.3827e-07  9.4527e-08  ;
+  1.0540e-04  6.9161e-06  1.3746e-07  3.7390e-02  1.2350e-03  8.4425e-05  ;
+  7.7524e-07  1.1652e-04  2.3827e-07  1.2350e-03  3.8354e-02  3.4860e-05  ;
+  3.2161e-07  4.4608e-08  9.4527e-08  8.4425e-05  3.4860e-05  3.0262e-05 ];
+  
+  if noiseOn
+    v_n = mvnrnd( [ x1 x2 x3 x4 x5 x6 ], Q, 1 );
+
+    x1 = v_n(1);
+    x2 = v_n(2);
+    x3 = v_n(3);
+    x4 = v_n(4);
+    x5 = v_n(5);
+    x6 = v_n(6);
+  
+    noise_theta1     = x1;
+    noise_theta2     = x2;
+    noise_x          = x3;
+  
+    %measurement
+    y_k = [ x1  ;
+            x2  ;
+            x3  ;
+            x4  ;
+            x5  ;
+            x6 ];
+  
+  %-------INITIALIZATION---------------------------------------------------
+  
+  Ad = ...
+  [ 1.0007e+00  2.7512e-05           0  6.6677e-03 -1.6497e-07           0  ;
+    3.8817e-05  1.0011e+00           0 -1.2727e-07  6.6632e-03           0  ;
+    7.7711e-06  8.7217e-06  1.0000e+00 -2.5479e-08 -5.2298e-08  6.6700e-03  ;
+    2.1397e-01  8.2496e-03           0  9.9930e-01 -4.9467e-05           0  ;
+    1.1639e-02  3.4024e-01           0 -3.8162e-05  9.9796e-01           0  ;
+    2.3302e-03  2.6152e-03           0 -7.6400e-06 -1.5681e-05  1.0000e+00 ];
+
+  Bd = [ 1.1173e-05  ;
+         1.7692e-05  ;
+         3.5419e-06  ;
+         3.3502e-03  ;
+         5.3050e-03  ;
+         1.0620e-03 ];
+
+  Cd = ...
+  [ 1.1143e+00  1.1761e+00  1.0000e+00  1.0030e+00  1.0023e+00  1.0033e+00 ];
+  
+  %-------PREDICTION-------------------------------------------------------
+  
+  %calculating priori/predicted estimate
+  x_pred_k  = Ad*xEst + Bd*previousU;
+
+  %error covariance (measure of uncertainty in the predicted states)
+  P_pred_k = Ad*P*Ad' + Q;
+  
+  %-------UPDATE-----------------------------------------------------------
+
+  %calculate Kalman gain
+  
+  size(P_pred_k), size(Cd'), size(Cd), size(P_pred_k), size(Cd'), size(R)
+  
+  K_k = P_pred_k*Cd'./( Cd*P_pred_k*Cd' + R );
+
+  xEst = x_pred_k + K_k*( y_k - Cd*x_pred_k );
+
+  P = ( eye(6) - K_k*Cd )*P_pred_k;
+
+  x1Est = xEst(1);
+  x2Est = xEst(2);
+  x3Est = xEst(3);
+  x4Est = xEst(4);
+  x5Est = xEst(5);
+  x6Est = xEst(6);
+  
+  %------------------------------------------------------------------------
+  
+  %adding process noise, w_p, to states
+  w_n = mvnrnd( [ x1 x2 x3 x4 x5 x6 ], R1, 1 );
+
+  q_dot = [ x4                   +   w_n(1)                   ;
+            x5                   +   w_n(2)                   ;
+            x6                   +   w_n(3)                   ;
+            MM\(F - G - C - B )  + [ w_n(4) w_n(5) w_n(6) ]' ];
+  
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

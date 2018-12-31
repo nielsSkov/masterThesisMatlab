@@ -18,11 +18,11 @@ noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-slm   = 0; %<-enable/disable sliding mode catch controller
+slm   = 1; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
 iaLim = 0; %<-limmit actuation peak on/off
-conX  = 0; %<-select whether or not to control x-position/velocity
-con   = 2; %<-controller selection where,
+conX  = 1; %<-select whether or not to control x-position/velocity
+con   = 4; %<-controller selection where,
 %             0 - no control
 %             1 - "rudementary" controller (Åström)
 %             2 - sign-based controller (Åström)    <--WARNING! VERY slow..

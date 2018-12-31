@@ -73,7 +73,7 @@ if       con == 0,     T_final = 10          +1.1;
 elseif   con == 1,     T_final = 15          +1.1;
 elseif   con == 2,     T_final = 10          +1.1;
 elseif   con == 3,     T_final = 10          +1.1;
-elseif   con == 4,     T_final = 10          +1.1;
+elseif   con == 4,     T_final = 20          +1.1;
 end
 
 %initialization for ode45

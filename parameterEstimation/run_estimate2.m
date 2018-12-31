@@ -30,7 +30,7 @@ b_ccm_vec_old = vertcat(loadTmp.b_ccm_vec);
 minMax = zeros(68,1);
 
 %if 0 -> manual tuning,  if 1 senseTool estimation
-sense = 0;
+sense = 1;
 %switch outher iterations on or off
 outherItr = 0;
 %plot all or just one
@@ -44,7 +44,7 @@ close all
 %figure
 
 currentRow = 0;
-for i = 5:72
+for i = 72:72
 
 %-----initial guesses is set to result of last estimate---------
 % if i > 5
@@ -53,8 +53,8 @@ for i = 5:72
 % end
 
 if j == itrAll || outherItr == 0
-  b_c_c_p = b_ccp_vec_old(i-4)-.59  +1.019;
-  b_c_c_m = b_ccm_vec_old(i-4)-.44  +.8;
+  b_c_c_p = b_ccp_vec_old(i-4)-.70  +.0;
+  b_c_c_m = b_ccm_vec_old(i-4)-.44  +1.8;
 else
   b_c_c_p = b_ccp_vec(i-4,j+1);
   b_c_c_m = b_ccm_vec(i-4,j+1);
@@ -71,8 +71,8 @@ if outherItr
   dataStart = 2250              -66*(itrAll-j);
   dataEnd   = length(data)-396  -66*(itrAll-j);
 else
-  dataStart = 1;%2250;
-  dataEnd   = length(data);%length(data)-396;
+  dataStart = 2250;
+  dataEnd   = length(data)-396;
 end
 
 %choose initial condition in data at high velocity (ca 0.2 m s^-1)
