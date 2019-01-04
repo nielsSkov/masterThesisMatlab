@@ -9,7 +9,7 @@ syms m1 m2 M l1 l2 g r b_c_c b_c_v b_p1_c b_p1_v b_p2_c b_p2_v k_tanh k_tau
 
 syms x1 x2 x3 x4 x5 x6 u
 
-noFriction = 0;
+noFriction = 1;
 
 MM = [  m1*(l1^2)       0              -m1*l1*cos(x1)  ;
         0               m2*(l2^2)      -m2*l2*cos(x2)  ;

@@ -18,7 +18,7 @@ noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-slm   = 1; %<-enable/disable sliding mode catch controller
+slm   = 0; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
 iaLim = 0; %<-limmit actuation peak on/off
 conX  = 1; %<-select whether or not to control x-position/velocity
@@ -107,8 +107,8 @@ switch con
     end
   case 4
     if conX
-      T_final = 9.45      +1.1;
-      %T_final = 20;  %<--to show x-position/velocity control reaching zero
+      %T_final = 9.45      +1.1;
+      T_final = 21.1; %<--to show x-position/velocity control reaching zero
     else
       T_final = 8.6       +1.1;
     end
@@ -179,6 +179,7 @@ run('animation.m')
 
 %remember to float the windows before saving (for consistent scale)
 if 0
+  %%
   figurePath1 = ...
     '~/syncDrive/uni/thesis/report/report/figures/original/';  %#ok<UNRCH>
   figurePath2 = ...
@@ -213,7 +214,7 @@ if 0
     saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
   end
   
-  for jj = 1:1:10
+  for jj = 1:1:2
     switch jj
     case 1
         figHandle=h_x;
@@ -257,4 +258,5 @@ if 0
         saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
     end
   end
+  %%
 end

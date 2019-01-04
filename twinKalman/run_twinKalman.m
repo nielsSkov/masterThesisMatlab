@@ -398,7 +398,7 @@ for k = 2:length(t)
   %>>
 
   %calculating priori/predicted estimate
-  xPred(:,k) = Ad*xEst(:,k-1) + Bd*u(k);
+  xPred(:,k) = Ad*xEst(:,k-1) + Bd*u(k-1);
 
   %error covariance (measure of uncertainty in the predicted states)
   P(:,:,k)     = Ad*P(:,:,k-1)*Ad' + Q;

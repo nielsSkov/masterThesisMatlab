@@ -79,6 +79,9 @@ function [ q_dot,          ...
   
   kLQR = [ -2005.64  1823.86  27.31  -354.10  249.88  37.16 ];
   
+  %linearized with no friction
+  %kLQR = [ -1803.90  1629.32  27.23  -324.42  232.13  36.57 ];
+  
   if catchTwin && ( (abs(x1Wrap)+abs(x2Wrap)) < catchAngle  )%<-- catch controller
     catchAngle = .8;
     u = -kLQR*X;

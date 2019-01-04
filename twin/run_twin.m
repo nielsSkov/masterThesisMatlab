@@ -126,7 +126,7 @@ for i = 1:length(t)
                                   b_c_c, b_c_v                          );
 end
 
-windowSize = 1/Ts;  %= 1 s long window
+windowSize = ceil(1/Ts);  %= 1 s long window
 for i = 1:length(t)-windowSize
   ia_rms(i) = rms( i_a(i:i+windowSize) );
 end
