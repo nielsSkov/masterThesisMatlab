@@ -16,6 +16,10 @@ syms x1 x2 x3 x4 x5 x6 u
 
 noFriction = 0;
 
+%control on/off   %  1 - controlled with LQR and linearized s.t.   up = 0
+con = 0;          %  0 - not controlled      and linearized s.t. down = 0
+
+
 MM = [  m1*(l1^2)       0              -m1*l1*cos(x1)  ;
         0               m2*(l2^2)      -m2*l2*cos(x2)  ;
        -m1*l1*cos(x1)  -m2*l2*cos(x2)   M+m1+m2       ];
@@ -53,7 +57,11 @@ A = jacobian(x_dot,x);
 
 B = jacobian(x_dot,u);
 
-x1 = 0; x2 = 0; x3 = 0; x4 = 0; x5 = 0; x6 = 0;
+if con == 1
+  x1 = 0; x2 = 0; x3 = 0; x4 = 0; x5 = 0; x6 = 0;
+else
+  x1 = pi; x2 = pi; x3 = pi; x4 = pi; x5 = pi; x6 = pi;
+end
 k_tanh = 1;
 
 b_c_c = 0; b_c_v = 0;
@@ -205,8 +213,13 @@ elseif noCartFriction
 end
 
 %initial conditions for ode45
-theta1_0         = .1;
-theta2_0         = .1;
+if con == 1
+  theta1_0         = .1;
+  theta2_0         = .1;
+else
+  theta1_0         = pi-.1;
+  theta2_0         = pi-.1;
+end
 x_0              = 0;
 theta1_dot_0     = 0;
 theta2_dot_0     = 0;
@@ -225,19 +238,23 @@ init  = [ theta1_0 theta2_0 x_0 theta1_dot_0 theta2_dot_0 x_dot_0 ];
 %lowering relative tollerence (default 1e-3) to avoid drifting along x
 options = odeset('RelTol',1e-7);
 
-
 %run ode45 simulation
 [t, q] = ode45( @(t,q)                                           ...
                 simTwin( t, q, m1, m2, M, l1, l2,          ...
                          g, k_tanh, r, k_tau,              ...
                          b_p1_c, b_p1_v,                   ...
                          b_p2_c, b_p2_v,                   ...
-                         b_c_c, b_c_v                ),    ...
+                         b_c_c, b_c_v, con           ),    ...
                 tspan, init, options                             );
 
 %assigning results of ode45 simulation
-theta1      =  q(:,1);
-theta2      =  q(:,2);
+if con == 0
+  theta1      =  q(:,1)-pi;
+  theta2      =  q(:,2)-pi;
+else
+  theta1      =  q(:,1);
+  theta2      =  q(:,2);
+end
 x           =  q(:,3);
 theta1_dot  =  q(:,4);
 theta2_dot  =  q(:,5);
@@ -264,7 +281,7 @@ for i = 1:length(t)
                                   g, k_tanh, r, k_tau,              ...
                                   b_p1_c, b_p1_v,                   ...
                                   b_p2_c, b_p2_v,                   ...
-                                  b_c_c, b_c_v                      );
+                                  b_c_c, b_c_v, con                    );
 end
 
 windowSize = ceil(1/Ts);  %= 1 s long window
@@ -426,6 +443,7 @@ x6Est = xEst(6,:)';
 
 
 %% -------PLOT FIGURES-----------------------------------------------------
+close all
 
 %run('plotFigs.m')
 

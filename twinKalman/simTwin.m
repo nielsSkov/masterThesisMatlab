@@ -8,7 +8,7 @@ function [ q_dot,            ...
                                          g, k_tanh, r, k_tau,           ...
                                          b_p1_c, b_p1_v,                ...
                                          b_p2_c, b_p2_v,                ...
-                                         b_c_c, b_c_v                   )
+                                         b_c_c, b_c_v , con               )
   
   persistent previousU;
   if isempty(previousU)
@@ -72,8 +72,12 @@ function [ q_dot,            ...
   
   kLQR = [ -1995.80  1802.84  29.42  -352.36  248.62  39.53  ];
 
-  u = -kLQR*X;
-
+  if con == 1
+    u = -kLQR*X;
+  else
+    u = 0;
+  end
+  
   i_a = u*r/k_tau;  %(function output)
   
   MM = [  m1*(l1^2)       0              -m1*l1*cos(x1)  ;
