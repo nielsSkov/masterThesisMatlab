@@ -14,7 +14,8 @@ matlabBlue = [0 0.4470 0.7410];
 
 %% -------IMPORT TEST DATA-------------------------------------------------
 
-dataFile = 'uOnKF21.csv';
+%q1 q2...
+dataFile = 'swing24.csv';
 
 data = csvread( dataFile, 0, 0);
 
@@ -24,45 +25,51 @@ dataEnd   = length(data)-00;
 %time vector
 t = ( data(dataStart:dataEnd,1)-data(dataStart,1) );
 
+%set tEnd = 0 to include all data
+tEnd = 0;
+if tEnd > 0
+  t = t( 1:length( t(t<tEnd) ) );
+end
+
 %-------measured--------------------------------------
 
 %angle of pendulum 1
-theta1       = data(dataStart:dataEnd,2);
+theta1       = data(dataStart:length(t),2);
 
 %angle of pendulum 2
-theta2       = data(dataStart:dataEnd,3);
+theta2       = data(dataStart:length(t),3);
 
 %position of cart
-x            = data(dataStart:dataEnd,4);
+x            = data(dataStart:length(t),4);
 
 %velocity of pendulum 1
-theta1_dot   = data(dataStart:dataEnd,5);
+theta1_dot   = data(dataStart:length(t),5);
 
 %velocity of pendulum 2
-theta2_dot   = data(dataStart:dataEnd,6);
+theta2_dot   = data(dataStart:length(t),6);
 
 %velocity of cart
-x_dot        = data(dataStart:dataEnd,7);
+x_dot        = data(dataStart:length(t),7);
 
 %-------From Kalman Filter----------------------------
 
 %KF angle of pendulum 1
-theta1KF     = data(dataStart:dataEnd,8);
+theta1KF     = data(dataStart:length(t),8);
 
 %KF angle of pendulum 2
-theta2KF     = data(dataStart:dataEnd,9);
+theta2KF     = data(dataStart:length(t),9);
 
 %KFposition of cart
-xKF          = data(dataStart:dataEnd,10);
+xKF          = data(dataStart:length(t),10);
 
 %KF velocity of pendulum 1
-theta1_dotKF = data(dataStart:dataEnd,11);
+theta1_dotKF = data(dataStart:length(t),11);
 
 %KF velocity of pendulum 2
-theta2_dotKF = data(dataStart:dataEnd,12);
+theta2_dotKF = data(dataStart:length(t),12);
 
 %KF velocity of cart
-x_dotKF      = data(dataStart:dataEnd,13);
+x_dotKF      = data(dataStart:length(t),13);
 
 figure
 subplot(3,2,1)
