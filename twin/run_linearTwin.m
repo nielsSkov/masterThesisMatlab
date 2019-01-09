@@ -138,13 +138,13 @@ Dd = disSys.D;
 %% -------LQR Design-------------------------------------------------------
 
 % theta1_max    [rad]       theta2_max    [rad]       x_max        [m]
-  x1Max = 0.001;             x2Max = 0.001;             x3Max = 0.001;
+  x1Max = 1;                x2Max = 1;                x3Max = .0001;
 
 % theta1Dot_max [rad s^-1]  theta2Dot_max [rad s^-1]  xDot_max     [m s^-1] 
-  x4Max = 1;                x5Max = 1;                x6Max = 1;
+  x4Max = 1;              x5Max = 1;              x6Max = .0001;
 
 %iaMax  = 0.01;         % [A] ,  max continuous = 4.85 A
-uMax   = 0.03; %iaMax*k_tau/r;   % [N]
+uMax   = 0.005; %iaMax*k_tau/r;   % [N]
 
 Q = ...
 [ 1/(x1Max^2) 0           0           0           0           0            ;
@@ -160,18 +160,20 @@ R = 1/(uMax^2);
 
 kLQR = lqr(A, B, Q, R);
 
+%       lqrd is used for contineous systems
 kLQRD = lqrd(A, B, Q, R, Ts);
 
-kDLQR = dlqr(Ad, Bd, Q, R);
+%        dlqr is used for already discretized systems
+%kDLQR = dlqr(Ad, Bd, Q, R);
 
-%display compact k-vectors with 2 digits after comma
-fprintf('kLQR  = [ %.2f  %.2f  %.2f  %.2f  %.2f  %.2f ]\n\n', kLQR)
-fprintf('kLQRD = [ %.2f  %.2f  %.2f  %.2f  %.2f  %.2f ]\n\n', kLQRD)
-fprintf('kDLQR = [ %.2f  %.2f  %.2f  %.2f  %.2f  %.2f ]\n\n', kDLQR)
+%display compact k-vectors with 2 digits after comma for implementation
+fprintf('kLQR  = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kLQR)
+fprintf('kLQRD = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kLQRD)
+%fprintf('kDLQR = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kDLQR)
 
 %choose method (almost the same)
-%kLQR_D = kLQRD;
-kLQR_D = kDLQR;
+kLQR_D = kLQRD;
+%kLQR_D = kDLQR;
 
 %control law
 %

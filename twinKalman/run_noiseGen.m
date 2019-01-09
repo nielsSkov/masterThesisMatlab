@@ -16,12 +16,14 @@ matlabBlue = [0 0.4470 0.7410];
 %% -------IMPORT TEST DATA-------------------------------------------------
 
 %dataFile = 'test1pend1.csv';
-dataFile = 'noiseCovTwinTest2.csv';
+%dataFile = 'noiseCovTwinTest2.csv';
+dataFile  = 'tuneKF4.csv';
 
 data = csvread( dataFile, 0, 0);
 
-dataStart = 91;
-dataEnd   = length(data);
+dataStart = 1;
+%dataStart = 91;
+dataEnd   = length(data)-1;
 
 %time vector
 t = ( data(dataStart:dataEnd,1)-data(dataStart,1) );
@@ -53,6 +55,7 @@ ylimUpper = 0.5;
 
 %Length of signal
 L = length(theta1);
+
 
 %compute FFT of signal
 theta1_fft = fft(theta1);
@@ -232,8 +235,8 @@ theta2_dot_noise = filter( HpFilt, theta2_dot);
 x_dot_noise      = filter( HpFilt, x_dot);
 
 %cropping noise signals
-noiseStart       = 3000;
-noiseEnd         = 4000;
+noiseStart       = 1;%3000;
+noiseEnd         = length(t);%4000;
 t                = t(                noiseStart:noiseEnd ) - t(noiseStart);
 theta1_noise     = theta1_noise(     noiseStart:noiseEnd );
 theta2_noise     = theta2_noise(     noiseStart:noiseEnd );
@@ -340,6 +343,11 @@ noiseCov = cov( [ theta1_noise,     ...
                    theta2_dot_noise, ...
                    x_dot_noise       ]  );
 
+%print R for easy code implementation
+fprintf( 'R =\n' )
+fprintf( '%.15f, %.15f, %.15f,\n',  noiseCov(1,1:3) )
+fprintf( '%.15f, %.15f, %.15f,\n',  noiseCov(2,1:3) )
+fprintf( '%.15f, %.15f, %.15f\n\n', noiseCov(3,1:3) )
 
 %generating noise
 rng default  % For reproducibility

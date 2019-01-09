@@ -77,7 +77,8 @@ function [ q_dot,          ...
   %total energy
   E_T = T + U; %(function output)
   
-  kLQR = [ -2005.64  1823.86  27.31  -354.10  249.88  37.16 ];
+  kLQR = [ -2815.13, 2414.30, 44.61, -506.12, 344.19, 78.97 ];
+  
   
   %linearized with no friction
   %kLQR = [ -1803.90  1629.32  27.23  -324.42  232.13  36.57 ];

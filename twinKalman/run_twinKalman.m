@@ -17,7 +17,7 @@ syms x1 x2 x3 x4 x5 x6 u
 noFriction = 0;
 
 %control on/off   %  1 - controlled with LQR and linearized s.t.   up = 0
-con = 0;          %  0 - not controlled      and linearized s.t. down = 0
+con = 1;          %  0 - not controlled      and linearized s.t. down = 0
 
 
 MM = [  m1*(l1^2)       0              -m1*l1*cos(x1)  ;
