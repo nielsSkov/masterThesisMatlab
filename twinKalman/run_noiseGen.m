@@ -17,7 +17,8 @@ matlabBlue = [0 0.4470 0.7410];
 
 %dataFile = 'test1pend1.csv';
 %dataFile = 'noiseCovTwinTest2.csv';
-dataFile  = 'tuneKF4.csv';
+%dataFile = 'tuneKF4.csv';
+dataFile  = 'workingKF3.csv';
 
 data = csvread( dataFile, 0, 0);
 

@@ -25,12 +25,12 @@ end
 
 %----------SIMULATION ODE45------------------------------------------------
 
-con = 4; %select control in sim, first trajectory
+con = 0; %select control
 
 %initial conditions for ode45
 if con == 0
-  theta1_0         = -pi/7;
-  theta2_0         = +pi/8;
+  theta1_0         = -.01;
+  theta2_0         = +.01;
   x_0              = 0;
   theta1_dot_0     = 0;
   theta2_dot_0     = 0;

@@ -17,65 +17,67 @@ matlabBlue = [0 0.4470 0.7410];
 %q1 q2...
 %swing24
 %k13!!! :D
-dataFile = 'now5.csv';
+%dataFile = 'now5.csv';
+%dataFile = 'Cnow4.csv';
+%dataFile = 'kf101.csv'; % !! :D
+
+%dataFile = 'workingKF3.csv';
+
+%dataFile = 'wrokf1.csv';
+dataFile = 'fixed3.csv'; %happy crying :'D
 
 P_on  = 0;
 KF_on = 1;
+cOn   = 1;  %should also be ON for now*.csv-files
 
 data = csvread( dataFile, 0, 0);
 
 dataStart = 1;
-dataEnd   = length(data)-00;
+dataEnd   = length(data);%200;%450;
 
 %time vector
 t = ( data(dataStart:dataEnd,1)-data(dataStart,1) );
 
-%set tEnd = 0 to include all data
-tEnd = 0;%1.535;
-if tEnd > 0
-  t = t( 1:length( t(t<tEnd) ) );
-end
-
 %-------measured--------------------------------------
 
 %angle of pendulum 1
-theta1       = data(dataStart:length(t),2);
+theta1       = data(dataStart:dataEnd,2);
 
 %angle of pendulum 2
-theta2       = data(dataStart:length(t),3);
+theta2       = data(dataStart:dataEnd,3);
 
 %position of cart
-x            = data(dataStart:length(t),4);
+x            = data(dataStart:dataEnd,4);
 
 %velocity of pendulum 1
-theta1_dot   = data(dataStart:length(t),5);
+theta1_dot   = data(dataStart:dataEnd,5);
 
 %velocity of pendulum 2
-theta2_dot   = data(dataStart:length(t),6);
+theta2_dot   = data(dataStart:dataEnd,6);
 
 %velocity of cart
-x_dot        = data(dataStart:length(t),7);
+x_dot        = data(dataStart:dataEnd,7);
 
 %-------From Kalman Filter----------------------------
 
 if KF_on
 %KF angle of pendulum 1
-theta1KF     = data(dataStart:length(t),8);
+theta1KF     = data(dataStart:dataEnd,8+cOn);
 
 %KF angle of pendulum 2
-theta2KF     = data(dataStart:length(t),9);
+theta2KF     = data(dataStart:dataEnd,9+cOn);
 
 %KFposition of cart
-xKF          = data(dataStart:length(t),10);
+xKF          = data(dataStart:dataEnd,10+cOn);
 
 %KF velocity of pendulum 1
-theta1_dotKF = data(dataStart:length(t),11);
+theta1_dotKF = data(dataStart:dataEnd,11+cOn);
 
 %KF velocity of pendulum 2
-theta2_dotKF = data(dataStart:length(t),12);
+theta2_dotKF = data(dataStart:dataEnd,12+cOn);
 
 %KF velocity of cart
-x_dotKF      = data(dataStart:length(t),13);
+x_dotKF      = data(dataStart:dataEnd,13+cOn);
 end
 
 %-------Kalman P--------------------------------------
@@ -96,7 +98,7 @@ subplot(3,2,1)
 plot(t,theta1)
 hold on
 if KF_on
-plot(t,theta1KF)
+plot(t,theta1KF, 'linewidth', 1.5 )
 end
 grid on, grid minor
 xlim([ 0 t(end) ])
@@ -107,7 +109,7 @@ subplot(3,2,3)
 plot(t,theta2)
 hold on
 if KF_on
-plot(t,theta2KF)
+plot(t,theta2KF, 'linewidth', 1.5 )
 end
 grid on, grid minor
 xlim([ 0 t(end) ])
@@ -118,7 +120,7 @@ subplot(3,2,5)
 plot(t,x)
 hold on
 if KF_on
-plot(t,xKF)
+plot(t,xKF, 'linewidth', 1.5 )
 end
 grid on, grid minor
 xlim([ 0 t(end) ])
@@ -129,7 +131,7 @@ subplot(3,2,2)
 plot(t,theta1_dot)
 hold on
 if KF_on
-plot(t,theta1_dotKF)
+plot(t,theta1_dotKF, 'linewidth', 1.5 )
 end
 grid on, grid minor
 xlim([ 0 t(end) ])
@@ -140,7 +142,7 @@ subplot(3,2,4)
 plot(t,theta2_dot)
 hold on
 if KF_on
-plot(t,theta2_dotKF)
+plot(t,theta2_dotKF, 'linewidth', 1.5 )
 end
 grid on, grid minor
 xlim([ 0 t(end) ])
@@ -151,7 +153,7 @@ subplot(3,2,6)
 plot(t,x_dot)
 hold on
 if KF_on
-plot(t,x_dotKF)
+plot(t,x_dotKF, 'linewidth', 1.5 )
 end
 grid on, grid minor
 xlim([ 0 t(end) ])

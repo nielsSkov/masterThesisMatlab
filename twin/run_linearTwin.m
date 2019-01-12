@@ -138,13 +138,14 @@ Dd = disSys.D;
 %% -------LQR Design-------------------------------------------------------
 
 % theta1_max    [rad]       theta2_max    [rad]       x_max        [m]
-  x1Max = 1;                x2Max = 1;                x3Max = .0001;
+  x1Max = 1;                x2Max = 1;                x3Max = .028;%.0001;
 
 % theta1Dot_max [rad s^-1]  theta2Dot_max [rad s^-1]  xDot_max     [m s^-1] 
-  x4Max = 1;              x5Max = 1;              x6Max = .0001;
+  x4Max = 1;              x5Max = 1;              x6Max = 1;%.0001;
 
-%iaMax  = 0.01;         % [A] ,  max continuous = 4.85 A
-uMax   = 0.005; %iaMax*k_tau/r;   % [N]
+iaMax  = 1;%4.85;                    % [A] ,  max continuous = 4.85 A
+%uMax  = 0.005; %iaMax*k_tau/r;   % [N]
+uMax   = iaMax*k_tau/r;           % [N]
 
 Q = ...
 [ 1/(x1Max^2) 0           0           0           0           0            ;
@@ -158,16 +159,16 @@ R = 1/(uMax^2);
 
 %optimize J = Integral { x'Qx + u'Ru } dt
 
-kLQR = lqr(A, B, Q, R);
+%kLQR = lqr(A, B, Q, R);
 
 %       lqrd is used for contineous systems
 kLQRD = lqrd(A, B, Q, R, Ts);
 
 %        dlqr is used for already discretized systems
-%kDLQR = dlqr(Ad, Bd, Q, R);
+kDLQR = dlqr(Ad, Bd, Q, R);
 
 %display compact k-vectors with 2 digits after comma for implementation
-fprintf('kLQR  = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kLQR)
+%fprintf('kLQR  = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kLQR)
 fprintf('kLQRD = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kLQRD)
 %fprintf('kDLQR = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kDLQR)
 
