@@ -41,11 +41,13 @@ plot( t, theta2, 'linewidth', 1.5, 'color', matlabRed )
 grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\theta$ [rad]')
-yPI = 1; xPI = 0; run('piAxes.m')
+if con == 4
+  yPI = 1; xPI = 0; run('piAxes.m')
+  ylim([ -.5  2*pi+.5 ])
+end
 xlim([min(t) max(t)-1.1])
-ylim([ -.5  2*pi+.5 ])
 legend( '$\theta_1$', '$\theta_2$', 'location', 'southwest' )
-if documentation == 1
+if documentation == 1 && con == 4
   pbaspect(aspectRatioAni)
 end
 

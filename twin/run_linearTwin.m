@@ -56,71 +56,91 @@ if noFriction
   b_p1_c = 0; b_p1_v = 0; b_p2_c = 0; b_p2_v = 0;
 end
 
-A = subs(A)
-B = subs(B)
+A = subs(A);
+B = subs(B);
+C = [ 1 0 0 0 0 0  ;
+      0 1 0 0 0 0  ;
+      0 0 1 0 0 0 ];
 
 %-------controllability----------------------------------------------------
 
 %controllability
-C = [ B A*B (A^2)*B (A^3)*B (A^4)*B (A^5)*B ]
+calC = [ B A*B (A^2)*B (A^3)*B (A^4)*B (A^5)*B ];
+
+%observability
+calO = [ C C*A C*(A^2) C*(A^3) C*(A^4) C*(A^5) ]';
 
 for i = 1:4
   if i == 1
-    fprintf('\n\n-------  m1 == m2   &   l1 == l2  -------\n')
+    fprintf('\n\n-------  m1 == m2   &   l1 == l2  -------\n\n')
     run('initTwin')
     
     m2 = m1;  l2 = l1;
     
   elseif i == 2
-    fprintf('\n\n-------  m1 != m2   &   l1 == l2  -------\n')
+    fprintf('\n\n-------  m1 != m2   &   l1 == l2  -------\n\n')
     run('initTwin')
     
     l2 = l1;
     
   elseif i == 3
-    fprintf('\n\n-------  m1 == m2   &   l1 != l2  -------\n')
+    fprintf('\n\n-------  m1 == m2   &   l1 != l2  -------\n\n')
     run('initTwin')
     
     m2 = m1;
     
   elseif i == 4
-    fprintf('\n\n-------  m1 != m2   &   l1 != l2  -------\n')
+    fprintf('\n\n-------  m1 != m2   &   l1 != l2  -------\n\n')
     run('initTwin')
   end
   
-  fprintf( 'm1=%.4f, m2=%.4f, l1=%.4f, l2=%.4f\n', m1, m2, l1, l2 )
+  fprintf( 'm1=%.4f, m2=%.4f, l1=%.4f, l2=%.4f\n\n', m1, m2, l1, l2 )
 
 
-  vpa(subs(A),4)
-  vpa(subs(B),4)
+  vpa(subs(A),4);
+  vpa(subs(B),4);
 
   A_n = double(subs(A));
   B_n = double(subs(B));
+  C_n = C;
 
   %controllability
-  C_n = [ B_n A_n*B_n (A_n^2)*B_n  (A_n^3)*B_n (A_n^4)*B_n (A_n^5)*B_n ]
+  calC_n = [ B_n A_n*B_n (A_n^2)*B_n (A_n^3)*B_n (A_n^4)*B_n (A_n^5)*B_n ];
+  
+  %observability
+  calO_n = [ C_n          ;
+             C_n*A_n      ;
+             C_n*(A_n^2)  ;
+             C_n*(A_n^3)  ;
+             C_n*(A_n^4)  ;
+             C_n*(A_n^5) ];
 
-  rankC = rank(C_n)
+  rankCalC = rank(calC_n);
+  rankCalO = rank(calO_n);
 
-  if rankC == length(x)
+  if rankCalC == length(x)
     disp('The system is controllable!')
   else
     disp('The system is NOT controllable!')
   end
 
+  if rankCalO == length(x)
+    disp('The system is observable!')
+  else
+    disp('The system is NOT observable!')
+  end
 end
-
+fprintf('\n\n')
 
 %% -------Discrete Time Model----------------------------------------------
 
-A = subs(A)
-B = subs(B)
+A = subs(A);
+B = subs(B);
 
 run('initTwin.m')
 
-A = double(subs(A))
-B = double(subs(B))
-C = ones(1,6);
+A = double(subs(A));
+B = double(subs(B));
 D = 0;
 
 Fs = 149.925;           % Sampling frequency    [ Hz ]
@@ -171,6 +191,9 @@ kDLQR = dlqr(Ad, Bd, Q, R);
 %fprintf('kLQR  = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kLQR)
 fprintf('kLQRD = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kLQRD)
 %fprintf('kDLQR = [ %.2f, %.2f, %.2f, %.2f, %.2f, %.2f ]\n\n', kDLQR)
+
+% currently using this gain vector
+% [ -2742.93, 2302.58, 107.09, -493.15, 328.26, 105.18 ]
 
 %choose method (almost the same)
 kLQR_D = kLQRD;

@@ -73,8 +73,9 @@ if       con == 0,     T_final = 10          +1.1;
 elseif   con == 1,     T_final = 15          +1.1;
 elseif   con == 2,     T_final = 10          +1.1;
 elseif   con == 3,     T_final = 10          +1.1;
-elseif   con == 4,     T_final = 20          +1.1;
-end
+elseif   con == 4,     T_final = 7.8         +1.1;
+end                    %7.6645 for swing
+                       %20 for swing&catch
 
 %initialization for ode45
 tspan = 0:Ts:T_final +.008;
@@ -165,20 +166,24 @@ if 0
     '~/syncDrive/uni/thesis/report/report/figures/';
   fileTypeOrig = "fig";
   
-  testID='_twinSwing';
-  %testID='_twinSwingAndCatch';
+  if con == 0
+    testID = '_twinStabilize';        xOn = 1;
+  else
+    %testID = '_twinSwing';           xOn = 0; <--carefull
+    testID = '_twinSwingAndCatch';    xOn = 1;
+  end
   
   for jj = 1:1:10
     switch jj
-    case 1
+    case 1*xOn
         figHandle=h_x;
         fileName=strcat('x',testID);
         saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
-    case 2
+    case 2*xOn
         figHandle=h_xDot;
         fileName=strcat('xDot',testID);
         saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
-    case 3
+    case 3*xOn
         figHandle=h_xDotDot;
         fileName=strcat('xDotDot',testID);
         saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
