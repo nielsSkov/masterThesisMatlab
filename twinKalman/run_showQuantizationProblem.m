@@ -111,6 +111,12 @@ x3Quant = delta2*floor(x3Smooth./delta2 + 1/2);
 
 h_quantizationProblem = figure;
 plot( t, x1, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\theta_1$ [rad]')
+
+h_quantizationProblemModel = figure;
+plot( t, x1, 'linewidth', 1.5 )
 hold on
 plot( t, x1Smooth, 'linewidth', 1.5 )
 scatter( t, x1Quant, 100, '.', 'cdata', [ 0 .56 0 ] )
@@ -122,6 +128,7 @@ legend( 'Original Signal',           ...
         'Smoothed Signal',           ...
         'Smoothed Signal Quantized', ...
         'location', 'southeast'      )
+
 
 if 0
 figure
@@ -150,11 +157,15 @@ if 0
     '~/syncDrive/uni/thesis/report/report/figures/';
   fileTypeOrig = "fig";
   
-  for jj = 1:1:1
+  for jj = 1:1:2
     switch jj
     case 1
         figHandle=h_quantizationProblem;
         fileName='quantizationProblem';
+        saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 2
+        figHandle=h_quantizationProblemModel;
+        fileName='quantizationProblemModel';
         saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
     end
   end
