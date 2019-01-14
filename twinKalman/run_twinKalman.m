@@ -292,17 +292,56 @@ end
 %calculating input vector from applied current
 u = i_a.*k_tau./r;
 
-%% -------ADD NOISE--------------------------------------------------------
+if 0
+  %% -------ADD NOISE------------------------------------------------------
 
-%estimated
-%measurement noise covariance
-R_full = ...
-[ 7.7114e-07  1.2205e-08 -3.5968e-10  1.0540e-04  7.7524e-07  3.2161e-07  ;
-  1.2205e-08  9.2307e-07 -3.1029e-09  6.9161e-06  1.1652e-04  4.4608e-08  ;
- -3.5968e-10 -3.1029e-09  1.0616e-09  1.3746e-07  2.3827e-07  9.4527e-08  ;
-  1.0540e-04  6.9161e-06  1.3746e-07  3.7390e-02  1.2350e-03  8.4425e-05  ;
-  7.7524e-07  1.1652e-04  2.3827e-07  1.2350e-03  3.8354e-02  3.4860e-05  ;
-  3.2161e-07  4.4608e-08  9.4527e-08  8.4425e-05  3.4860e-05  3.0262e-05 ];
+  %estimated
+  %measurement noise covariance
+
+  R_full = ...
+  [ 7.7114e-07  1.2205e-08 -3.5968e-10  1.0540e-04  7.7524e-07  3.2161e-07  ;
+    1.2205e-08  9.2307e-07 -3.1029e-09  6.9161e-06  1.1652e-04  4.4608e-08  ;
+   -3.5968e-10 -3.1029e-09  1.0616e-09  1.3746e-07  2.3827e-07  9.4527e-08  ;
+    1.0540e-04  6.9161e-06  1.3746e-07  3.7390e-02  1.2350e-03  8.4425e-05  ;
+    7.7524e-07  1.1652e-04  2.3827e-07  1.2350e-03  3.8354e-02  3.4860e-05  ;
+    3.2161e-07  4.4608e-08  9.4527e-08  8.4425e-05  3.4860e-05  3.0262e-05 ];
+
+  x1 = theta1;
+  x2 = theta2;
+  x3 = x;
+  x4 = theta1_dot;
+  x5 = theta2_dot;
+  x6 = x_dot;
+
+  for i = 1:length(t)
+    v_n = mvnrnd( [ x1(i) x2(i) x3(i) x4(i) x5(i) x6(i) ], R_full, 1 );
+    x1(i) = v_n(1);
+    x2(i) = v_n(2);
+    x3(i) = v_n(3);
+    x4(i) = v_n(4);
+    x5(i) = v_n(5);
+    x6(i) = v_n(6);
+  end
+
+  % %create variables for nummerical differentiations
+  % x_numDot      = zeros(size(t));
+  % theta1_numDot = zeros(size(t));
+  % theta2_numDot = zeros(size(t));
+  % 
+  % %initialize
+  % x_numDot(1)      = x(1);
+  % theta1_numDot(1) = theta1(1);
+  % theta2_numDot(1) = theta2(1);
+  % 
+  % %calculate nummerical differentiations
+  % for i = 2:length(t)
+  %   theta1_numDot(i) = ( x1(i)+x1(i-1) )/Ts;
+  %   theta2_numDot(i) = ( x2(i)+x2(i-1) )/Ts;
+  %   x_numDot(i)      = ( x3(i)+x3(i-1) )/Ts;
+  % end
+end
+
+%% -------ADD QUANTIZATION-------------------------------------------------
 
 x1 = theta1;
 x2 = theta2;
@@ -311,62 +350,41 @@ x4 = theta1_dot;
 x5 = theta2_dot;
 x6 = x_dot;
 
-for i = 1:length(t)
-  v_n = mvnrnd( [ x1(i) x2(i) x3(i) x4(i) x5(i) x6(i) ], R_full, 1 );
-  x1(i) = v_n(1);
-  x2(i) = v_n(2);
-  x3(i) = v_n(3);
-  x4(i) = v_n(4);
-  x5(i) = v_n(5);
-  x6(i) = v_n(6);
-end
+%quantize
+delta = 0.00314;
+x1 = delta*floor(x1./delta + 1/2);
+x2 = delta*floor(x2./delta + 1/2);
 
-% %create variables for nummerical differentiations
-% x_numDot      = zeros(size(t));
-% theta1_numDot = zeros(size(t));
-% theta2_numDot = zeros(size(t));
-% 
-% %initialize
-% x_numDot(1)      = x(1);
-% theta1_numDot(1) = theta1(1);
-% theta2_numDot(1) = theta2(1);
-% 
-% %calculate nummerical differentiations
-% for i = 2:length(t)
-%   theta1_numDot(i) = ( x1(i)+x1(i-1) )/Ts;
-%   theta2_numDot(i) = ( x2(i)+x2(i-1) )/Ts;
-%   x_numDot(i)      = ( x3(i)+x3(i-1) )/Ts;
-% end
-
+delta = 0.000088;
+x3 = delta*floor(x3./delta + 1/2);
 
 %% -------KALMAN FILTER----------------------------------------------------
 
 %>>
-%>>>>---INITIALIZATION---------------------------------------------------
+%>>>>---INITIALIZATION-----------------------------------------------------
 %>>
 
-P0 = [ 0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0     ;
-       0     0     0     0     0     0    ];
-
+P0 = [ 14.185841171390,   0.030200335462,    0.001829079170,   101.695493886294,     0.988096632836,      0.200091103028  ;
+        0.030200335462,  14.519946416777,    0.002114160236,     0.705198836483,   111.070129716470,      0.228222661121  ;
+        0.001829079170,   0.002114160236,    2.798279396029,     0.002494930421,     0.006615239723,      6.788717407965  ;
+      101.695493886294,   0.705198836483,    0.002494930421,  2327.959125138203,     7.104051276564,      0.628709554973  ;
+        0.988096632836, 111.070129716470,    0.006615239723,     7.104051276564,  2383.358258809027,      0.994982551030  ;
+        0.200091103028,   0.228222661121,    6.788717407965,     0.628709554973,     0.994982551030,    500.159420342470 ];
 
 %guessed
 %process noise (disturbance) covariance
-Q = [ 1e+1  0     0     0     0     0     ;
-      0     1e+1  0     0     0     0     ;
-      0     0     1e+1  0     0     0     ;
-      0     0     0     1e+1  0     0     ;
-      0     0     0     0     1e+1  0     ;
-      0     0     0     0     0     1e+1 ];
+Q = [ 1    0     0    0     0     0       ;
+      0    1     0    0     0     0       ;
+      0    0     1    0     0     0       ;
+      0    0     0    100   0     0       ;
+      0    0     0    0     100   0       ;
+      0    0     0    0     0     10  ];
 
 %estimated
 %measurement noise covariance
-R = [ 7.7114e-07  1.2205e-08 -3.5968e-10  ;
-      1.2205e-08  9.2307e-07 -3.1029e-09  ;
-     -3.5968e-10 -3.1029e-09  1.0616e-09 ];
+R =   [ 100,  0,   0  ;
+         0, 100,   0  ;
+         0,   0,  10 ];
 
 % Ad = [ 1.0007e+00  2.7512e-05  0  6.6677e-03 -1.6497e-07           0  ;
 %        3.8817e-05  1.0011e+00  0 -1.2727e-07  6.6632e-03           0  ;
@@ -441,25 +459,47 @@ x4Est = xEst(4,:)';
 x5Est = xEst(5,:)';
 x6Est = xEst(6,:)';
 
+%set time from which to print P
+P_t = 3;
+
+P_print = P(:,:,length(t(t<P_t)));
+
+%print P for easy code implementation
+fprintf( 'P =\n' )
+fprintf( '%16.12f, %16.12f, %17.12f, %18.12f, %18.12f, %19.12f,\n',   P_print(1,:) )
+fprintf( '%16.12f, %16.12f, %17.12f, %18.12f, %18.12f, %19.12f,\n',   P_print(2,:) )
+fprintf( '%16.12f, %16.12f, %17.12f, %18.12f, %18.12f, %19.12f,\n',   P_print(3,:) )
+fprintf( '%16.12f, %16.12f, %17.12f, %18.12f, %18.12f, %19.12f,\n',   P_print(4,:) )
+fprintf( '%16.12f, %16.12f, %17.12f, %18.12f, %18.12f, %19.12f,\n',   P_print(5,:) )
+fprintf( '%16.12f, %16.12f, %17.12f, %18.12f, %18.12f, %19.12f \n\n', P_print(6,:) )
+
 
 %% -------PLOT FIGURES-----------------------------------------------------
 close all
 
 %run('plotFigs.m')
 
-figure
+h_theta1 = figure
 plot( t, x1, 'linewidth', 1.5 )
 hold on
-plot( t, x2, 'linewidth', 1.5 )
 plot( t, x1Est, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\theta_1$ [rad]')
+axis([ 1.3761  2.6146 -0.0398  0.0418 ])
+legend( 'Quantized Simulation', 'Estimated', 'location', 'southeast' )
+
+h_theta2 = figure
+plot( t, x2, 'linewidth', 1.5 )
+hold on
 plot( t, x2Est, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
-ylabel('$\theta$ [rad]')
+ylabel('$\theta_2$ [rad]')
 xlim([min(t) max(t)])
-legend( '$\theta_1$', '$\theta_2$', 'location', 'southeast' )
+legend( 'Quantized Simulation', 'Estimated', 'location', 'southeast' )
 
-figure
+h_x =figure
 plot( t, x3, 'linewidth', 1.5 )
 hold on
 plot( t, x3Est, 'linewidth', 1.5 )
@@ -467,21 +507,29 @@ grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$x$ [m]')
 xlim([min(t) max(t)])
+legend( 'Quantized Simulation', 'Estimated', 'location', 'southeast' )
 
-figure
+h_theta1Dot = figure
 plot( t, x4, 'linewidth', 1.5 )
 hold on
+plot( t, x4Est, 'linewidth', 1.5 )
+grid on, grid minor
+xlabel('$t$ [s]')
+ylabel('$\dot{\theta}_1$ [rad$\cdot$s$^{-1}$]')
+xlim([min(t) max(t)])
+legend( 'True', 'Estimated', 'location', 'southeast' )
+
+h_theta2Dot = figure
 plot( t, x5, 'linewidth', 1.5 )
 hold on
-plot( t, x4Est, 'linewidth', 1.5 )
 plot( t, x5Est, 'linewidth', 1.5 )
 grid on, grid minor
 xlabel('$t$ [s]')
-ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
+ylabel('$\dot{\theta}_2$ [rad$\cdot$s$^{-1}$]')
 xlim([min(t) max(t)])
-legend( '$\dot{\theta}_1$', '$\dot{\theta}_2$', 'location', 'southeast' )
+legend( 'True', 'Estimated', 'location', 'southeast' )
 
-figure
+h_xDot = figure
 plot( t, x6, 'linewidth', 1.5 )
 hold on
 plot( t, x6Est, 'linewidth', 1.5 )
@@ -489,165 +537,48 @@ grid on, grid minor
 xlabel('$t$ [s]')
 ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
 xlim([min(t) max(t)])
+legend( 'True', 'Estimated', 'location', 'southeast' )
 
 
+%% ----------SAVE PLOTS----------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%% -------FIRST ATTEMPT (FAILED)-------------------------------------------
-
+%remember to float the windows before saving (for consistent scale)
 if 0
-  P = [ 0     0     0     0     0     0     ;
-        0     0     0     0     0     0     ;
-        0     0     0     0     0     0     ;
-        0     0     0     0     0     0     ;
-        0     0     0     0     0     0     ;
-        0     0     0     0     0     0    ];
-
-%guessed
-%process noise (disturbance) covariance
-R1 = [ 1e+1  0     0     0     0     0     ;
-       0     1e+1  0     0     0     0     ;
-       0     0     1e+1  0     0     0     ;
-       0     0     0     1e+1  0     0     ;
-       0     0     0     0     1e+1  0     ;
-       0     0     0     0     0     1e+1 ];
+  %%
+  figurePath1 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/original/';  %#ok<UNRCH>
+  figurePath2 = ...
+    '~/syncDrive/uni/thesis/report/report/figures/';
+  fileTypeOrig = "fig";
   
-R = 5;
-
-%estimated
-%measurement noise covariance
-Q = ...
-[ 7.7114e-07  1.2205e-08 -3.5968e-10  1.0540e-04  7.7524e-07  3.2161e-07  ;
-  1.2205e-08  9.2307e-07 -3.1029e-09  6.9161e-06  1.1652e-04  4.4608e-08  ;
- -3.5968e-10 -3.1029e-09  1.0616e-09  1.3746e-07  2.3827e-07  9.4527e-08  ;
-  1.0540e-04  6.9161e-06  1.3746e-07  3.7390e-02  1.2350e-03  8.4425e-05  ;
-  7.7524e-07  1.1652e-04  2.3827e-07  1.2350e-03  3.8354e-02  3.4860e-05  ;
-  3.2161e-07  4.4608e-08  9.4527e-08  8.4425e-05  3.4860e-05  3.0262e-05 ];
+  testID = '_KFsim';
   
-  if noiseOn
-    v_n = mvnrnd( [ x1 x2 x3 x4 x5 x6 ], Q, 1 );
-
-    x1 = v_n(1);
-    x2 = v_n(2);
-    x3 = v_n(3);
-    x4 = v_n(4);
-    x5 = v_n(5);
-    x6 = v_n(6);
-  
-    noise_theta1     = x1;
-    noise_theta2     = x2;
-    noise_x          = x3;
-  
-    %measurement
-    y_k = [ x1  ;
-            x2  ;
-            x3  ;
-            x4  ;
-            x5  ;
-            x6 ];
-  
-  %-------INITIALIZATION---------------------------------------------------
-  
-  Ad = ...
-  [ 1.0007e+00  2.7512e-05           0  6.6677e-03 -1.6497e-07           0  ;
-    3.8817e-05  1.0011e+00           0 -1.2727e-07  6.6632e-03           0  ;
-    7.7711e-06  8.7217e-06  1.0000e+00 -2.5479e-08 -5.2298e-08  6.6700e-03  ;
-    2.1397e-01  8.2496e-03           0  9.9930e-01 -4.9467e-05           0  ;
-    1.1639e-02  3.4024e-01           0 -3.8162e-05  9.9796e-01           0  ;
-    2.3302e-03  2.6152e-03           0 -7.6400e-06 -1.5681e-05  1.0000e+00 ];
-
-  Bd = [ 1.1173e-05  ;
-         1.7692e-05  ;
-         3.5419e-06  ;
-         3.3502e-03  ;
-         5.3050e-03  ;
-         1.0620e-03 ];
-
-  Cd = ...
-  [ 1.1143e+00  1.1761e+00  1.0000e+00  1.0030e+00  1.0023e+00  1.0033e+00 ];
-  
-  %-------PREDICTION-------------------------------------------------------
-  
-  %calculating priori/predicted estimate
-  x_pred_k  = Ad*xEst + Bd*previousU;
-
-  %error covariance (measure of uncertainty in the predicted states)
-  P_pred_k = Ad*P*Ad' + Q;
-  
-  %-------UPDATE-----------------------------------------------------------
-
-  %calculate Kalman gain
-  
-  size(P_pred_k), size(Cd'), size(Cd), size(P_pred_k), size(Cd'), size(R)
-  
-  K_k = P_pred_k*Cd'./( Cd*P_pred_k*Cd' + R );
-
-  xEst = x_pred_k + K_k*( y_k - Cd*x_pred_k );
-
-  P = ( eye(6) - K_k*Cd )*P_pred_k;
-
-  x1Est = xEst(1);
-  x2Est = xEst(2);
-  x3Est = xEst(3);
-  x4Est = xEst(4);
-  x5Est = xEst(5);
-  x6Est = xEst(6);
-  
-  %------------------------------------------------------------------------
-  
-  %adding process noise, w_p, to states
-  w_n = mvnrnd( [ x1 x2 x3 x4 x5 x6 ], R1, 1 );
-
-  q_dot = [ x4                   +   w_n(1)                   ;
-            x5                   +   w_n(2)                   ;
-            x6                   +   w_n(3)                   ;
-            MM\(F - G - C - B )  + [ w_n(4) w_n(5) w_n(6) ]' ];
-  
+  for jj = 1:1:10
+    switch jj
+    case 1
+      figHandle=h_theta1;
+      fileName=strcat('theta1',testID);
+      saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 2
+      figHandle=h_theta2;
+      fileName=strcat('theta2',testID);
+      saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 3
+      figHandle=h_x;
+      fileName=strcat('x',testID);
+      saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 4
+      figHandle=h_theta1Dot;
+      fileName=strcat('theta1Dot',testID);
+      saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 5
+      figHandle=h_theta2Dot;
+      fileName=strcat('theta2Dot',testID);
+      saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    case 6
+      figHandle=h_xDot;
+      fileName=strcat('xDot',testID);
+      saveFig(figHandle,fileName,fileTypeOrig,figurePath1,figurePath2,3);
+    end
   end
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

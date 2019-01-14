@@ -47,7 +47,7 @@ if con == 4
 end
 xlim([min(t) max(t)-1.1])
 legend( '$\theta_1$', '$\theta_2$', 'location', 'southwest' )
-if documentation == 1 && con == 4
+if documentation == 1 && con == 4 && 0
   pbaspect(aspectRatioAni)
 end
 

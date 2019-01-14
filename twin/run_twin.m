@@ -25,7 +25,7 @@ end
 
 %----------SIMULATION ODE45------------------------------------------------
 
-con = 0; %select control
+con = 4; %select control
 
 %initial conditions for ode45
 if con == 0
@@ -73,8 +73,8 @@ if       con == 0,     T_final = 10          +1.1;
 elseif   con == 1,     T_final = 15          +1.1;
 elseif   con == 2,     T_final = 10          +1.1;
 elseif   con == 3,     T_final = 10          +1.1;
-elseif   con == 4,     T_final = 7.8         +1.1;
-end                    %7.6645 for swing
+elseif   con == 4,     T_final = 20          +1.1;
+end                    %7.8 for swing
                        %20 for swing&catch
 
 %initialization for ode45
