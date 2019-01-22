@@ -9,7 +9,7 @@ syms m1 m2 M l1 l2 g r b_c_c b_c_v b_p1_c b_p1_v b_p2_c b_p2_v k_tanh k_tau
 
 syms x1 x2 x3 x4 x5 x6 u
 
-noFriction = 1;
+noFriction = 0;
 
 MM = [  m1*(l1^2)       0              -m1*l1*cos(x1)  ;
         0               m2*(l2^2)      -m2*l2*cos(x2)  ;
@@ -158,10 +158,10 @@ Dd = disSys.D;
 %% -------LQR Design-------------------------------------------------------
 
 % theta1_max    [rad]       theta2_max    [rad]       x_max        [m]
-  x1Max = 1;                x2Max = 1;                x3Max = .028;%.0001;
+  x1Max = 1;                x2Max = 1;                x3Max = .01;
 
 % theta1Dot_max [rad s^-1]  theta2Dot_max [rad s^-1]  xDot_max     [m s^-1] 
-  x4Max = 1;              x5Max = 1;              x6Max = 1;%.0001;
+  x4Max = 1;                x5Max = 1;                x6Max = 1;
 
 iaMax  = 1;%4.85;                    % [A] ,  max continuous = 4.85 A
 %uMax  = 0.005; %iaMax*k_tau/r;   % [N]

@@ -282,7 +282,7 @@ phi = -k*eta;
 
 s = xi - phi;
 
-%converting to regular states using T^-1
+%converting to regular states using T
 eta1 = x1;    eta2 = (cos(x1)/l)*x4 - x3;    eta3 = x2;    xi = x4;
 
 s = subs( s )                                                              %#ok<NOPTS>

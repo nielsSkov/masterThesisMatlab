@@ -38,6 +38,7 @@ function [ q_dot,          ...
   catchTwin = 1;
   conX      = 1;
   fComp     = 0;
+  slide     = 1;
 
   %creating wrapped vertions of angles for catch controller
   x1Wrap = mod( (x1 + pi), 2*pi );
@@ -77,16 +78,43 @@ function [ q_dot,          ...
   %total energy
   E_T = T + U; %(function output)
   
-  %kLQR = [ -2344.16, 2061.82, 29.91, -421.55, 293.94, 54.95 ];
-  %kLQR = [ -2930.11, 2521.15, 44.33, -526.85, 359.54, 79.10 ];
-  kLQR  = [ -2742.93, 2302.58, 107.09, -493.15, 328.26, 105.18 ];
-
-  %linearized with no friction
-  %kLQR = [ -1803.90  1629.32  27.23  -324.42  232.13  36.57 ];
+  kLQR   =  [ -5058.01, 4037.40, 296.63, -892.48, 553.70, 256.29 ];
+  
+  %kSlide =  [ -12.0798   10.5851   -7.8671  -31.6698    0.0789 ]; %works well in sim
+  kSlide =  [ -21.3136   17.3192  -13.2417  -53.8390    0.4732 ]; %also works well in sim
+  %kSlide =  [ -9.5609    8.6073   -6.3968  -25.6343    0.0388 ];
+  %kSlide =  [ -16.1846   13.6424  -10.2666  -41.5516    0.2135 ];
+  %kSlide =  [ -21.5476   17.5819  -13.4090  -54.5000    0.3965 ];
   
   if catchTwin && ( (abs(x1Wrap)+abs(x2Wrap)) < catchAngle  )%<-- catch controller
     catchAngle = .8;
-    u = -kLQR*X;
+    
+    if slide
+            
+      k1 = kSlide(1);
+      k2 = kSlide(2);
+      k3 = kSlide(3);
+      k4 = kSlide(4);
+      k5 = kSlide(5);
+      
+      rho     = 5;
+      beta0   = .1;
+      beta    = rho + beta0;
+      
+      g_b_inv = M + m1 + m2 - m1*cos(x1Wrap)^2 - m2*cos(x2Wrap)^2;
+      
+      s = x6 + k1*x1Wrap + k2*x2Wrap + k5*x3 - k3*(x4 + x5   ...
+        - x6*(cos(x1Wrap)/l1 + cos(x2Wrap)/l2))              ...
+        + k4*(l1*x4 + l2*x5 - x6*(cos(x1Wrap) + cos(x2Wrap)));
+      
+      epsilon = 0.03;
+      satS    = min( 1, max(-1, (1/epsilon)*s));
+    
+      u       =  -satS*beta*g_b_inv;
+      
+    else % LQR
+      u = -kLQR*X;
+    end
     
     i_a = u*r/k_tau;
     

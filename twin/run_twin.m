@@ -25,7 +25,7 @@ end
 
 %----------SIMULATION ODE45------------------------------------------------
 
-con = 4; %select control
+con = 0; %select control
 
 %initial conditions for ode45
 if con == 0
@@ -73,7 +73,7 @@ if       con == 0,     T_final = 10          +1.1;
 elseif   con == 1,     T_final = 15          +1.1;
 elseif   con == 2,     T_final = 10          +1.1;
 elseif   con == 3,     T_final = 10          +1.1;
-elseif   con == 4,     T_final = 20          +1.1;
+elseif   con == 4,     T_final = 10          +1.1;
 end                    %7.8 for swing
                        %20 for swing&catch
 
@@ -160,6 +160,7 @@ run('plotFigs.m')
 
 %remember to float the windows before saving (for consistent scale)
 if 0
+  %%
   figurePath1 = ...
     '~/syncDrive/uni/thesis/report/report/figures/original/';  %#ok<UNRCH>
   figurePath2 = ...
