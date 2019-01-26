@@ -18,7 +18,9 @@ noCartFriction = 1;
 noMass         = 0; % no mass of cart, M
 fComp          = 0; % friction compensation (feed forward)
 
-slm   = 0; %<-enable/disable sliding mode catch controller
+saveAni        = 1; % to generate animation frames for slides
+
+slm   = 1; %<-enable/disable sliding mode catch controller
 noLim = 0; %<-select weather or not to limit control to actuator capability
 iaLim = 0; %<-limmit actuation peak on/off
 conX  = 1; %<-select whether or not to control x-position/velocity
@@ -107,8 +109,12 @@ switch con
     end
   case 4
     if conX
-      %T_final = 9.45      +1.1;
-      T_final = 21.1; %<--to show x-position/velocity control reaching zero
+      if saveAni
+        T_final = 6         +1.1;
+      else
+        T_final = 9.45      +1.1;
+        %T_final = 21.1; %<--to show x-position/velocity
+      end                %   control reaching zero
     else
       T_final = 8.6       +1.1;
     end
@@ -170,7 +176,9 @@ for i = 1:length(t)-windowSize
   ia_rms(i) = rms( i_a(i:i+windowSize) );
 end
 
-run('plotFigs.m')
+if ~saveAni
+  run('plotFigs.m')
+end
 
 %% ----------ANIMATION-----------------------------------------------------
 run('animation.m')
@@ -259,4 +267,35 @@ if 0
     end
   end
   %%
+end
+
+
+
+%save animation (don't forget to float figures first)
+if 0
+%%
+  figurePath = ...
+    '~/syncDrive/uni/thesis/report/presentation/figures/cartPendulumAni/';
+  
+  fileName = 'ani-';
+
+  for jj = 0:1:59
+    
+    frameNr       = sprintf("%i",jj);
+    
+    fileNameAndNr = strcat(fileName,frameNr);
+    
+    if jj == 0
+      figHandle = h_ani;
+    else
+      figHandle = aniFigs(jj);
+    end
+
+    %save png
+    figTmp = sprintf('%s%s.png', figurePath, fileNameAndNr);
+    
+    print(figHandle, figTmp, '-dpng');
+    
+  end
+%%
 end

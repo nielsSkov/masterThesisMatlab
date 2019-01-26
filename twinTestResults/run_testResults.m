@@ -20,7 +20,7 @@ matlabPurple = [ 0.494 0.184  0.556  ];
 %//
 
 %select test Nr
-testNr = 4;      % 1 - swing-up
+testNr = 3;      % 1 - swing-up
                  % 2 - catch
                  % 3 - swing-up and catch attempt
                  % 4 - Kalman filter with LQR
@@ -31,7 +31,7 @@ if testNr == 1
 elseif testNr == 2
   dataFile = 'c6.csv';
 elseif testNr == 3
-  dataFile = 's33.csv';
+  dataFile = 'scAlmost2.csv';%'s33.csv';
 elseif testNr == 4
   dataFile = 'c6.csv';
 end
@@ -46,7 +46,7 @@ elseif testNr == 2
   dataEnd   = length(data)-3020;
 elseif testNr == 3
   dataStart = 1;
-  dataEnd   = length(data)-65;
+  dataEnd   = length(data);%-65;
 elseif testNr == 4
   dataStart = 1;
   dataEnd   = length(data);
@@ -155,7 +155,7 @@ if testNr == 1
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$\theta$ [rad]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   legend( '$\theta_1$', '$\theta_2$', 'location', 'southwest' )
   
   h_x = figure;
@@ -163,7 +163,7 @@ if testNr == 1
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$x$ [m]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
 
   h_thetaDot = figure;
   plot( t, x4, 'linewidth', 1.5, 'color', matlabBlue )
@@ -173,7 +173,7 @@ if testNr == 1
   xlabel('$t$ [s]')
   ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
   %yPI = 1; xPI = 0; run('piAxes.m')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   legend( '$\dot{\theta}_1$', '$\dot{\theta}_2$', 'location', 'southeast' )
   
   h_xDot = figure;
@@ -181,7 +181,7 @@ if testNr == 1
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
 
   %plot armature current
   h_ia = figure;
@@ -192,7 +192,7 @@ if testNr == 1
   hold on
   plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
   i_max = 4.58;
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   ylim([min(ia)-.5 max(ia)+.5])
   plot(xlim,[i_max i_max], 'linewidth', 1.5, 'color', matlabRed )
   legend( 'Motor Current',          ...
@@ -226,7 +226,7 @@ if testNr == 1
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$E_\Delta$ [J]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   pbaspect(aspectRatioPhasePlot)
   legend( '$E_{\Delta_1}$', '$E_{\Delta_2}$', 'location', 'southeast' )
 
@@ -240,7 +240,7 @@ elseif testNr == 2
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$\theta$ [rad]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   legend( '$\theta_1$', '$\theta_2$', 'location', 'southeast' )
   
   h_x = figure;
@@ -248,7 +248,7 @@ elseif testNr == 2
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$x$ [m]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
 
   h_thetaDot = figure;
   plot( t, x4K, 'linewidth', 1.5, 'color', matlabBlue )
@@ -258,7 +258,7 @@ elseif testNr == 2
   xlabel('$t$ [s]')
   ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
   %yPI = 1; xPI = 0; run('piAxes.m')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   legend( '$\dot{\theta}_1$', '$\dot{\theta}_2$', 'location', 'southeast' )
   
   h_xDot = figure;
@@ -266,7 +266,7 @@ elseif testNr == 2
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
 
   %plot armature current
   h_ia = figure;
@@ -277,7 +277,7 @@ elseif testNr == 2
   hold on
   plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
   i_max = 4.58;
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   ylim([min(ia)-.5 max(ia)+.5])
   plot(xlim,[i_max i_max], 'linewidth', 1.5, 'color', matlabRed )
   legend( 'Motor Current',          ...
@@ -289,13 +289,13 @@ elseif testNr == 3
   
   %plot all states
   h_theta = figure;
-  plot( t, x1K, 'linewidth', 1.5, 'color', matlabBlue )
+  plot( t, x1, 'linewidth', 1.5, 'color', matlabBlue )
   hold on
-  plot( t, x2K, 'linewidth', 1.5, 'color', matlabRed )
+  plot( t, x2, 'linewidth', 1.5, 'color', matlabRed )
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$\theta$ [rad]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   legend( '$\theta_1$', '$\theta_2$', 'location', 'southwest' )
   
   h_x = figure;
@@ -303,7 +303,7 @@ elseif testNr == 3
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$x$ [m]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
 
   h_thetaDot = figure;
   plot( t, x4K, 'linewidth', 1.5, 'color', matlabBlue )
@@ -313,7 +313,7 @@ elseif testNr == 3
   xlabel('$t$ [s]')
   ylabel('$\dot{\theta}$ [rad$\cdot$s$^{-1}$]')
   %yPI = 1; xPI = 0; run('piAxes.m')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   legend( '$\dot{\theta}_1$', '$\dot{\theta}_2$', 'location', 'southeast' )
   
   h_xDot = figure;
@@ -321,7 +321,7 @@ elseif testNr == 3
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$\dot{x}$ [m$\cdot$s$^{-1}$]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
 
   %plot armature current
   h_ia = figure;
@@ -332,7 +332,7 @@ elseif testNr == 3
   hold on
   plot( t, ia_rms, 'color', [ 0 .6 0 ], 'linewidth', 1.5 )
   i_max = 4.58;
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   ylim([min(ia)-.5 max(ia)+.5])
   plot(xlim,[i_max i_max], 'linewidth', 1.5, 'color', matlabRed )
   legend( 'Motor Current',          ...
@@ -342,10 +342,10 @@ elseif testNr == 3
 
   %plot trajectories in theta-plane
   h_phase = figure;
-  plot( x1K(1:end-164), x4K(1:end-164),          ...
+  plot( x1(1:end-164), x4(1:end-164),          ...
         'linewidth', 1.5, 'color', matlabBlue     )
   hold on
-  plot( x2K(1:end-164), x5K(1:end-164),          ...
+  plot( x2(1:end-164), x5(1:end-164),          ...
         'linewidth', 1.5, 'color', matlabRed      )
   %grid on
   yPI = 1; xPI = 1; run('piAxes.m')
@@ -366,7 +366,7 @@ elseif testNr == 3
   grid on, grid minor
   xlabel('$t$ [s]')
   ylabel('$E_\Delta$ [J]')
-  xlim([min(t) max(t)-1.2])
+  xlim([min(t) max(t)-1.1])
   pbaspect(aspectRatioPhasePlot)
   legend( '$E_{\Delta_1}$', '$E_{\Delta_2}$', 'location', 'southeast' )
 

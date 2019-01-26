@@ -25,7 +25,7 @@ end
 
 %----------SIMULATION ODE45------------------------------------------------
 
-con = 0; %select control
+con = 4; %select control
 
 %initial conditions for ode45
 if con == 0
